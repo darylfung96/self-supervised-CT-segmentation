@@ -18,8 +18,8 @@ while read -r line; do
 		pids="";
 		for ((col=0;col<=600;col+=200)); do
 			echo 'creating ' ${line}_${row}_${col};
-			convert ${potsdam_img_root}/${line}_RGB.tif -crop 600x600+${col}+${row} ${potsdam_root}/processed/train/images/${line}_${row}_${col}.jpg 2>/dev/null &
-			convert ${potsdam_gt_root}/${line}_label.png -crop 600x600+${col}+${row} ${potsdam_root}/processed/train/gt/${line}_${row}_${col}.png 2>/dev/null &
+			convert ${potsdam_img_root}/${line}_RGB.tif -crop 600x600+${col}+${row} ${potsdam_root}/processed/train/images/${line}_${row}_${col}.jpg 2>/dev/null
+			convert ${potsdam_gt_root}/${line}_label.png -crop 600x600+${col}+${row} ${potsdam_root}/processed/train/gt/${line}_${row}_${col}.png 2>/dev/null
 			pids="$pids $!";
 		done;
 		wait $pids;
@@ -35,8 +35,8 @@ while read -r line; do
 		pids="";
 		for ((col=0;col<=600;col+=200)); do
 			echo 'creating ' ${line}_${row}_${col};
-			convert ${potsdam_img_root}/${line}_RGB.tif -crop 600x600+${col}+${row} ${potsdam_root}/processed/val/images/${line}_${row}_${col}.jpg 2>/dev/null &
-			convert ${potsdam_gt_root}/${line}_label.png -crop 600x600+${col}+${row} ${potsdam_root}/processed/val/gt/${line}_${row}_${col}.png 2>/dev/null &
+			convert ${potsdam_img_root}/${line}_RGB.tif -crop 600x600+${col}+${row} ${potsdam_root}/processed/val/images/${line}_${row}_${col}.jpg 2>/dev/null
+			convert ${potsdam_gt_root}/${line}_label.png -crop 600x600+${col}+${row} ${potsdam_root}/processed/val/gt/${line}_${row}_${col}.png 2>/dev/null
 			pids="$pids $!";
 		done;
 		wait $pids;
