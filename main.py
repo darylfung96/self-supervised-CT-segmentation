@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-from tqdm import tqdm_notebook
+from tqdm import tqdm
 import torch.optim as optim
 import torch.nn.functional as F
 from utils.dataloaders import context_inpainting_dataloader, segmentation_data_loader
@@ -180,7 +180,7 @@ coach_loss = []
 
 
 def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_masks=False):
-    progbar = tqdm_notebook(total=len(train_loader), desc='Train')
+    progbar = tqdm(total=len(train_loader), desc='Train')
     net.train()
 
     if coach is not None:
@@ -218,7 +218,7 @@ def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_ma
 
 
 def train_coach(epoch, net, coach, coach_optimizer):
-    progbar = tqdm_notebook(total=len(train_loader), desc='Coach')
+    progbar = tqdm(total=len(train_loader), desc='Coach')
     coach.train()
     net.eval()
     coach_loss.append(0)
@@ -255,7 +255,7 @@ def train_coach(epoch, net, coach, coach_optimizer):
 
 def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False):
     global best_loss
-    progbar = tqdm_notebook(total=len(val_loader), desc='Val')
+    progbar = tqdm(total=len(val_loader), desc='Val')
     net.eval()
     if coach is not None:
         coach.eval()
@@ -311,13 +311,13 @@ else:
     epochs = [100]
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4]]
 
-progbar_1 = tqdm_notebook(total=len(epochs), desc='Iters')
+progbar_1 = tqdm(total=len(epochs), desc='Iters')
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
 
     if use_coach and iter_ > 0:
         use_coach_masks = True
-        progbar_2 = tqdm_notebook(total=epochs[iter_], desc='Epochs')
+        progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
         optimizer_coach = optim.Adam(net_coach.parameters(), lr=1e-5)
 
         for epoch in range(epochs[iter_]):
@@ -326,7 +326,7 @@ for iter_ in range(0, len(epochs)):
 
     net_optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
 
-    progbar_2 = tqdm_notebook(total=epochs[iter_], desc='Epochs')
+    progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
     for epoch in range(epochs[iter_]):
         if epoch % 10 == 0:
             if use_coach:
@@ -389,7 +389,7 @@ val_seg_loader = torch.utils.data.DataLoader(
 
 def train_segmentation(epoch, net_segmentation, seg_optimizer):
     global train_seg_iou
-    progbar = tqdm_notebook(total=len(train_seg_loader), desc='Train')
+    progbar = tqdm(total=len(train_seg_loader), desc='Train')
     net_segmentation.train()
 
     train_seg_loss.append(0)
@@ -427,7 +427,7 @@ def train_segmentation(epoch, net_segmentation, seg_optimizer):
 def val_segmentation(epoch, net_segmentation):
     global best_iou
     global val_seg_iou
-    progbar = tqdm_notebook(total=len(val_seg_loader), desc='Val')
+    progbar = tqdm(total=len(val_seg_loader), desc='Val')
     net_segmentation.eval()
 
     val_seg_loss.append(0)
@@ -463,7 +463,7 @@ def val_segmentation(epoch, net_segmentation):
         torch.save(state, model_root + experiment + 'segmentation' + '.ckpt.t7')
 
 
-progbar = tqdm_notebook(total=100, desc='Epochs')
+progbar = tqdm(total=100, desc='Epochs')
 for epoch in range(0, 100):
     if epoch == 90:
         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
@@ -478,7 +478,7 @@ for epoch in range(0, 100):
     val_segmentation(epoch, net_segmentation=net_segmentation)
     progbar.update(1)
 
-progbar = tqdm_notebook(total=100, desc='Epochs')
+progbar = tqdm(total=100, desc='Epochs')
 for epoch in range(0, 100):
     if epoch == 90:
         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
@@ -538,7 +538,7 @@ def evaluate_segmentation(net_segmentation):
                                  suffix=dataset, out=out, crop=False, mirror=False),
         batch_size=1, num_workers=8, shuffle=False)
 
-    progbar = tqdm_notebook(total=len(val_seg_loader), desc='Eval')
+    progbar = tqdm(total=len(val_seg_loader), desc='Eval')
 
     hist = np.zeros((nClasses, nClasses))
     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
