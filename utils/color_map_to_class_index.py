@@ -72,19 +72,19 @@ def apply_DGlands_colormap(image):
 
 
 
-print "Converting RGB GT to 8-bit GT image"
+print("Converting RGB GT to 8-bit GT image")
 source_path = sys.argv[1]
 destination_path = sys.argv[2]
 dataset = sys.argv[3]
 
 if not os.path.isfile(source_path):
-	print "ERROR: file not found --->", source_path
+	print("ERROR: file not found --->", source_path)
 else:
 
 	img = cv2.imread(source_path)[:,:,::-1]  ### BGR->RGB
 
 	if img.shape[2] != 3:
-		print 'skipping ', source_path
+		print('skipping ', source_path)
 	else:
 		target = 7*np.ones((img.shape[0], img.shape[1]), dtype = np.uint8)
 
@@ -130,5 +130,5 @@ else:
 
 
 		
-	print "writing", destination_path
+	print("writing", destination_path)
 	cv2.imwrite(destination_path, target)

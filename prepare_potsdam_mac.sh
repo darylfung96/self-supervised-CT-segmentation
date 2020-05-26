@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # set paths
-potsdam_root=/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets
+
+potsdam_root=/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/potsdam
 potsdam_splits=$potsdam_root/splits/
 potsdam_img_root=$potsdam_root/RELEASE_FOLDER/2_Ortho_RGB/
 potsdam_gt_root=$potsdam_root/RELEASE_FOLDER/5_Labels_for_participants/
@@ -14,9 +15,9 @@ echo 'creating train crops with stride of' ${potsdam_stride} x ${potsdam_stride}
 while read -r line; do 
 	echo 'processing ' $line;
 	python utils/color_map_to_class_index.py ${potsdam_gt_root}/${line}_label.tif ${potsdam_gt_root}/${line}_label.png potsdam
-	for ((row=0;row<=600;row+=200)); do
+	for ((row=0;row<=5400;row+=200)); do
 		pids="";
-		for ((col=0;col<=600;col+=200)); do
+		for ((col=0;col<=5400;col+=200)); do
 			echo 'creating ' ${line}_${row}_${col};
 			convert ${potsdam_img_root}/${line}_RGB.tif -crop 600x600+${col}+${row} ${potsdam_root}/processed/train/images/${line}_${row}_${col}.jpg 2>/dev/null
 			convert ${potsdam_gt_root}/${line}_label.png -crop 600x600+${col}+${row} ${potsdam_root}/processed/train/gt/${line}_${row}_${col}.png 2>/dev/null
@@ -31,9 +32,9 @@ echo 'creating val crops with stride of' ${potsdam_stride} x ${potsdam_stride}
 while read -r line; do 
 	echo 'processing ' $line;
 	python utils/color_map_to_class_index.py ${potsdam_gt_root}/${line}_label.tif ${potsdam_gt_root}/${line}_label.png potsdam
-	for ((row=0;row<=600;row+=600)); do
+	for ((row=0;row<=5400;row+=600)); do
 		pids="";
-		for ((col=0;col<=600;col+=600)); do
+		for ((col=0;col<=5400;col+=600)); do
 			echo 'creating ' ${line}_${row}_${col};
 			convert ${potsdam_img_root}/${line}_RGB.tif -crop 600x600+${col}+${row} ${potsdam_root}/processed/val/images/${line}_${row}_${col}.jpg 2>/dev/null
 			convert ${potsdam_gt_root}/${line}_label.png -crop 600x600+${col}+${row} ${potsdam_root}/processed/val/gt/${line}_${row}_${col}.png 2>/dev/null
