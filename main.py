@@ -18,8 +18,8 @@ torch.cuda.manual_seed(7)
 torch.manual_seed(7)
 np.random.seed(7)
 
-dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
-model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
+dataset_root = '/home/daryl/Self-supervision-for-segmenting-overhead-imagery/datasets/'
+model_root = '/home/daryl/Self-supervision-for-segmenting-overhead-imagery/model/'
 
 dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
