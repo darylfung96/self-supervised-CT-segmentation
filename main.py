@@ -11,6 +11,9 @@ from models import resnet18_encoderdecoder, resnet18_encoderdecoder_wbottleneck
 from models import resnet18_coach_vae
 
 import warnings
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True' # for mac
 warnings.filterwarnings('ignore')
 
 ## fix seeds
@@ -18,14 +21,19 @@ torch.cuda.manual_seed(7)
 torch.manual_seed(7)
 np.random.seed(7)
 
-dataset_root = '/home/daryl/Self-supervision-for-segmenting-overhead-imagery/datasets/'
-model_root = '/home/daryl/Self-supervision-for-segmenting-overhead-imagery/model/'
+
+
+device = 'cpu'
+
+dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
+model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
 
 dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
 use_coach = True                                       #options are: True or Flase
-self_supervised_split = 'train_crops'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
-supervised_split = 'train_10crops'                     #options are: train_10crops, train_25crops, train_50crops, train_crops
+self_supervised_split = 'train_crops_mac'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
+supervised_split = 'train_crops_mac'
+# supervised_split = 'train_10crops'                     #options are: train_10crops, train_25crops, train_50crops, train_crops
 
 experiment = dataset + '_' + architecture                #model file suffix
 
@@ -68,7 +76,7 @@ elif dataset == 'potsdam':
 
     val_img_root = dataset_root + 'potsdam/processed/val/images/'
     val_gt_root = dataset_root + 'potsdam/processed/val/gt/'
-    val_image_list = dataset_root + 'potsdam/splits/val_crops.txt'
+    val_image_list = dataset_root + 'potsdam/splits/val_crops_mac.txt'
 
     train_image_list_path = dataset_root + 'potsdam/splits/'
     nClasses = 6                ### number of classes for pixelwise classification
@@ -108,13 +116,13 @@ train_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = train_img_root, image_list = train_image_list_path+self_supervised_split+'.txt', suffix=dataset,
                                   mirror = True, resize=True, resize_shape=[256, 256], rotate = True,
                                   erase_shape = erase_shape, erase_count = erase_count),
-    batch_size=128, num_workers=10, shuffle = True)
+    batch_size=128, shuffle = True)
 
 val_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = val_img_root, image_list = val_image_list, suffix=dataset,
                                   mirror = False, resize=False, resize_shape=[256, 256], rotate = False,
                                   crop = True, erase_shape = erase_shape, erase_count = erase_count),
-    batch_size=32, num_workers=10, shuffle = False)
+    batch_size=32, shuffle = False)
 
 
 def torch_to_np(input_, mask, target, output=None):
@@ -137,12 +145,12 @@ def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
         if coach is None:
             inputs_ = inputs_ * masks.float()
         else:
-            masks, _, _ = coach.forward(inputs_.cuda(), alpha=100, use_coach=use_coach_masks)
+            masks, _, _ = coach.forward(inputs_.to(device), alpha=100, use_coach=use_coach_masks)
             inputs_ = inputs_ * masks.float().cpu()
 
         outputs = None
         if cols == 4:
-            outputs = net.forward(inputs_.cuda()).cpu().data
+            outputs = net.forward(inputs_.to(device)).cpu().data
             input_, mask, target, output = torch_to_np(inputs_[0].cpu(), masks[0].cpu(), targets[0].cpu(),
                                                        outputs[0].cpu())
         else:
@@ -165,11 +173,11 @@ def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
 
 visualize_self_sup()
 
-net = resnet18_encoderdecoder().cuda()
+net = resnet18_encoderdecoder().to(device)
 net_coach = None
 
 if use_coach:
-    net_coach = resnet18_coach_vae(drop_ratio=0.75).cuda()
+    net_coach = resnet18_coach_vae(drop_ratio=0.75, device=device).to(device)
 
 net_optimizer = None
 coach_optimizer = None
@@ -189,7 +197,7 @@ def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_ma
     train_loss.append(0)
     for batch_idx, (inputs_, masks, targets) in enumerate(train_loader):
         net_optimizer.zero_grad()
-        inputs_, masks, targets = Variable(inputs_.cuda()), Variable(masks.cuda().float()), Variable(targets.cuda())
+        inputs_, masks, targets = Variable(inputs_.to(device)), Variable(masks.to(device).float()), Variable(targets.to(device))
 
         if coach is not None:
             masks, _, _ = coach.forward(inputs_, alpha=100, use_coach=use_coach_masks)
@@ -224,7 +232,7 @@ def train_coach(epoch, net, coach, coach_optimizer):
     coach_loss.append(0)
     for batch_idx, (inputs_, masks, targets) in enumerate(train_loader):
         coach_optimizer.zero_grad()
-        inputs_, targets = Variable(inputs_.cuda()), Variable(targets.cuda())
+        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
 
         masks, mu, logvar = coach.forward(inputs_, alpha=1)
 
@@ -261,7 +269,7 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         coach.eval()
     val_loss.append(0)
     for batch_idx, (inputs_, masks, targets) in enumerate(val_loader):
-        inputs_, masks, targets = Variable(inputs_.cuda()), Variable(masks.cuda().float()), Variable(targets.cuda())
+        inputs_, masks, targets = Variable(inputs_.to(device)), Variable(masks.to(device).float()), Variable(targets.to(device))
 
         if coach is not None:
             masks, _, _ = coach.forward(inputs_, alpha=100, use_coach=use_coach_masks)
@@ -361,7 +369,7 @@ torch.cuda.empty_cache()
 from models import FCNify_v2
 iter_ = len(epochs) - 1   ### iter_ = 0 is semantic inpainting model, iter_ > 0 is trained against coach masks
 net = torch.load(model_root + experiment + str(iter_) + '.ckpt.t7')['context_inpainting_net']
-net_segmentation = FCNify_v2(net, n_class = nClasses).cuda()
+net_segmentation = FCNify_v2(net, n_class = nClasses).to(device)
 optimizer_seg = None
 del(net)
 
@@ -396,7 +404,7 @@ def train_segmentation(epoch, net_segmentation, seg_optimizer):
     seg_optimizer.zero_grad()
     hist = np.zeros((nClasses, nClasses))
     for batch_idx, (inputs_, targets) in enumerate(train_seg_loader):
-        inputs_, targets = Variable(inputs_.cuda()), Variable(targets.cuda())
+        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
 
         outputs = net_segmentation(inputs_)
 
@@ -433,7 +441,7 @@ def val_segmentation(epoch, net_segmentation):
     val_seg_loss.append(0)
     hist = np.zeros((nClasses, nClasses))
     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
-        inputs_, targets = Variable(inputs_.cuda()), Variable(targets.cuda())
+        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
 
         outputs = net_segmentation(inputs_)
 
@@ -509,7 +517,7 @@ def visualize_segmentation(net_segmentation):
         batch_size=1, num_workers=8, shuffle=False)
     fig, axs = plt.subplots(nrows=4, ncols=3, figsize=(9, 9))
     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
-        inputs_, targets = Variable(inputs_.cuda()), Variable(targets.cuda())
+        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
 
         outputs = net_segmentation(inputs_)
 
@@ -542,7 +550,7 @@ def evaluate_segmentation(net_segmentation):
 
     hist = np.zeros((nClasses, nClasses))
     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
-        inputs_, targets = Variable(inputs_.cuda()), Variable(targets.cuda())
+        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
 
         outputs = net_segmentation(inputs_)
 
@@ -561,7 +569,7 @@ def evaluate_segmentation(net_segmentation):
     print('\n Pixel accuracy: ', p_acc)
     print('\n Frequency Weighted Pixel accuracy: ', fwacc)
 
-net = torch.load(model_root + experiment + 'segmentation' + '.ckpt.t7')['net_segmentation'].cuda().eval() ### load the best model
+net = torch.load(model_root + experiment + 'segmentation' + '.ckpt.t7')['net_segmentation'].to(device).eval() ### load the best model
 evaluate_segmentation(net)
 
 visualize_segmentation(net)

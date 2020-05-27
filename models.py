@@ -492,8 +492,9 @@ class FCNify_v2(nn.Module):
 
 class Resnet_coach_vae(nn.Module):
 
-    def __init__(self, block, layers, drop_ratio = 0.5):
+    def __init__(self, block, layers, drop_ratio = 0.5, device='cuda'):
         self.inplanes = 64
+        self.device = device
         super(Resnet_coach_vae, self).__init__()
         torch.cuda.manual_seed(7)
         torch.manual_seed(7)
@@ -575,7 +576,7 @@ class Resnet_coach_vae(nn.Module):
         logvar = None
         if not use_coach:
             size_ = x.size()
-            features = Variable(torch.rand(size_[0], 1, int(size_[2]/16), int(size_[3]/16) ).cuda())
+            features = Variable(torch.rand(size_[0], 1, int(size_[2]/16), int(size_[3]/16) ).to(self.device))
         else:
             features, mu, logvar = self.get_feature(x) 
         
