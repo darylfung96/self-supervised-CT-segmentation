@@ -14,7 +14,7 @@ if __name__ == '__main__':
     for img_str in os.listdir(args.gt_folder):
         img_filename = os.path.join(args.gt_folder, img_str)
         img = io.imread(img_filename)
-        edge = feature.canny(img).astype(np.int32)
+        edge = feature.canny(img).astype(np.uint8)
 
         output_filename = os.path.join(args.output_folder, img_str)
         io.imsave(output_filename, edge)
