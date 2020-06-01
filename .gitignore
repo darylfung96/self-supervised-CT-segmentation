@@ -7,6 +7,7 @@ __pycache__/
 **/.idea
 **/Dataset
 **/datasets
+**/edge_output
 
 # C extensions
 *.so
