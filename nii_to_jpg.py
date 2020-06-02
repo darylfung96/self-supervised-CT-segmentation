@@ -8,6 +8,7 @@ if __name__ == '__main__':
     arg_parse = ArgumentParser()
     arg_parse.add_argument('--nii_file', type=str, required=True)
     arg_parse.add_argument('--output_folder', type=str, required=True)
+    arg_parse.add_argument('--filename_prefix', type=str, required=True)
     arg_parse.add_argument('--save_type', type=str, required=True, help='jpg or png')
 
     arg = arg_parse.parse_args()
@@ -18,7 +19,7 @@ if __name__ == '__main__':
     # make output folder if not exist yet
     os.makedirs(arg.output_folder, exist_ok=True)
 
-    prefix = os.path.basename(arg.nii_file).split('.')[0]
+    prefix = arg.filename_prefix
     num_images = data.shape[2]
     for i in range(num_images):
         current_img = data[:, :, i]
