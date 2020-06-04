@@ -124,22 +124,26 @@ class Inf_Net(nn.Module):
         self.ra4_conv3 = BasicConv2d(256, 256, kernel_size=5, padding=2)
         self.ra4_conv4 = BasicConv2d(256, 256, kernel_size=5, padding=2)
         self.ra4_conv5 = BasicConv2d(256, n_class, kernel_size=1)
+        self.ra4_conv5_inpainting = BasicConv2d(256, 3, kernel_size=1)
         # ---- reverse attention branch 3 ----
         self.ra3_conv1 = BasicConv2d(1024, 64, kernel_size=1)
         self.ra3_conv2 = BasicConv2d(64+64, 64, kernel_size=3, padding=1)
         self.ra3_conv3 = BasicConv2d(64, 64, kernel_size=3, padding=1)
         self.ra3_conv4 = BasicConv2d(64, n_class, kernel_size=3, padding=1)
+        self.ra3_conv4_inpainting = BasicConv2d(64, 3, kernel_size=3, padding=1)
         # ---- reverse attention branch 2 ----
         self.ra2_conv1 = BasicConv2d(512, 64, kernel_size=1)
         self.ra2_conv2 = BasicConv2d(64+64, 64, kernel_size=3, padding=1)
         self.ra2_conv3 = BasicConv2d(64, 64, kernel_size=3, padding=1)
         self.ra2_conv4 = BasicConv2d(64, n_class, kernel_size=3, padding=1)
+        self.ra2_conv4_inpainting = BasicConv2d(64, 3, kernel_size=3, padding=1)
 
         # ---- edge branch ----
         self.edge_conv1 = BasicConv2d(256, 64, kernel_size=1)
         self.edge_conv2 = BasicConv2d(64, 64, kernel_size=3, padding=1)
         self.edge_conv3 = BasicConv2d(64, 64, kernel_size=3, padding=1)
         self.edge_conv4 = BasicConv2d(64, n_class, kernel_size=3, padding=1)
+        self.edge_conv4_inpainting = BasicConv2d(64, 3, kernel_size=3, padding=1)
 
     def forward(self, x):
         x = self.resnet.conv1(x)
