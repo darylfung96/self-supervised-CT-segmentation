@@ -13,8 +13,8 @@ import numpy as np
 import os
 import argparse
 from scipy import misc
-from Code.model_lung_infection.InfNet_Res2Net import Inf_Net as Network
-from Code.utils.dataloader_LungInf import test_dataset
+from InfNet.Code.model_lung_infection.InfNet_ResNet import Inf_Net as Network
+from InfNet.Code.utils.dataloader_LungInf import test_dataset
 
 
 def inference():
