@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
     # testing dataset
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
-    parser.add_argument('--test_size', type=int, default=352, help='testing size')
+    parser.add_argument('--testsize', type=int, default=352, help='testing size')
 
     # save log tensorboard
     parser.add_argument('--graph_path', type=str, default="./graph_log")
