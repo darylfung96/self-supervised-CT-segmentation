@@ -15,6 +15,9 @@ from datetime import datetime
 from Code.utils.dataloader_LungInf import get_loader
 from Code.utils.utils import clip_gradient, adjust_lr, AvgMeter
 import torch.nn.functional as F
+from tensorboardX import SummaryWriter
+
+from InfNet.Code.utils.dataloader_LungInf import test_dataset
 
 
 def joint_loss(pred, mask):
@@ -29,13 +32,15 @@ def joint_loss(pred, mask):
     return (wbce + wiou).mean()
 
 
-def train(train_loader, model, optimizer, epoch, train_save):
+def train(train_loader, test_loader, model, optimizer, epoch, train_save):
     model.train()
     # ---- multi-scale training ----
     size_rates = [0.75, 1, 1.25]    # replace your desired scale, try larger scale for better accuracy in small object
     loss_record1, loss_record2, loss_record3, loss_record4, loss_record5 = AvgMeter(), AvgMeter(), AvgMeter(), AvgMeter(), AvgMeter()
+    current_iteration = 0
     for i, pack in enumerate(train_loader, start=1):
         for rate in size_rates:
+            current_iteration += 1
             optimizer.zero_grad()
             # ---- data prepare ----
             images, gts, edges = pack
@@ -58,6 +63,15 @@ def train(train_loader, model, optimizer, epoch, train_save):
             loss2 = joint_loss(lateral_map_2, gts)
             loss1 = BCE(lateral_edge, edges)
             loss = loss1 + loss2 + loss3 + loss4 + loss5
+
+            writer.add_scalar('train/edge_loss', loss1.item(), current_iteration)
+            writer.add_scalar('train/loss2', loss2.item(), current_iteration)
+            writer.add_scalar('train/loss3', loss3.item(), current_iteration)
+            writer.add_scalar('train/loss4', loss4.item(), current_iteration)
+            writer.add_scalar('train/loss5', loss5.item(), current_iteration)
+            scalar_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
+            writer.add_scalar('train/total_loss', scalar_total_loss, current_iteration)
+
             # ---- backward ----
             loss.backward()
             clip_gradient(optimizer, opt.clip)
@@ -75,6 +89,27 @@ def train(train_loader, model, optimizer, epoch, train_save):
                   'lateral-2: {:.4f}, lateral-3: {:0.4f}, lateral-4: {:0.4f}, lateral-5: {:0.4f}]'.
                   format(datetime.now(), epoch, opt.epoch, i, total_step, loss_record1.show(),
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
+        # check testing error
+        if current_iteration % 200 == 0:
+            for i in range(test_loader.size):
+                image, gt, name = test_loader.load_data()
+                # ---- forward ----
+                lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
+                # ---- loss function ----
+                loss5 = joint_loss(lateral_map_5, gt)
+                loss4 = joint_loss(lateral_map_4, gt)
+                loss3 = joint_loss(lateral_map_3, gt)
+                loss2 = joint_loss(lateral_map_2, gt)
+                loss = loss2 + loss3 + loss4 + loss5
+
+                writer.add_scalar('test/loss2', loss2.item(), current_iteration)
+                writer.add_scalar('test/loss3', loss3.item(), current_iteration)
+                writer.add_scalar('test/loss4', loss4.item(), current_iteration)
+                writer.add_scalar('test/loss5', loss5.item(), current_iteration)
+                scalar_testing_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
+                writer.add_scalar('test/total_loss', scalar_testing_total_loss, current_iteration)
+
+
     # ---- save model_lung_infection ----
     save_path = './Snapshots/save_weights/{}/'.format(train_save)
     os.makedirs(save_path, exist_ok=True)
@@ -124,6 +159,13 @@ if __name__ == '__main__':
     parser.add_argument('--train_save', type=str, default=None,
                         help='If you use custom save path, please edit `--is_semi=True` and `--is_pseudo=True`')
 
+    # testing dataset
+    parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
+    parser.add_argument('--test_size', type=int, default=352, help='testing size')
+
+    # save log tensorboard
+    parser.add_argument('--graph_path', type=str, default="./graph_log")
+
     opt = parser.parse_args()
 
     # ---- build models ----
@@ -170,6 +212,8 @@ if __name__ == '__main__':
     # ---- load training sub-modules ----
     BCE = torch.nn.BCEWithLogitsLoss()
 
+    writer = SummaryWriter(logdir=opt.graph_path)
+
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr)
 
@@ -179,6 +223,10 @@ if __name__ == '__main__':
 
     train_loader = get_loader(image_root, gt_root, edge_root,
                               batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers)
+
+    test_image_root = '{}/Imgs/'.format(opt.test_path)
+    test_gt_root = '{}/GT/'.format(opt.test_path)
+    test_loader = test_dataset(test_image_root, test_gt_root, opt.testsize)
     total_step = len(train_loader)
 
     # ---- start !! -----
@@ -190,4 +238,4 @@ if __name__ == '__main__':
 
     for epoch in range(1, opt.epoch):
         adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
-        train(train_loader, model, optimizer, epoch, train_save)
+        train(train_loader,test_loader, model, optimizer, epoch, train_save)
