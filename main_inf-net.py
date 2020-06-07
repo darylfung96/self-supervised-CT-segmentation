@@ -141,8 +141,18 @@ def torch_to_np(input_, mask, target, output=None):
     return input_, mask, target, output
 
 
+def model_output_to_np(output):
+    output = np.asarray(3 * std_bgr * (output.numpy().transpose(1, 2, 0)) + mean_bgr[np.newaxis, np.newaxis, :],
+                        dtype=np.uint8)[:, :, ::-1]
+    return output
+
+
 def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
-    fig, axs = plt.subplots(nrows=4, ncols=cols, figsize=(9, 9))
+    # + 4 for the different lateral maps created by inf-net otherwise just see the target, masks and input
+    if cols == 4:
+        fig, axs = plt.subplots(nrows=4, ncols=cols+4, figsize=(15, 15))
+    else:
+        fig, axs = plt.subplots(nrows=4, ncols=cols, figsize=(9, 9))
 
     for batch_idx, (inputs_, masks, targets) in enumerate(val_loader):
         if coach is None:
@@ -155,23 +165,35 @@ def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
         if cols == 4:
             outputs = [output.cpu().data for output in net.forward(inputs_.to(device))]
             # TODO: might have to change this so we visualize all of the lateral maps
-            input_, mask, target, output = torch_to_np(inputs_[0].cpu(), masks[0].cpu(), targets[0].cpu(),
+            input_, mask, target, output1 = torch_to_np(inputs_[0].cpu(), masks[0].cpu(), targets[0].cpu(),
                                                        outputs[0][0].cpu()) # change outputs[0][0] to all lateral maps
+            output2 = model_output_to_np(outputs[0][1].cpu())
+            output3 = model_output_to_np(outputs[0][2].cpu())
+            output4 = model_output_to_np(outputs[0][3].cpu())
+            output5 = model_output_to_np(outputs[0][4].cpu())
         else:
             input_, mask, target, _ = torch_to_np(inputs_[0].cpu(), masks[0].cpu(), targets[0].cpu())
         axs[batch_idx, 0].imshow(input_)
         axs[batch_idx, 1].imshow(mask, cmap='gray')
         axs[batch_idx, 2].imshow(target)
         if cols == 4:
-            axs[batch_idx, 3].imshow(output)
+            axs[batch_idx, 3].imshow(output1)
+            axs[batch_idx, 4].imshow(output2)
+            axs[batch_idx, 5].imshow(output3)
+            axs[batch_idx, 6].imshow(output4)
+            axs[batch_idx, 7].imshow(output5)
         if batch_idx == 3:
             break
 
-    axs[0, 0].set_title('input', fontsize=18)
-    axs[0, 1].set_title('mask', fontsize=18)
-    axs[0, 2].set_title('target', fontsize=18)
+    axs[0, 0].set_title('input', fontsize=12)
+    axs[0, 1].set_title('mask', fontsize=12)
+    axs[0, 2].set_title('target', fontsize=12)
     if cols == 4:
-        axs[0, 3].set_title('semantic inpainting', fontsize=18)
+        axs[0, 3].set_title('inpainting1', fontsize=12)
+        axs[0, 4].set_title('inpainting2', fontsize=12)
+        axs[0, 5].set_title('inpainting3', fontsize=12)
+        axs[0, 6].set_title('inpainting4', fontsize=12)
+        axs[0, 7].set_title('inpainting5', fontsize=12)
     fig.tight_layout()
     plt.show()
 
@@ -291,15 +313,30 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         if coach is not None:
             masks, _, _ = coach.forward(inputs_, alpha=100, use_coach=use_coach_masks)
 
+        loss_rec = None
+        loss_con = None
         outputs_1 = net(inputs_ * masks)
-        mse_loss = (outputs_1 - targets) ** 2
-        mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-        loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+        for output_1 in outputs_1:
+            mse_loss = (output_1 - targets) ** 2
+            mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+            # calculate reconstruction loss
+            if loss_rec is None:
+                loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+            else:
+                loss_rec += torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
 
-        outputs_2 = net(inputs_ * (1 - masks))
-        mse_loss = (outputs_2 - targets) ** 2
-        mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-        loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+            # calculate con loss
+            if coach is not None:
+                loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+            else:
+                outputs_2 = net(inputs_ * (1 - masks))
+                for output_2 in outputs_2:
+                    mse_loss = (output_2 - targets) ** 2
+                    mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+                    if loss_con is None:
+                        loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+                    else:
+                        loss_con += torch.sum(mse_loss * masks) / torch.sum(masks)
 
         total_loss = rec_weight * loss_rec + (1 - rec_weight) * loss_con
 
