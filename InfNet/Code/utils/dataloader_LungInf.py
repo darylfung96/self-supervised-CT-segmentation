@@ -11,6 +11,9 @@ import os
 from PIL import Image
 import torch.utils.data as data
 import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+
+import random
 
 
 class COVIDDataset(data.Dataset):
@@ -44,6 +47,23 @@ class COVIDDataset(data.Dataset):
         image = self.rgb_loader(self.images[index])
         gt = self.binary_loader(self.gts[index])
 
+        crop_size = int(min(image.size) * 0.8)
+        # random cropping
+        i, j, w, h = transforms.RandomCrop.get_params(image, output_size=(crop_size, crop_size))
+        image = TF.crop(image, i, j, w, h)
+        gt = TF.crop(gt, i, j, w, h)
+        # -- data augmentation --
+        # Random horizontal flipping
+        if random.random() > 0.5:
+            image = TF.hflip(image)
+            gt = TF.hflip(gt)
+
+        # Random vertical flipping
+        if random.random() > 0.5:
+            image = TF.vflip(image)
+            gt = TF.vflip(gt)
+
+        # transform image and gt
         image = self.img_transform(image)
         gt = self.gt_transform(gt)
 
