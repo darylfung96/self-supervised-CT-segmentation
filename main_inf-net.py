@@ -31,6 +31,8 @@ device = 'cpu'
 dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
 model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
 
+os.makedirs(model_root, exist_ok=True)
+
 dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
 use_coach = True                                       #options are: True or Flase

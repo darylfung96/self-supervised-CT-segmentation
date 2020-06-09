@@ -90,7 +90,7 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save):
                   format(datetime.now(), epoch, opt.epoch, i, total_step, loss_record1.show(),
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
         # check testing error
-        if current_iteration % 200 == 0:
+        if current_iteration % 20 == 0:
             for i in range(test_loader.size):
                 image, gt, name = test_loader.load_data()
                 # ---- forward ----
