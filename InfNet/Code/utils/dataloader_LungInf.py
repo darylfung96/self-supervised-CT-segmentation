@@ -52,6 +52,7 @@ class COVIDDataset(data.Dataset):
         i, j, w, h = transforms.RandomCrop.get_params(image, output_size=(crop_size, crop_size))
         image = TF.crop(image, i, j, w, h)
         gt = TF.crop(gt, i, j, w, h)
+
         # -- data augmentation --
         # Random horizontal flipping
         if random.random() > 0.5:
@@ -62,6 +63,15 @@ class COVIDDataset(data.Dataset):
         if random.random() > 0.5:
             image = TF.vflip(image)
             gt = TF.vflip(gt)
+
+        # random cutout
+        cutout_size = int(min(image.size) * 0.4)
+        i, j, w, h = transforms.RandomCrop.get_params(image,
+                                                      output_size=(random.randint(0, cutout_size), random.randint(0, cutout_size)))
+        color_code = random.randint(0, 255)
+        rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
+        image.paste(rect, (i, j))
+
 
         # transform image and gt
         image = self.img_transform(image)
