@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set paths
-potsdam_root=/tmp/suriya/datasets/potsdam
+potsdam_root=/home/daryl/Self-supervision-for-segmenting-overhead-imagery/datasets/potsdam
 potsdam_splits=$potsdam_root/splits/
 potsdam_img_root=$potsdam_root/RELEASE_FOLDER/2_Ortho_RGB/
 potsdam_gt_root=$potsdam_root/RELEASE_FOLDER/5_Labels_for_participants/
