@@ -119,7 +119,7 @@ rec_weight = 0.99            ### loss = rec_weight*loss_rec+ (1-rec_weight)*loss
 
 train_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = train_img_root, image_list = train_image_list_path+self_supervised_split+'.txt', suffix=dataset,
-                                  mirror = True, resize=True, resize_shape=[352, 352], rotate = True,
+                                  mirror = True, resize=True, crop=True, resize_shape=[352, 352], rotate = True,
                                   erase_shape = erase_shape, erase_count = erase_count),
     batch_size=128, shuffle = True)
 
@@ -230,7 +230,7 @@ def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_ma
         if coach is not None:
             masks, _, _ = coach.forward(inputs_, alpha=100, use_coach=use_coach_masks)
 
-        outputs_1 = net(inputs_ * masks)
+        outputs_1 = net.forward_inpainting(inputs_ * masks)
         loss_rec = None
         loss_con = None
         for output_1 in outputs_1:
@@ -246,7 +246,7 @@ def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_ma
             if coach is not None:
                 loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
             else:
-                outputs_2 = net(inputs_ * (1 - masks))
+                outputs_2 = net.forward_inpainting(inputs_ * (1 - masks))
                 for output_2 in outputs_2:
                     mse_loss = (output_2 - targets) ** 2
                     mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
@@ -277,7 +277,7 @@ def train_coach(epoch, net, coach, coach_optimizer):
 
         masks, mu, logvar = coach.forward(inputs_, alpha=1)
 
-        outputs = net(inputs_ * masks).detach()
+        outputs = net.forward_inpainting(inputs_ * masks).detach()
         mse_loss = (outputs - targets) ** 2
         mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
         loss_rec = torch.sum(mse_loss * (1 - masks)) / (3 * torch.sum(1 - masks))
@@ -317,7 +317,7 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
 
         loss_rec = None
         loss_con = None
-        outputs_1 = net(inputs_ * masks)
+        outputs_1 = net.forward_inpainting(inputs_ * masks)
         for output_1 in outputs_1:
             mse_loss = (output_1 - targets) ** 2
             mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
@@ -331,7 +331,7 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
             if coach is not None:
                 loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
             else:
-                outputs_2 = net(inputs_ * (1 - masks))
+                outputs_2 = net.forward_inpainting(inputs_ * (1 - masks))
                 for output_2 in outputs_2:
                     mse_loss = (output_2 - targets) ** 2
                     mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
@@ -421,6 +421,8 @@ training_curves_loss(train_loss, val_loss)
 del(net_coach)
 del(net)
 torch.cuda.empty_cache()
+
+print('DONE training inpainting self-supervised')
 
 from models import FCNify_v2
 iter_ = len(epochs) - 1   ### iter_ = 0 is semantic inpainting model, iter_ > 0 is trained against coach masks
