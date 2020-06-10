@@ -119,13 +119,13 @@ rec_weight = 0.99            ### loss = rec_weight*loss_rec+ (1-rec_weight)*loss
 
 train_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = train_img_root, image_list = train_image_list_path+self_supervised_split+'.txt', suffix=dataset,
-                                  mirror = True, resize=True, resize_shape=[256, 256], rotate = True,
+                                  mirror = True, resize=True, resize_shape=[352, 352], rotate = True,
                                   erase_shape = erase_shape, erase_count = erase_count),
     batch_size=128, shuffle = True)
 
 val_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = val_img_root, image_list = val_image_list, suffix=dataset,
-                                  mirror = False, resize=False, resize_shape=[256, 256], rotate = False,
+                                  mirror = False, resize=False, resize_shape=[352, 352], rotate = False,
                                   crop = True, erase_shape = erase_shape, erase_count = erase_count),
     batch_size=32, shuffle = False)
 

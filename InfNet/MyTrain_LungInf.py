@@ -161,6 +161,7 @@ if __name__ == '__main__':
                         help='if True, you will train the model on pseudo-label')
     parser.add_argument('--train_save', type=str, default=None,
                         help='If you use custom save path, please edit `--is_semi=True` and `--is_pseudo=True`')
+    parser.add_argument('--is_data_augment', type=bool, default=False)
 
     # testing dataset
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
@@ -225,7 +226,8 @@ if __name__ == '__main__':
     edge_root = '{}/Edge/'.format(opt.train_path)
 
     train_loader = get_loader(image_root, gt_root, edge_root,
-                              batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers)
+                              batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers,
+                              is_data_augment=opt.is_data_augment)
 
     test_image_root = '{}/Imgs/'.format(opt.test_path)
     test_gt_root = '{}/GT/'.format(opt.test_path)

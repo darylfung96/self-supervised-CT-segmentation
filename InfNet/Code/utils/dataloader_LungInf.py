@@ -17,8 +17,9 @@ import random
 
 
 class COVIDDataset(data.Dataset):
-    def __init__(self, image_root, gt_root, edge_root, trainsize):
+    def __init__(self, image_root, gt_root, edge_root, trainsize, is_data_augment=False):
         self.trainsize = trainsize
+        self.is_data_augment = is_data_augment
         self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]
         self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]
 
@@ -122,8 +123,9 @@ class COVIDDataset(data.Dataset):
         return self.size
 
 
-def get_loader(image_root, gt_root, edge_root, batchsize, trainsize, shuffle=True, num_workers=0, pin_memory=True):
-    dataset = COVIDDataset(image_root, gt_root, edge_root, trainsize)
+def get_loader(image_root, gt_root, edge_root, batchsize, trainsize, shuffle=True, num_workers=0, pin_memory=True,
+               is_data_augment=False):
+    dataset = COVIDDataset(image_root, gt_root, edge_root, trainsize, is_data_augment)
     data_loader = data.DataLoader(dataset=dataset,
                                   batch_size=batchsize,
                                   shuffle=shuffle,
