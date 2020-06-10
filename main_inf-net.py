@@ -36,8 +36,8 @@ os.makedirs(model_root, exist_ok=True)
 dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
 use_coach = True                                       #options are: True or Flase
-self_supervised_split = 'train_crops_mac'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
-supervised_split = 'train_crops_mac'
+self_supervised_split = 'train_crops'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
+supervised_split = 'train_crops'
 # supervised_split = 'train_10crops'                     #options are: train_10crops, train_25crops, train_50crops, train_crops
 
 experiment = dataset + '_' + architecture                #model file suffix
@@ -81,7 +81,7 @@ elif dataset == 'potsdam':
 
     val_img_root = dataset_root + 'potsdam/processed/val/images/'
     val_gt_root = dataset_root + 'potsdam/processed/val/gt/'
-    val_image_list = dataset_root + 'potsdam/splits/val_crops_mac.txt'
+    val_image_list = dataset_root + 'potsdam/splits/val_crops.txt'
 
     train_image_list_path = dataset_root + 'potsdam/splits/'
     nClasses = 6                ### number of classes for pixelwise classification

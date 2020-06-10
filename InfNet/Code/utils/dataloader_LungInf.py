@@ -148,7 +148,10 @@ class test_dataset:
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406],
                                  [0.229, 0.224, 0.225])])
-        self.gt_transform = transforms.ToTensor()
+
+        self.gt_transform = transforms.Compose([
+            transforms.Resize((self.testsize, self.testsize)),
+            transforms.ToTensor()])
         self.size = len(self.images)
         self.index = 0
 
@@ -156,6 +159,7 @@ class test_dataset:
         image = self.rgb_loader(self.images[self.index])
         image = self.transform(image).unsqueeze(0)
         gt = self.binary_loader(self.gts[self.index])
+        gt = self.gt_transform(gt)
         name = self.images[self.index].split('/')[-1]
         if name.endswith('.jpg'):
             name = name.split('.jpg')[0] + '.png'
