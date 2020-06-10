@@ -19,6 +19,8 @@ from tensorboardX import SummaryWriter
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
 
+global_current_iteration = 0
+
 
 def joint_loss(pred, mask):
     weit = 1 + 5*torch.abs(F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
@@ -33,14 +35,15 @@ def joint_loss(pred, mask):
 
 
 def train(train_loader, test_loader, model, optimizer, epoch, train_save):
+    global global_current_iteration
+
     model.train()
     # ---- multi-scale training ----
     size_rates = [0.75, 1, 1.25]    # replace your desired scale, try larger scale for better accuracy in small object
     loss_record1, loss_record2, loss_record3, loss_record4, loss_record5 = AvgMeter(), AvgMeter(), AvgMeter(), AvgMeter(), AvgMeter()
-    current_iteration = 0
     for i, pack in enumerate(train_loader, start=1):
+        global_current_iteration += 1
         for rate in size_rates:
-            current_iteration += 1
             optimizer.zero_grad()
             # ---- data prepare ----
             images, gts, edges = pack
@@ -64,13 +67,13 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save):
             loss1 = BCE(lateral_edge, edges)
             loss = loss1 + loss2 + loss3 + loss4 + loss5
 
-            writer.add_scalar('train/edge_loss', loss1.item(), current_iteration)
-            writer.add_scalar('train/loss2', loss2.item(), current_iteration)
-            writer.add_scalar('train/loss3', loss3.item(), current_iteration)
-            writer.add_scalar('train/loss4', loss4.item(), current_iteration)
-            writer.add_scalar('train/loss5', loss5.item(), current_iteration)
+            writer.add_scalar('train/edge_loss', loss1.item(), global_current_iteration)
+            writer.add_scalar('train/loss2', loss2.item(), global_current_iteration)
+            writer.add_scalar('train/loss3', loss3.item(), global_current_iteration)
+            writer.add_scalar('train/loss4', loss4.item(), global_current_iteration)
+            writer.add_scalar('train/loss5', loss5.item(), global_current_iteration)
             scalar_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
-            writer.add_scalar('train/total_loss', scalar_total_loss, current_iteration)
+            writer.add_scalar('train/total_loss', scalar_total_loss, global_current_iteration)
 
             # ---- backward ----
             loss.backward()
@@ -90,7 +93,7 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save):
                   format(datetime.now(), epoch, opt.epoch, i, total_step, loss_record1.show(),
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
         # check testing error
-        if current_iteration % 20 == 0:
+        if global_current_iteration % 20 == 0:
             for i in range(test_loader.size):
                 image, gt, name = test_loader.load_data()
                 # ---- forward ----
@@ -102,12 +105,12 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save):
                 loss2 = joint_loss(lateral_map_2, gt)
                 loss = loss2 + loss3 + loss4 + loss5
 
-                writer.add_scalar('test/loss2', loss2.item(), current_iteration)
-                writer.add_scalar('test/loss3', loss3.item(), current_iteration)
-                writer.add_scalar('test/loss4', loss4.item(), current_iteration)
-                writer.add_scalar('test/loss5', loss5.item(), current_iteration)
+                writer.add_scalar('test/loss2', loss2.item(), global_current_iteration)
+                writer.add_scalar('test/loss3', loss3.item(), global_current_iteration)
+                writer.add_scalar('test/loss4', loss4.item(), global_current_iteration)
+                writer.add_scalar('test/loss5', loss5.item(), global_current_iteration)
                 scalar_testing_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
-                writer.add_scalar('test/total_loss', scalar_testing_total_loss, current_iteration)
+                writer.add_scalar('test/total_loss', scalar_testing_total_loss, global_current_iteration)
 
 
     # ---- save model_lung_infection ----
