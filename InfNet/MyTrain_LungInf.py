@@ -68,13 +68,13 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
             loss1 = BCE(lateral_edge, edges)
             loss = loss1 + loss2 + loss3 + loss4 + loss5
 
-            writer.add_scalar('train/edge_loss', loss1.item(), global_current_iteration)
-            writer.add_scalar('train/loss2', loss2.item(), global_current_iteration)
-            writer.add_scalar('train/loss3', loss3.item(), global_current_iteration)
-            writer.add_scalar('train/loss4', loss4.item(), global_current_iteration)
-            writer.add_scalar('train/loss5', loss5.item(), global_current_iteration)
+            train_writer.add_scalar('edge_loss', loss1.item(), global_current_iteration)
+            train_writer.add_scalar('loss2', loss2.item(), global_current_iteration)
+            train_writer.add_scalar('loss3', loss3.item(), global_current_iteration)
+            train_writer.add_scalar('loss4', loss4.item(), global_current_iteration)
+            train_writer.add_scalar('loss5', loss5.item(), global_current_iteration)
             scalar_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
-            writer.add_scalar('train/total_loss', scalar_total_loss, global_current_iteration)
+            train_writer.add_scalar('total_loss', scalar_total_loss, global_current_iteration)
 
             # ---- backward ----
             loss.backward()
@@ -108,12 +108,12 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 loss2 = joint_loss(lateral_map_2, gt)
                 loss = loss2 + loss3 + loss4 + loss5
 
-                writer.add_scalar('test/loss2', loss2.item(), global_current_iteration)
-                writer.add_scalar('test/loss3', loss3.item(), global_current_iteration)
-                writer.add_scalar('test/loss4', loss4.item(), global_current_iteration)
-                writer.add_scalar('test/loss5', loss5.item(), global_current_iteration)
+                test_writer.add_scalar('loss2', loss2.item(), global_current_iteration)
+                test_writer.add_scalar('loss3', loss3.item(), global_current_iteration)
+                test_writer.add_scalar('loss4', loss4.item(), global_current_iteration)
+                test_writer.add_scalar('loss5', loss5.item(), global_current_iteration)
                 scalar_testing_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
-                writer.add_scalar('test/total_loss', scalar_testing_total_loss, global_current_iteration)
+                test_writer.add_scalar('total_loss', scalar_testing_total_loss, global_current_iteration)
 
 
     # ---- save model_lung_infection ----
@@ -221,7 +221,8 @@ if __name__ == '__main__':
     # ---- load training sub-modules ----
     BCE = torch.nn.BCEWithLogitsLoss()
 
-    writer = SummaryWriter(logdir=opt.graph_path)
+    train_writer = SummaryWriter(logdir=os.path.join(opt.graph_path, 'training'))
+    test_writer = SummaryWriter(logdir=os.path.join(opt.graph_path, 'testing'))
 
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr)
