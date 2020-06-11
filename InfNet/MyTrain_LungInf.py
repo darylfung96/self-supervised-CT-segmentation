@@ -210,6 +210,7 @@ if __name__ == '__main__':
     else:
         print('Use custom save path')
         train_save = opt.train_save
+    train_save = opt.train_save
 
     # ---- calculate FLOPs and Params ----
     if opt.is_thop:
