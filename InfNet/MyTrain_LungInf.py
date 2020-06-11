@@ -88,13 +88,13 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 loss_record4.update(loss4.data, opt.batchsize)
                 loss_record5.update(loss5.data, opt.batchsize)
         # ---- train logging ----
-        if i % 0 == 0 or i == total_step:
+        if i % 20 == 0 or i == total_step:
             print('{} Epoch [{:03d}/{:03d}], Step [{:04d}/{:04d}], [lateral-edge: {:.4f}, '
                   'lateral-2: {:.4f}, lateral-3: {:0.4f}, lateral-4: {:0.4f}, lateral-5: {:0.4f}]'.
                   format(datetime.now(), epoch, opt.epoch, i, total_step, loss_record1.show(),
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
         # check testing error
-        if True:#global_current_iteration % 0 == 0:
+        if global_current_iteration % 20 == 0:
             for pack in test_loader:
                 image, gt, name = pack
                 # ---- forward ----
