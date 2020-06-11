@@ -97,8 +97,8 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
         if global_current_iteration % 20 == 0:
             for pack in test_loader:
                 image, gt, name = pack
-                image = image.to(device)
-                gt = gt.to(device)
+                image = Variable(image).to(device)
+                gt = Variable(gt).to(device)
                 # ---- forward ----
                 lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
                 # ---- loss function ----
