@@ -155,12 +155,15 @@ class test_dataset:
         self.size = len(self.images)
         self.index = 0
 
-    def load_data(self):
-        image = self.rgb_loader(self.images[self.index])
-        image = self.transform(image).unsqueeze(0)
-        gt = self.binary_loader(self.gts[self.index])
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, index):
+        image = self.rgb_loader(self.images[index])
+        image = self.transform(image) #.unsqueeze(0)
+        gt = self.binary_loader(self.gts[index])
         gt = self.gt_transform(gt)
-        name = self.images[self.index].split('/')[-1]
+        name = self.images[index].split('/')[-1]
         if name.endswith('.jpg'):
             name = name.split('.jpg')[0] + '.png'
         self.index += 1
