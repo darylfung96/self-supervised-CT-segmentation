@@ -103,8 +103,11 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
             average_train_loss = sum(total_train_loss) / len(total_train_loss)
             train_writer.add_scalar('train/loss', average_train_loss)
 
+        del img
+        del img_mask
+        del pseudo
         total_test_loss = []
-        for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
+        for index, (img, _, img_mask, name) in enumerate(test_dataloader):
             img = img.to(device)
             img_mask = img_mask.to(device)
             output = lung_model(torch.cat((img, img), dim=1))  # change 2nd img to pseudo for original
@@ -115,6 +118,8 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
         test_writer.add_scalar('test/loss', average_test_loss)
+        del img
+        del img_mask
 
 
 if __name__ == "__main__":
