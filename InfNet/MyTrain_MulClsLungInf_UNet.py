@@ -69,7 +69,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
         lung_model.train()
 
         total_train_loss = []
-        for index, (img, pseudo, img_mask, _) in enumerate(train_dataloader):
+        for index, (img, _, img_mask, _) in enumerate(train_dataloader):
             global_iteration += 1
 
             img = img.to(device)
