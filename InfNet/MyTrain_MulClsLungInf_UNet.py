@@ -129,7 +129,7 @@ if __name__ == "__main__":
     train(epo_num=arg.epoch,
           num_classes=3,
           input_channels=6,
-          batch_size=16,
+          batch_size=arg.batchsize,
           lr=1e-2,
           graph_path=arg.graph_path,
           save_path=arg.save_path)
