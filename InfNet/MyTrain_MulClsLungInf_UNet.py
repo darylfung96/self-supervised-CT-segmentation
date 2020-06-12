@@ -105,7 +105,6 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
 
         del img
         del img_mask
-        del pseudo
         total_test_loss = []
         for index, (img, _, img_mask, name) in enumerate(test_dataloader):
             img = img.to(device)
