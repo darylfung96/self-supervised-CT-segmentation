@@ -73,7 +73,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
             global_iteration += 1
 
             img = img.to(device)
-            pseudo = pseudo.to(device)
+            # pseudo = pseudo.to(device)
             img_mask = img_mask.to(device)
 
             optimizer.zero_grad()
