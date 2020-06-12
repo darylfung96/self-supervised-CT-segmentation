@@ -42,6 +42,8 @@ class LungDataset(Dataset):
             imgB = cv2.resize(imgB, (352, 352))
         img_label = imgB
         # print(np.unique(img_label))
+        # make data augmentation here
+
 
         img_label[img_label == 38] = 1
         img_label[img_label == 75] = 2
