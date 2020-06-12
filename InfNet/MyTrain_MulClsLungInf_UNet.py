@@ -121,11 +121,12 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
-    parser.add_argument('--epochs', type=int, default=200)
+    parser.add_argument('--epoch', type=int, default=200)
+    parser.add_argument('--batchsize', type=int, default=12)
 
     arg = parser.parse_args()
 
-    train(epo_num=arg.epochs,
+    train(epo_num=arg.epoch,
           num_classes=3,
           input_channels=6,
           batch_size=16,
