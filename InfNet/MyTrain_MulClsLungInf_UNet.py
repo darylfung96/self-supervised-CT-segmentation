@@ -10,6 +10,8 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 import os
 import numpy as np
 import torch.optim as optim
+from tensorboardX import SummaryWriter
+from argparse import ArgumentParser
 from Code.utils.dataloader_MulClsLungInf_UNet import LungDataset
 from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
@@ -17,7 +19,7 @@ from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 
 
-def train(epo_num, num_classes, input_channels, batch_size, lr, save_path):
+def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save_path):
     train_dataset = LungDataset(
         imgs_path='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/',
         # NOTES: prior is borrowed from the object-level label of train split
@@ -28,6 +30,18 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, save_path):
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
+    # test dataset
+    test_dataset = LungDataset(
+        imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
+        pseudo_path='./Results/Lung infection segmentation/Semi-Inf-Net/',  # NOTES: generated from Semi-Inf-Net
+        label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+        is_test=True
+    )
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     lung_model = Inf_Net_UNet(input_channels, num_classes)  # input_channels=3， n_class=3
@@ -37,18 +51,26 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, save_path):
     criterion = nn.BCELoss().to(device)
     optimizer = optim.SGD(lung_model.parameters(), lr=lr, momentum=0.7)
 
+    # summary writers
+    train_writer = SummaryWriter(os.path.join(graph_path), 'training')
+    test_writer = SummaryWriter(os.path.join(graph_path), 'testing')
+
+
     print("#" * 20, "\nStart Training (Inf-Net)\nThis code is written for 'Inf-Net: Automatic COVID-19 Lung "
                     "Infection Segmentation from CT Scans', 2020, arXiv.\n"
                     "----\nPlease cite the paper if you use this code and dataset. "
                     "And any questions feel free to contact me "
                     "via E-mail (gepengai.ji@163.com)\n----\n", "#" * 20)
 
+    global_iteration = 0
     for epo in range(epo_num):
 
         train_loss = 0
         lung_model.train()
 
+        total_train_loss = []
         for index, (img, pseudo, img_mask, _) in enumerate(train_dataloader):
+            global_iteration += 1
 
             img = img.to(device)
             pseudo = pseudo.to(device)
@@ -62,7 +84,10 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, save_path):
 
             loss.backward()
             iter_loss = loss.item()
+
             train_loss += iter_loss
+            total_train_loss.append(train_loss)
+
             optimizer.step()
 
             if np.mod(index, 20) == 0:
@@ -74,11 +99,35 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, save_path):
                        './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo+1))
             print('Saving checkpoints: unet_model_{}.pkl'.format(epo+1))
 
+        if global_iteration % 20 == 0:
+            average_train_loss = sum(total_train_loss) / len(total_train_loss)
+            train_writer.add_scalar('train/loss', average_train_loss)
+
+        total_test_loss = []
+        for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
+            img = img.to(device)
+            img_mask = img_mask.to(device)
+            output = lung_model(torch.cat((img, img), dim=1))  # change 2nd img to pseudo for original
+
+            output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
+            loss = criterion(output, img_mask)
+            total_test_loss.append(loss.item())
+
+        average_test_loss = sum(total_test_loss) / len(total_test_loss)
+        test_writer.add_scalar('test/loss', average_test_loss)
+
 
 if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
+    parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
+
+    arg = parser.parse_args()
+
     train(epo_num=200,
           num_classes=3,
           input_channels=6,
           batch_size=16,
           lr=1e-2,
-          save_path='Semi-Inf-Net_UNet')
+          graph_path=arg.graph_path,
+          save_path=arg.save_path)
