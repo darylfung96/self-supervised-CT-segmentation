@@ -114,6 +114,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
 
             output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
             loss = criterion(output, img_mask)
+            print(f'test loss is {loss.item()}')
             total_test_loss.append(loss.item())
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
