@@ -54,8 +54,8 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
     optimizer = optim.SGD(lung_model.parameters(), lr=lr, momentum=0.7)
 
     # summary writers
-    train_writer = SummaryWriter(os.path.join(graph_path), 'training')
-    test_writer = SummaryWriter(os.path.join(graph_path), 'testing')
+    train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
+    test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
 
     print("#" * 20, "\nStart Training (Inf-Net)\nThis code is written for 'Inf-Net: Automatic COVID-19 Lung "
