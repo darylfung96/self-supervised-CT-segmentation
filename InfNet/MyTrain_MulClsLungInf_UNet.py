@@ -20,6 +20,8 @@ from Code.model_lung_infection.InfNet_UNet import *
 
 
 def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save_path):
+    os.makedirs(save_path, exist_ok=True)
+
     train_dataset = LungDataset(
         imgs_path='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/',
         # NOTES: prior is borrowed from the object-level label of train split
