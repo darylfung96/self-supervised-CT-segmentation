@@ -10,17 +10,22 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 import os
 import torch
 from torch.utils.data import Dataset
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as TF
+import random
+from PIL import Image
 import cv2
 from Code.utils.onehot import onehot
 
 
 class LungDataset(Dataset):
-    def __init__(self, imgs_path, pseudo_path, label_path, transform=None, is_test=False):
+    def __init__(self, imgs_path, pseudo_path, label_path, transform=None, is_test=False, is_data_augment=False):
         self.transform = transform
         self.imgs_path = imgs_path  # 'data/class3_images/'
         self.pseudo_path = pseudo_path
         self.label_path = label_path    # 'data/class3_label/'
         self.is_test = is_test
+        self.is_data_augment = is_data_augment
 
     def __len__(self):
         return len(os.listdir(self.imgs_path))
@@ -43,7 +48,32 @@ class LungDataset(Dataset):
         img_label = imgB
         # print(np.unique(img_label))
         # make data augmentation here
+        if self.is_data_augment:
+            crop_size = int(min(imgA.size) * 0.8)
+            # random cropping
+            i, j, w, h = transforms.RandomCrop.get_params(imgA, output_size=(crop_size, crop_size))
+            image = TF.crop(imgA, i, j, w, h)
+            img_label = TF.crop(img_label, i, j, w, h)
 
+            # -- data augmentation --
+            # Random horizontal flipping
+            if random.random() > 0.5:
+                imgA = TF.hflip(imgA)
+                imgB = TF.hflip(imgB)
+
+            # Random vertical flipping
+            if random.random() > 0.5:
+                imgA = TF.vflip(imgA)
+                imgB = TF.vflip(imgB)
+
+            # random cutout
+            cutout_size = int(min(imgA.size) * 0.4)
+            i, j, w, h = transforms.RandomCrop.get_params(imgA,
+                                                          output_size=(random.randint(0, cutout_size),
+                                                                       random.randint(0, cutout_size)))
+            color_code = random.randint(0, 255)
+            rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
+            imgA.paste(rect, (i, j))
 
         img_label[img_label == 38] = 1
         img_label[img_label == 75] = 2
@@ -82,7 +112,7 @@ class LungNoPseudoDataset(Dataset):
             imgB = cv2.resize(imgB, (352, 352))
         img_label = imgB
         # print(np.unique(img_label))
-
+        #TODO might need to change this for other dataset
         img_label[img_label == 38] = 1
         img_label[img_label == 75] = 2
 

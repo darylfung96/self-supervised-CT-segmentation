@@ -29,7 +29,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
         label_path='./Dataset/TrainingSet/MultiClassInfection-Train/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]))
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]), is_data_augment=False)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     # test dataset
