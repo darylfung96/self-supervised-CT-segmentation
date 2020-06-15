@@ -8,7 +8,8 @@ First Version: Created on 2020-05-05 (@author: Ge-Peng Ji)
 Second Version: Fix some bugs and edit some parameters on 2020-05-15. (@author: Ge-Peng Ji)
 """
 
-from Code.model_lung_infection.module.unet_parts import *
+import torch.nn.functional as F
+from InfNet.Code.model_lung_infection.module.unet_parts import *
 
 
 class Inf_Net_UNet(nn.Module):
@@ -29,7 +30,23 @@ class Inf_Net_UNet(nn.Module):
         self.up2 = Up(512, 256 // factor, bilinear)
         self.up3 = Up(256, 128 // factor, bilinear)
         self.up4 = Up(128, 64, bilinear)
+
+        self.out_inpainting = OutConv(64, n_channels)
         self.outc = OutConv(64, n_classes)
+
+    def forward_inpainting(self, x):
+        x1 = self.inc(x)
+        x2 = self.down1(x1)
+        x3 = self.down2(x2)
+        x4 = self.down3(x3)
+        x5 = self.down4(x4)
+        x = self.up1(x5, x4)
+        x = self.up2(x, x3)
+        x = self.up3(x, x2)
+        x = self.up4(x, x1)
+        reconstructed_image = F.tanh(self.out_inpainting(x))
+
+        return reconstructed_image
 
     def forward(self, x):
         x1 = self.inc(x)

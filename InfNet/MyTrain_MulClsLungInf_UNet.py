@@ -79,7 +79,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
             img_mask = img_mask.to(device)
 
             optimizer.zero_grad()
-            output = lung_model(torch.cat((img, img), dim=1))  # change 2nd img to pseudo for original
+            output = lung_model(img)  # change 2nd img to pseudo for original
 
             output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
             loss = criterion(output, img_mask)
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     train(epo_num=arg.epoch,
           num_classes=3,
-          input_channels=6,
+          input_channels=3,
           batch_size=arg.batchsize,
           lr=1e-2,
           graph_path=arg.graph_path,
