@@ -102,7 +102,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
             print('Saving checkpoints: unet_model_{}.pkl'.format(epo+1))
 
         average_train_loss = sum(total_train_loss) / len(total_train_loss)
-        train_writer.add_scalar('train/loss', average_train_loss)
+        train_writer.add_scalar('train/loss', average_train_loss, global_iteration)
 
         del img
         del img_mask
@@ -118,7 +118,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
             total_test_loss.append(loss.item())
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
-        test_writer.add_scalar('test/loss', average_test_loss)
+        test_writer.add_scalar('test/loss', average_test_loss, global_iteration)
         del img
         del img_mask
 
