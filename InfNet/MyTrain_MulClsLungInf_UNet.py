@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 
 
-def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save_path):
+def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, graph_path, save_path):
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
     train_dataset = LungDataset(
@@ -29,7 +29,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, graph_path, save
         label_path='./Dataset/TrainingSet/MultiClassInfection-Train/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]), is_data_augment=False)
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]), is_data_augment=is_data_augment)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
     # test dataset
@@ -128,6 +128,7 @@ if __name__ == "__main__":
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
     parser.add_argument('--epoch', type=int, default=200)
+    parser.add_argument('--is_data_augment', type=str, default=False)
     parser.add_argument('--batchsize', type=int, default=12)
 
     arg = parser.parse_args()
@@ -137,5 +138,6 @@ if __name__ == "__main__":
           input_channels=3,
           batch_size=arg.batchsize,
           lr=1e-2,
+          is_data_augment=arg.is_data_augment,
           graph_path=arg.graph_path,
           save_path=arg.save_path)
