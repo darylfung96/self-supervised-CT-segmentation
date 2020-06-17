@@ -43,7 +43,8 @@ class LungDataset(Dataset):
         # imgC = cv2.resize(imgC, (352, 352))
 
         # processing label
-        imgB = cv2.imread(self.label_path + img_name.split('.')[0] + '.png', 0)
+        img_filename = img_name.split('.')[0]
+        imgB = cv2.imread(self.label_path + img_filename + '.png', 0)
         if not self.is_test:
             imgB = cv2.resize(imgB, (352, 352))
         img_label = imgB
@@ -85,9 +86,11 @@ class LungDataset(Dataset):
             imgA = np.array(pil_imgA)
             img_label = np.array(pil_img_label)
 
-        img_label[img_label < 19] = 0
-        img_label[(img_label <= 38) & (img_label >= 19)] = 1
-        img_label[img_label > 38] = 2
+        # only need to process the original dataset, tr and rp already processed
+        if 'tr' in img_filename or 'rp' in img_filename:
+            img_label[img_label < 19] = 0
+            img_label[(img_label <= 38) & (img_label >= 19)] = 1
+            img_label[img_label > 38] = 2
 
         img_label_onehot = (np.arange(3) == img_label[...,None]).astype(int)# onehot(img_label, 3)  # w * H * n_class
         img_label_onehot = img_label_onehot.transpose(2, 0, 1)  # n_class * w * H

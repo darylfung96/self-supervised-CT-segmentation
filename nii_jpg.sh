@@ -73,3 +73,14 @@ python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/9.nii --filename_prefix rp
 python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/9.nii --filename_prefix rp_9 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/Prior/ --save_type png --is_binary True
 python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/9.nii --filename_prefix rp_9 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
 
+
+python nii_to_jpg.py --nii_file InfNet/Dataset/tr_mask.nii --filename_prefix tr --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/1.nii --filename_prefix rp_1 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/2.nii --filename_prefix rp_2 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/3.nii --filename_prefix rp_3 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/4.nii --filename_prefix rp_4 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/5.nii --filename_prefix rp_5 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/6.nii --filename_prefix rp_6 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/7.nii --filename_prefix rp_7 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/8.nii --filename_prefix rp_8 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
+python nii_to_jpg.py --nii_file InfNet/Dataset/rp_msk/9.nii --filename_prefix rp_9 --output_folder InfNet/Dataset/TrainingSet/MultiClassInfection-Train/GT/ --save_type png
