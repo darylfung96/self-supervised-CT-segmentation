@@ -10,6 +10,7 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 import os
 import torch
 from torch.utils.data import Dataset
+import numpy as np
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
 import random
@@ -49,36 +50,46 @@ class LungDataset(Dataset):
         # print(np.unique(img_label))
         # make data augmentation here
         if self.is_data_augment:
-            crop_size = int(min(imgA.size) * 0.8)
+            # convert to pil format so we can data augment them
+            img_label = np.expand_dims(img_label, -1)
+            pil_imgA = TF.to_pil_image(imgA)
+            pil_img_label = TF.to_pil_image(img_label)
+
             # random cropping
-            i, j, w, h = transforms.RandomCrop.get_params(imgA, output_size=(crop_size, crop_size))
-            image = TF.crop(imgA, i, j, w, h)
-            img_label = TF.crop(img_label, i, j, w, h)
+            crop_size = int(min(imgA.shape[:2]) * 0.8)
+            i, j, w, h = transforms.RandomCrop.get_params(pil_imgA, output_size=(crop_size, crop_size))
+            pil_imgA = TF.crop(pil_imgA, i, j, w, h)
+            pil_img_label = TF.crop(pil_img_label, i, j, w, h)
 
             # -- data augmentation --
             # Random horizontal flipping
             if random.random() > 0.5:
-                imgA = TF.hflip(imgA)
-                imgB = TF.hflip(imgB)
+                pil_imgA = TF.hflip(pil_imgA)
+                pil_img_label = TF.hflip(pil_img_label)
 
             # Random vertical flipping
             if random.random() > 0.5:
-                imgA = TF.vflip(imgA)
-                imgB = TF.vflip(imgB)
+                pil_imgA = TF.vflip(pil_imgA)
+                pil_img_label = TF.vflip(pil_img_label)
 
             # random cutout
-            cutout_size = int(min(imgA.size) * 0.4)
-            i, j, w, h = transforms.RandomCrop.get_params(imgA,
+            cutout_size = int(min(imgA.shape[:2]) * 0.4)
+            i, j, w, h = transforms.RandomCrop.get_params(pil_imgA,
                                                           output_size=(random.randint(0, cutout_size),
                                                                        random.randint(0, cutout_size)))
             color_code = random.randint(0, 255)
             rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
-            imgA.paste(rect, (i, j))
+            pil_imgA.paste(rect, (i, j))
 
-        img_label[img_label == 38] = 1
-        img_label[img_label == 75] = 2
+            # convert pil back to numpy
+            imgA = np.array(pil_imgA)
+            img_label = np.array(pil_img_label)
 
-        img_label_onehot = onehot(img_label, 3)  # w * H * n_class
+        img_label[img_label < 19] = 0
+        img_label[(img_label <= 38) & (img_label >= 19)] = 1
+        img_label[img_label > 38] = 2
+
+        img_label_onehot = (np.arange(3) == img_label[...,None]).astype(int)# onehot(img_label, 3)  # w * H * n_class
         img_label_onehot = img_label_onehot.transpose(2, 0, 1)  # n_class * w * H
 
         onehot_label = torch.FloatTensor(img_label_onehot)
