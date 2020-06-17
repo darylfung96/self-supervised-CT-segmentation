@@ -43,7 +43,7 @@ test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
 device = args.device
 
-dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
+dataset_root = './datasets/'
 
 os.makedirs(save_model_location, exist_ok=True)
 
