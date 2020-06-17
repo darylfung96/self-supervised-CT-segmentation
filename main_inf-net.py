@@ -32,6 +32,7 @@ save_iter_epoch = 20
 arg_parse = ArgumentParser()
 arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
 arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
+arg_parse.add_argument('--device', required=True, type=str)
 args = arg_parse.parse_args()
 
 save_model_location = args.save_path
@@ -40,7 +41,7 @@ train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
 test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
 
-device = 'cpu'
+device = args.device
 
 dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
 
