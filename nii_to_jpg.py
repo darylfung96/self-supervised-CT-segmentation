@@ -1,6 +1,6 @@
 import nibabel as nib
 import os
-import imageio
+import cv2
 from argparse import ArgumentParser
 
 
@@ -30,5 +30,5 @@ if __name__ == '__main__':
         if arg.is_binary:
             current_img[current_img > 1] = 1
         output_filename = os.path.join(arg.output_folder, f'{prefix}_{i}.{arg.save_type}')
-        imageio.imwrite(output_filename, current_img)
+        cv2.imwrite(output_filename, current_img)
 

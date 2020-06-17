@@ -39,8 +39,8 @@ class LungDataset(Dataset):
         imgA = cv2.resize(imgA, (352, 352))
 
         # processing pseudo
-        imgC = cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png')
-        imgC = cv2.resize(imgC, (352, 352))
+        # imgC = cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png')
+        # imgC = cv2.resize(imgC, (352, 352))
 
         # processing label
         imgB = cv2.imread(self.label_path + img_name.split('.')[0] + '.png', 0)
@@ -95,9 +95,9 @@ class LungDataset(Dataset):
         onehot_label = torch.FloatTensor(img_label_onehot)
         if self.transform:
             imgA = self.transform(imgA)
-            imgC = self.transform(imgC)
+            # imgC = self.transform(imgC)
 
-        return imgA, imgC, onehot_label, img_name
+        return imgA, imgA, onehot_label, img_name
 
 
 class LungNoPseudoDataset(Dataset):
