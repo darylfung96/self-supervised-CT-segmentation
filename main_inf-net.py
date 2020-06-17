@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import torch.optim as optim
 import torch.nn.functional as F
+from tensorboardX import SummaryWriter
+from argparse import ArgumentParser
+
 from utils.dataloaders import context_inpainting_dataloader, segmentation_data_loader
 from models import resnet18_encoderdecoder, resnet18_encoderdecoder_wbottleneck
 from models import resnet18_coach_vae
@@ -24,14 +27,24 @@ torch.cuda.manual_seed(7)
 torch.manual_seed(7)
 np.random.seed(7)
 
+# arguments
+save_iter_epoch = 20
+arg_parse = ArgumentParser()
+arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
+arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
+args = arg_parse.parse_args()
+
+save_model_location = args.save_path
+graph_path = args.graph_path
+train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
+test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
 
 device = 'cpu'
 
 dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
-model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
 
-os.makedirs(model_root, exist_ok=True)
+os.makedirs(save_model_location, exist_ok=True)
 
 dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
@@ -218,6 +231,7 @@ coach_loss = []
 def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_masks=False):
     progbar = tqdm(total=len(train_loader), desc='Train')
     net.train()
+    graph_train_loss = []
 
     if coach is not None:
         coach.eval()
@@ -261,9 +275,12 @@ def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_ma
         net_optimizer.step()
 
         train_loss[-1] += total_loss.data
+        graph_train_loss.append(total_loss.item())
         progbar.set_description('Train (loss=%.4f)' % (train_loss[-1] / (batch_idx + 1)))
         progbar.update(1)
     train_loss[-1] = train_loss[-1] / len(train_loader)
+    average_graph_train_loss = sum(graph_train_loss) / len(graph_train_loss)
+    return average_graph_train_loss
 
 
 def train_coach(epoch, net, coach, coach_optimizer):
@@ -306,6 +323,9 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
     global best_loss
     progbar = tqdm(total=len(val_loader), desc='Val')
     net.eval()
+
+    graph_test_loss = []
+
     if coach is not None:
         coach.eval()
     val_loss.append(0)
@@ -345,6 +365,7 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         val_loss[-1] += total_loss.data
         progbar.set_description('Val (loss=%.4f)' % (val_loss[-1] / (batch_idx + 1)))
         progbar.update(1)
+        graph_test_loss.append(total_loss.item())
 
     val_loss[-1] = val_loss[-1] / len(val_loader)
     if best_loss > val_loss[-1]:
@@ -352,7 +373,10 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         print('Saving..')
         state = {'context_inpainting_net': net, 'coach': coach}
 
-        torch.save(state, model_root + experiment + str(iter_) + '.ckpt.t7')
+        torch.save(state, save_model_location + experiment + str(iter_) + '.best.ckpt.t7')
+    average_graph_test_loss = sum(graph_test_loss) / len(graph_test_loss)
+    return average_graph_test_loss
+
 
 use_coach_masks = False
 epochs = []
@@ -407,12 +431,15 @@ for iter_ in range(0, len(epochs)):
         if epoch == 0:
             net_optimizer = optim.SGD(net.parameters(), lr=lrs[iter_][0], momentum=0.9, weight_decay=5e-4)
 
-        train_context_inpainting(epoch, net=net, net_optimizer=net_optimizer, coach=net_coach,
+        average_train_loss = train_context_inpainting(epoch, net=net, net_optimizer=net_optimizer, coach=net_coach,
                                  use_coach_masks=use_coach_masks)
-        val_context_inpainting(iter_, epoch, net=net, coach=net_coach, use_coach_masks=use_coach_masks)
+        average_test_loss = val_context_inpainting(iter_, epoch, net=net, coach=net_coach, use_coach_masks=use_coach_masks)
+
 
         progbar_2.update(1)
 
+    train_writer.add_scalar('train/inpainting_loss', average_train_loss, iter_)
+    test_writer.add_scalar('test/inpainting_loss', average_test_loss, iter_)
     progbar_1.update(1)
 
 from utils.printing import training_curves_loss
@@ -424,210 +451,210 @@ torch.cuda.empty_cache()
 
 print('DONE training inpainting self-supervised')
 
-from models import FCNify_v2
-iter_ = len(epochs) - 1   ### iter_ = 0 is semantic inpainting model, iter_ > 0 is trained against coach masks
-net = torch.load(model_root + experiment + str(iter_) + '.ckpt.t7')['context_inpainting_net']
-net_segmentation = FCNify_v2(net, n_class = nClasses).to(device)
-optimizer_seg = None
-del(net)
-
-from loss import soft_iou
-from metric import fast_hist, performMetrics
-from utils.dataloaders import segmentation_data_loader
-
-train_seg_loss = []
-val_seg_loss = []
-train_seg_iou = []
-val_seg_iou = []
-ITER_SIZE = 2    ### accumulate gradients over ITER_SIZE iterations
-best_iou = 0.
-
-train_seg_loader = torch.utils.data.DataLoader(
-    segmentation_data_loader(img_root = train_img_root, gt_root = train_gt_root, image_list = train_image_list_path+supervised_split+'.txt',
-                             suffix=dataset, out=out, crop = True, crop_shape = [256, 256], mirror = True),
-                                           batch_size=32, num_workers=8, shuffle = True)
-
-val_seg_loader = torch.utils.data.DataLoader(
-    segmentation_data_loader(img_root = val_img_root, gt_root = val_gt_root, image_list = val_image_list,
-                             suffix=dataset, out=out, crop = False, mirror=False),
-                                           batch_size=8, num_workers=8, shuffle = False)
-
-
-def train_segmentation(epoch, net_segmentation, seg_optimizer):
-    global train_seg_iou
-    progbar = tqdm(total=len(train_seg_loader), desc='Train')
-    net_segmentation.train()
-
-    train_seg_loss.append(0)
-    seg_optimizer.zero_grad()
-    hist = np.zeros((nClasses, nClasses))
-    for batch_idx, (inputs_, targets) in enumerate(train_seg_loader):
-        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
-
-        outputs = net_segmentation(inputs_)
-
-        total_loss = (1 - soft_iou(outputs, targets, ignore=ignore_class)) / ITER_SIZE
-        total_loss.backward()
-
-        if (batch_idx % ITER_SIZE == 0 and batch_idx != 0) or batch_idx == len(train_loader) - 1:
-            seg_optimizer.step()
-            seg_optimizer.zero_grad()
-
-        train_seg_loss[-1] += total_loss.data
-
-        _, predicted = torch.max(outputs.data, 1)
-        correctLabel = targets.view(-1, targets.size()[1], targets.size()[2])
-        hist += fast_hist(correctLabel.view(correctLabel.size(0), -1).cpu().numpy(),
-                          predicted.view(predicted.size(0), -1).cpu().numpy(),
-                          nClasses)
-
-        miou, p_acc, fwacc = performMetrics(hist)
-
-        progbar.set_description('Train (loss=%.4f, mIoU=%.4f)' % (train_seg_loss[-1] / (batch_idx + 1), miou))
-        progbar.update(1)
-    train_seg_loss[-1] = train_seg_loss[-1] / len(train_seg_loader)
-    miou, p_acc, fwacc = performMetrics(hist)
-    train_seg_iou += [miou]
-
-
-def val_segmentation(epoch, net_segmentation):
-    global best_iou
-    global val_seg_iou
-    progbar = tqdm(total=len(val_seg_loader), desc='Val')
-    net_segmentation.eval()
-
-    val_seg_loss.append(0)
-    hist = np.zeros((nClasses, nClasses))
-    for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
-        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
-
-        outputs = net_segmentation(inputs_)
-
-        total_loss = 1 - soft_iou(outputs, targets, ignore=ignore_class)
-
-        val_seg_loss[-1] += total_loss.data
-
-        _, predicted = torch.max(outputs.data, 1)
-        correctLabel = targets.view(-1, targets.size()[1], targets.size()[2])
-        hist += fast_hist(correctLabel.view(correctLabel.size(0), -1).cpu().numpy(),
-                          predicted.view(predicted.size(0), -1).cpu().numpy(),
-                          nClasses)
-
-        miou, p_acc, fwacc = performMetrics(hist)
-
-        progbar.set_description('Val (loss=%.4f, mIoU=%.4f)' % (val_seg_loss[-1] / (batch_idx + 1), miou))
-        progbar.update(1)
-    val_seg_loss[-1] = val_seg_loss[-1] / len(val_seg_loader)
-    val_miou, _, _ = performMetrics(hist)
-    val_seg_iou += [val_miou]
-
-    if best_iou < val_miou:
-        best_iou = val_miou
-        print('Saving..')
-        state = {'net_segmentation': net_segmentation}
-
-        torch.save(state, model_root + experiment + 'segmentation' + '.ckpt.t7')
-
-
-progbar = tqdm(total=100, desc='Epochs')
-for epoch in range(0, 100):
-    if epoch == 90:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
-    elif epoch == 80:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-5, momentum=0.9, weight_decay=5e-4)
-    elif epoch == 60:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-4, momentum=0.9, weight_decay=5e-4)
-    elif epoch == 0:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
-
-    train_segmentation(epoch, net_segmentation=net_segmentation, seg_optimizer=seg_optimizer)
-    val_segmentation(epoch, net_segmentation=net_segmentation)
-    progbar.update(1)
-
-progbar = tqdm(total=100, desc='Epochs')
-for epoch in range(0, 100):
-    if epoch == 90:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
-    elif epoch == 80:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-5, momentum=0.9, weight_decay=5e-4)
-    elif epoch == 60:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-4, momentum=0.9, weight_decay=5e-4)
-    elif epoch == 0:
-        seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
-
-    train_segmentation(epoch, net_segmentation=net_segmentation, seg_optimizer=seg_optimizer)
-    val_segmentation(epoch, net_segmentation=net_segmentation)
-    progbar.update(1)
-
-from utils.printing import segmentation_training_curves_loss, apply_color_map
-segmentation_training_curves_loss(train_seg_loss, val_seg_loss, train_seg_iou, val_seg_iou)
-
-del(net_segmentation)
-torch.cuda.empty_cache()
-
-c_map = np.asarray([[128, 128, 128], [128, 128, 0], [0, 64, 0], [0, 128, 0], [128, 0, 0], [0, 0, 0]])
-
-
-def visualize_segmentation(net_segmentation):
-    val_seg_loader = torch.utils.data.DataLoader(
-        segmentation_data_loader(img_root=val_img_root, gt_root=val_gt_root, image_list=val_image_list,
-                                 suffix=dataset, out=out, crop=False, mirror=False),
-        batch_size=1, num_workers=8, shuffle=False)
-    fig, axs = plt.subplots(nrows=4, ncols=3, figsize=(9, 9))
-    for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
-        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
-
-        outputs = net_segmentation(inputs_)
-
-        _, predicted = torch.max(outputs.data, 1)
-
-        input_ = np.asarray(inputs_[0].cpu().numpy().transpose(1, 2, 0) + mean_bgr[np.newaxis, np.newaxis, :],
-                            dtype=np.uint8)[:, :, ::-1]
-        axs[batch_idx, 0].imshow(input_)
-        axs[batch_idx, 1].imshow(apply_color_map(targets[0].cpu().data, c_map))
-        axs[batch_idx, 2].imshow(apply_color_map(predicted[0].cpu().data, c_map))
-        if batch_idx == 3:
-            break
-
-    axs[0, 0].set_title('input', fontsize=18)
-    axs[0, 1].set_title('GT', fontsize=18)
-    axs[0, 2].set_title('Pred', fontsize=18)
-    fig.tight_layout()
-    plt.show()
-
-
-def evaluate_segmentation(net_segmentation):
-    net_segmentation.eval()
-    hist = np.zeros((nClasses, nClasses))
-    val_seg_loader = torch.utils.data.DataLoader(
-        segmentation_data_loader(img_root=val_img_root, gt_root=val_gt_root, image_list=val_image_list,
-                                 suffix=dataset, out=out, crop=False, mirror=False),
-        batch_size=1, num_workers=8, shuffle=False)
-
-    progbar = tqdm(total=len(val_seg_loader), desc='Eval')
-
-    hist = np.zeros((nClasses, nClasses))
-    for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
-        inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
-
-        outputs = net_segmentation(inputs_)
-
-        _, predicted = torch.max(outputs.data, 1)
-        correctLabel = targets.view(-1, targets.size()[1], targets.size()[2])
-        hist += fast_hist(correctLabel.view(correctLabel.size(0), -1).cpu().numpy(),
-                          predicted.view(predicted.size(0), -1).cpu().numpy(),
-                          nClasses)
-
-        miou, p_acc, fwacc = performMetrics(hist)
-        progbar.set_description('Eval (mIoU=%.4f)' % (miou))
-        progbar.update(1)
-
-    miou, p_acc, fwacc = performMetrics(hist)
-    print('\n mIoU: ', miou)
-    print('\n Pixel accuracy: ', p_acc)
-    print('\n Frequency Weighted Pixel accuracy: ', fwacc)
-
-net = torch.load(model_root + experiment + 'segmentation' + '.ckpt.t7')['net_segmentation'].to(device).eval() ### load the best model
-evaluate_segmentation(net)
-
+# from models import FCNify_v2
+# iter_ = len(epochs) - 1   ### iter_ = 0 is semantic inpainting model, iter_ > 0 is trained against coach masks
+# net = torch.load(model_root + experiment + str(iter_) + '.ckpt.t7')['context_inpainting_net']
+# net_segmentation = FCNify_v2(net, n_class = nClasses).to(device)
+# optimizer_seg = None
+# del(net)
+#
+# from loss import soft_iou
+# from metric import fast_hist, performMetrics
+# from utils.dataloaders import segmentation_data_loader
+#
+# train_seg_loss = []
+# val_seg_loss = []
+# train_seg_iou = []
+# val_seg_iou = []
+# ITER_SIZE = 2    ### accumulate gradients over ITER_SIZE iterations
+# best_iou = 0.
+#
+# train_seg_loader = torch.utils.data.DataLoader(
+#     segmentation_data_loader(img_root = train_img_root, gt_root = train_gt_root, image_list = train_image_list_path+supervised_split+'.txt',
+#                              suffix=dataset, out=out, crop = True, crop_shape = [256, 256], mirror = True),
+#                                            batch_size=32, num_workers=8, shuffle = True)
+#
+# val_seg_loader = torch.utils.data.DataLoader(
+#     segmentation_data_loader(img_root = val_img_root, gt_root = val_gt_root, image_list = val_image_list,
+#                              suffix=dataset, out=out, crop = False, mirror=False),
+#                                            batch_size=8, num_workers=8, shuffle = False)
+#
+#
+# def train_segmentation(epoch, net_segmentation, seg_optimizer):
+#     global train_seg_iou
+#     progbar = tqdm(total=len(train_seg_loader), desc='Train')
+#     net_segmentation.train()
+#
+#     train_seg_loss.append(0)
+#     seg_optimizer.zero_grad()
+#     hist = np.zeros((nClasses, nClasses))
+#     for batch_idx, (inputs_, targets) in enumerate(train_seg_loader):
+#         inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
+#
+#         outputs = net_segmentation(inputs_)
+#
+#         total_loss = (1 - soft_iou(outputs, targets, ignore=ignore_class)) / ITER_SIZE
+#         total_loss.backward()
+#
+#         if (batch_idx % ITER_SIZE == 0 and batch_idx != 0) or batch_idx == len(train_loader) - 1:
+#             seg_optimizer.step()
+#             seg_optimizer.zero_grad()
+#
+#         train_seg_loss[-1] += total_loss.data
+#
+#         _, predicted = torch.max(outputs.data, 1)
+#         correctLabel = targets.view(-1, targets.size()[1], targets.size()[2])
+#         hist += fast_hist(correctLabel.view(correctLabel.size(0), -1).cpu().numpy(),
+#                           predicted.view(predicted.size(0), -1).cpu().numpy(),
+#                           nClasses)
+#
+#         miou, p_acc, fwacc = performMetrics(hist)
+#
+#         progbar.set_description('Train (loss=%.4f, mIoU=%.4f)' % (train_seg_loss[-1] / (batch_idx + 1), miou))
+#         progbar.update(1)
+#     train_seg_loss[-1] = train_seg_loss[-1] / len(train_seg_loader)
+#     miou, p_acc, fwacc = performMetrics(hist)
+#     train_seg_iou += [miou]
+#
+#
+# def val_segmentation(epoch, net_segmentation):
+#     global best_iou
+#     global val_seg_iou
+#     progbar = tqdm(total=len(val_seg_loader), desc='Val')
+#     net_segmentation.eval()
+#
+#     val_seg_loss.append(0)
+#     hist = np.zeros((nClasses, nClasses))
+#     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
+#         inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
+#
+#         outputs = net_segmentation(inputs_)
+#
+#         total_loss = 1 - soft_iou(outputs, targets, ignore=ignore_class)
+#
+#         val_seg_loss[-1] += total_loss.data
+#
+#         _, predicted = torch.max(outputs.data, 1)
+#         correctLabel = targets.view(-1, targets.size()[1], targets.size()[2])
+#         hist += fast_hist(correctLabel.view(correctLabel.size(0), -1).cpu().numpy(),
+#                           predicted.view(predicted.size(0), -1).cpu().numpy(),
+#                           nClasses)
+#
+#         miou, p_acc, fwacc = performMetrics(hist)
+#
+#         progbar.set_description('Val (loss=%.4f, mIoU=%.4f)' % (val_seg_loss[-1] / (batch_idx + 1), miou))
+#         progbar.update(1)
+#     val_seg_loss[-1] = val_seg_loss[-1] / len(val_seg_loader)
+#     val_miou, _, _ = performMetrics(hist)
+#     val_seg_iou += [val_miou]
+#
+#     if best_iou < val_miou:
+#         best_iou = val_miou
+#         print('Saving..')
+#         state = {'net_segmentation': net_segmentation}
+#
+#         torch.save(state, model_root + experiment + 'segmentation' + '.ckpt.t7')
+#
+#
+# progbar = tqdm(total=100, desc='Epochs')
+# for epoch in range(0, 100):
+#     if epoch == 90:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
+#     elif epoch == 80:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-5, momentum=0.9, weight_decay=5e-4)
+#     elif epoch == 60:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-4, momentum=0.9, weight_decay=5e-4)
+#     elif epoch == 0:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
+#
+#     train_segmentation(epoch, net_segmentation=net_segmentation, seg_optimizer=seg_optimizer)
+#     val_segmentation(epoch, net_segmentation=net_segmentation)
+#     progbar.update(1)
+#
+# progbar = tqdm(total=100, desc='Epochs')
+# for epoch in range(0, 100):
+#     if epoch == 90:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-6, momentum=0.9, weight_decay=5e-4)
+#     elif epoch == 80:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-5, momentum=0.9, weight_decay=5e-4)
+#     elif epoch == 60:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-4, momentum=0.9, weight_decay=5e-4)
+#     elif epoch == 0:
+#         seg_optimizer = optim.SGD(net_segmentation.parameters(), lr=1e-3, momentum=0.9, weight_decay=5e-4)
+#
+#     train_segmentation(epoch, net_segmentation=net_segmentation, seg_optimizer=seg_optimizer)
+#     val_segmentation(epoch, net_segmentation=net_segmentation)
+#     progbar.update(1)
+#
+# from utils.printing import segmentation_training_curves_loss, apply_color_map
+# segmentation_training_curves_loss(train_seg_loss, val_seg_loss, train_seg_iou, val_seg_iou)
+#
+# del(net_segmentation)
+# torch.cuda.empty_cache()
+#
+# c_map = np.asarray([[128, 128, 128], [128, 128, 0], [0, 64, 0], [0, 128, 0], [128, 0, 0], [0, 0, 0]])
+#
+#
+# def visualize_segmentation(net_segmentation):
+#     val_seg_loader = torch.utils.data.DataLoader(
+#         segmentation_data_loader(img_root=val_img_root, gt_root=val_gt_root, image_list=val_image_list,
+#                                  suffix=dataset, out=out, crop=False, mirror=False),
+#         batch_size=1, num_workers=8, shuffle=False)
+#     fig, axs = plt.subplots(nrows=4, ncols=3, figsize=(9, 9))
+#     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
+#         inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
+#
+#         outputs = net_segmentation(inputs_)
+#
+#         _, predicted = torch.max(outputs.data, 1)
+#
+#         input_ = np.asarray(inputs_[0].cpu().numpy().transpose(1, 2, 0) + mean_bgr[np.newaxis, np.newaxis, :],
+#                             dtype=np.uint8)[:, :, ::-1]
+#         axs[batch_idx, 0].imshow(input_)
+#         axs[batch_idx, 1].imshow(apply_color_map(targets[0].cpu().data, c_map))
+#         axs[batch_idx, 2].imshow(apply_color_map(predicted[0].cpu().data, c_map))
+#         if batch_idx == 3:
+#             break
+#
+#     axs[0, 0].set_title('input', fontsize=18)
+#     axs[0, 1].set_title('GT', fontsize=18)
+#     axs[0, 2].set_title('Pred', fontsize=18)
+#     fig.tight_layout()
+#     plt.show()
+#
+#
+# def evaluate_segmentation(net_segmentation):
+#     net_segmentation.eval()
+#     hist = np.zeros((nClasses, nClasses))
+#     val_seg_loader = torch.utils.data.DataLoader(
+#         segmentation_data_loader(img_root=val_img_root, gt_root=val_gt_root, image_list=val_image_list,
+#                                  suffix=dataset, out=out, crop=False, mirror=False),
+#         batch_size=1, num_workers=8, shuffle=False)
+#
+#     progbar = tqdm(total=len(val_seg_loader), desc='Eval')
+#
+#     hist = np.zeros((nClasses, nClasses))
+#     for batch_idx, (inputs_, targets) in enumerate(val_seg_loader):
+#         inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
+#
+#         outputs = net_segmentation(inputs_)
+#
+#         _, predicted = torch.max(outputs.data, 1)
+#         correctLabel = targets.view(-1, targets.size()[1], targets.size()[2])
+#         hist += fast_hist(correctLabel.view(correctLabel.size(0), -1).cpu().numpy(),
+#                           predicted.view(predicted.size(0), -1).cpu().numpy(),
+#                           nClasses)
+#
+#         miou, p_acc, fwacc = performMetrics(hist)
+#         progbar.set_description('Eval (mIoU=%.4f)' % (miou))
+#         progbar.update(1)
+#
+#     miou, p_acc, fwacc = performMetrics(hist)
+#     print('\n mIoU: ', miou)
+#     print('\n Pixel accuracy: ', p_acc)
+#     print('\n Frequency Weighted Pixel accuracy: ', fwacc)
+#
+# net = torch.load(model_root + experiment + 'segmentation' + '.ckpt.t7')['net_segmentation'].to(device).eval() ### load the best model
+# evaluate_segmentation(net)
+#
 visualize_segmentation(net)

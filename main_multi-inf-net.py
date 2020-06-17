@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import torch.optim as optim
 import torch.nn.functional as F
+from argparse import ArgumentParser
 from utils.dataloaders import context_inpainting_dataloader, segmentation_data_loader
 from models import resnet18_encoderdecoder, resnet18_encoderdecoder_wbottleneck
 from models import resnet18_coach_vae
@@ -32,9 +33,9 @@ np.random.seed(7)
 device = 'cpu'
 
 dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
-model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
-
-os.makedirs(model_root, exist_ok=True)
+# model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
+#
+# os.makedirs(model_root, exist_ok=True)
 
 dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
@@ -66,8 +67,13 @@ ignore_class = None
 
 # arguments
 save_iter_epoch = 20
-save_model_location = './saved_model'
-graph_path = './graph_logs'
+arg_parse = ArgumentParser()
+arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
+arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
+args = arg_parse.parse_args()
+save_model_location = args.save_path
+graph_path = args.graph_path
+
 os.makedirs(save_model_location, exist_ok=True)
 train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
 test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
@@ -365,7 +371,7 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         print('Saving..')
         state = {'context_inpainting_net': net, 'coach': coach}
 
-        torch.save(state, model_root + experiment + str(iter_) + '.ckpt.t7')
+        torch.save(state, save_model_location + experiment + str(iter_) + '.best.ckpt.t7')
 
 use_coach_masks = False
 epochs = []
@@ -427,15 +433,10 @@ for iter_ in range(0, len(epochs)):
                                  use_coach_masks=use_coach_masks)
         average_test_loss = val_context_inpainting(iter_, epoch, net=net, coach=net_coach, use_coach_masks=use_coach_masks)
 
-        train_writer.add_scalar('train/inpainting_loss', average_train_loss, iter_)
-        test_writer.add_scalar('test/inpainting_loss', average_test_loss, iter_)
-
-        # save models
-        if iter_ % save_iter_epoch == 0:
-            torch.save(net.state_dict(), os.path.join(save_model_location, f'multi_infnet_{iter_}.ckpt'))
-            torch.save(net_coach.state_dict(), os.path.join(save_model_location, f'multi_infnet_coach_{iter}.ckpt'))
         progbar_2.update(1)
 
+    train_writer.add_scalar('train/inpainting_loss', average_train_loss, iter_)
+    test_writer.add_scalar('test/inpainting_loss', average_test_loss, iter_)
     progbar_1.update(1)
 
 from utils.printing import training_curves_loss

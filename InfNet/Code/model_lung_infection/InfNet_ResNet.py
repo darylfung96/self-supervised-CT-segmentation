@@ -89,7 +89,7 @@ class aggregation(nn.Module):
         self.conv5 = nn.Conv2d(3*channel, n_class, 1)
         self.conv5_inpainting = nn.Conv2d(3 * channel, 3, 1)
 
-    def foward_inpainting(self, x1, x2, x3):
+    def forward_inpainting(self, x1, x2, x3):
         x1_1 = x1
         x2_1 = self.conv_upsample1(self.upsample(x1)) * x2
         x3_1 = self.conv_upsample2(self.upsample(self.upsample(x1))) \
@@ -98,9 +98,11 @@ class aggregation(nn.Module):
         x2_2 = self.conv_concat2(x2_2)
         x3_2 = torch.cat((x3_1, self.conv_upsample5(self.upsample(x2_2))), 1)
         x3_2 = self.conv_concat3(x3_2)
+
         x = self.conv4(x3_2)
-        x = F.tanh(self.conv5_inpainting(x))
-        return x
+        x_out = self.conv5(x)
+        x_inpainting = F.tanh(self.conv5_inpainting(x))
+        return x_out, x_inpainting
 
     def forward(self, x1, x2, x3):
         x1_1 = x1
@@ -185,8 +187,8 @@ class Inf_Net(nn.Module):
                                                 scale_factor=4,
                                                 mode='bilinear')
         # ---- global guidance ----
-        ra5_feat = self.ParDec.forward_inpainting(x4_rfb, x3_rfb, x2_rfb)
-        lateral_inpainting_map_5 = F.interpolate(F.tanh(ra5_feat),
+        ra5_feat, ra5_feat_inpainting = self.ParDec.forward_inpainting(x4_rfb, x3_rfb, x2_rfb)
+        lateral_inpainting_map_5 = F.interpolate(F.tanh(ra5_feat_inpainting),
                                                  scale_factor=8,
                                                  mode='bilinear')  # NOTES: Sup-1 (bs, 1, 44, 44) -> (bs, 1, 352, 352)
         # ---- reverse attention branch_4 ----
@@ -197,25 +199,31 @@ class Inf_Net(nn.Module):
         x = F.relu(self.ra4_conv2(x))
         x = F.relu(self.ra4_conv3(x))
         x = F.relu(self.ra4_conv4(x))
-        ra4_feat = self.ra4_conv5_inpainting(x)
-        x = F.tanh(ra4_feat + crop_4)  # element-wise addition
-        lateral_inpainting_map_4 = F.interpolate(x,
+        ra4_feat = self.ra4_conv5(x)
+        x_out = ra4_feat + crop_4
+        # inpainting
+        ra4_feat_inpainting = self.ra4_conv5_inpainting(x)
+        x_inpainting = F.tanh(ra4_feat_inpainting + crop_4)  # element-wise addition
+        lateral_inpainting_map_4 = F.interpolate(x_inpainting,
                                                  scale_factor=32,
                                                  mode='bilinear')  # NOTES: Sup-2 (bs, 1, 11, 11) -> (bs, 1, 352, 352)
         # ---- reverse attention branch_3 ----
-        crop_3 = F.interpolate(x, scale_factor=2, mode='bilinear')
+        crop_3 = F.interpolate(x_out, scale_factor=2, mode='bilinear')
         x = -1 * (torch.sigmoid(crop_3)) + 1
         x = x.expand(-1, 1024, -1, -1).mul(x3)
         x = torch.cat((self.ra3_conv1(x), F.interpolate(edge_guidance, scale_factor=1 / 4, mode='bilinear')), dim=1)
         x = F.relu(self.ra3_conv2(x))
         x = F.relu(self.ra3_conv3(x))
-        ra3_feat = self.ra3_conv4_inpainting(x)
-        x = F.tanh(ra3_feat + crop_3)
-        lateral_inpainting_map_3 = F.interpolate(x,
+        ra3_feat = self.ra3_conv4(x)
+        x_out = ra3_feat + crop_3
+
+        ra3_feat_inpainting = self.ra3_conv4_inpainting(x)
+        x_inpainting = F.tanh(ra3_feat_inpainting + crop_3)
+        lateral_inpainting_map_3 = F.interpolate(x_inpainting,
                                                  scale_factor=16,
                                                  mode='bilinear')  # NOTES: Sup-3 (bs, 1, 22, 22) -> (bs, 1, 352, 352)
         # ---- reverse attention branch_2 ----
-        crop_2 = F.interpolate(x, scale_factor=2, mode='bilinear')
+        crop_2 = F.interpolate(x_out, scale_factor=2, mode='bilinear')
         x = -1 * (torch.sigmoid(crop_2)) + 1
         x = x.expand(-1, 512, -1, -1).mul(x2)
         x = torch.cat((self.ra2_conv1(x), F.interpolate(edge_guidance, scale_factor=1 / 2, mode='bilinear')), dim=1)
