@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 
 
-def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, graph_path, save_path):
+def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, graph_path, save_path, device):
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
     train_dataset = LungDataset(
@@ -43,8 +43,6 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         is_test=False
     )
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     lung_model = Inf_Net_UNet(input_channels, num_classes)  # input_channels=3， n_class=3
     print(lung_model)
@@ -130,6 +128,7 @@ if __name__ == "__main__":
     parser.add_argument('--epoch', type=int, default=200)
     parser.add_argument('--is_data_augment', type=str, default=False)
     parser.add_argument('--batchsize', type=int, default=12)
+    parser.add_argument('--device', type=str, default='cuda')
 
     arg = parser.parse_args()
 
@@ -140,4 +139,5 @@ if __name__ == "__main__":
           lr=1e-2,
           is_data_augment=arg.is_data_augment,
           graph_path=arg.graph_path,
-          save_path=arg.save_path)
+          save_path=arg.save_path,
+          device=arg.device)
