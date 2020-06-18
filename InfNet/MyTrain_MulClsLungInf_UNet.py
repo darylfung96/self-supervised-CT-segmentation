@@ -71,7 +71,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         lung_model.train()
 
         total_train_loss = []
-        for index, (img, _, img_mask, _) in enumerate(train_dataloader):
+        for index, (img, pseudo, img_mask, _) in enumerate(train_dataloader):
             global_iteration += 1
 
             img = img.to(device)
@@ -79,7 +79,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             img_mask = img_mask.to(device)
 
             optimizer.zero_grad()
-            output = lung_model(img)  # change 2nd img to pseudo for original
+            output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
 
             output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
             loss = criterion(output, img_mask)
@@ -102,15 +102,15 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             print('Saving checkpoints: unet_model_{}.pkl'.format(epo+1))
 
         average_train_loss = sum(total_train_loss) / len(total_train_loss)
-        train_writer.add_scalar('train/loss', average_train_loss, global_iteration)
+        train_writer.add_scalar('train/loss', average_train_loss, epo)
 
         del img
         del img_mask
         total_test_loss = []
-        for index, (img, _, img_mask, name) in enumerate(test_dataloader):
+        for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
             img = img.to(device)
             img_mask = img_mask.to(device)
-            output = lung_model(img)  # change 2nd img to pseudo for original
+            output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
 
             output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
             loss = criterion(output, img_mask)
@@ -118,7 +118,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             total_test_loss.append(loss.item())
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
-        test_writer.add_scalar('test/loss', average_test_loss, global_iteration)
+        test_writer.add_scalar('test/loss', average_test_loss, epo)
         del img
         del img_mask
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     train(epo_num=arg.epoch,
           num_classes=3,
-          input_channels=3,
+          input_channels=6,
           batch_size=arg.batchsize,
           lr=1e-2,
           is_data_augment=arg.is_data_augment,

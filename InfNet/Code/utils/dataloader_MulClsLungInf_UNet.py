@@ -40,8 +40,8 @@ class LungDataset(Dataset):
         imgA = cv2.resize(imgA, (352, 352))
 
         # processing pseudo
-        # imgC = cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png')
-        # imgC = cv2.resize(imgC, (352, 352))
+        imgC = cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png')
+        imgC = cv2.resize(imgC, (352, 352))
 
         # processing label
         img_filename = img_name.split('.')[0]
@@ -56,23 +56,28 @@ class LungDataset(Dataset):
             img_label = np.expand_dims(img_label, -1)
             pil_imgA = TF.to_pil_image(imgA)
             pil_img_label = TF.to_pil_image(img_label)
+            pil_imgC = TF.to_pil_image(imgC)
 
             # random cropping
             crop_size = int(min(imgA.shape[:2]) * 0.8)
             i, j, w, h = transforms.RandomCrop.get_params(pil_imgA, output_size=(crop_size, crop_size))
             pil_imgA = TF.crop(pil_imgA, i, j, w, h)
             pil_img_label = TF.crop(pil_img_label, i, j, w, h)
+            pil_imgC = TF.crop(pil_imgC, i, j, w, h)
+
 
             # -- data augmentation --
             # Random horizontal flipping
             if random.random() > 0.5:
                 pil_imgA = TF.hflip(pil_imgA)
                 pil_img_label = TF.hflip(pil_img_label)
+                pil_imgC = TF.hflip(pil_imgC)
 
             # Random vertical flipping
             if random.random() > 0.5:
                 pil_imgA = TF.vflip(pil_imgA)
                 pil_img_label = TF.vflip(pil_img_label)
+                pil_imgC = TF.vflip(pil_imgC)
 
             # random cutout
             if random.random() > 0.5:
@@ -87,6 +92,7 @@ class LungDataset(Dataset):
             # convert pil back to numpy
             imgA = np.array(pil_imgA)
             img_label = np.array(pil_img_label)
+            imgC = np.array(pil_imgC)
 
         # only need to process the original dataset, tr and rp already processed
         if 'tr' not in img_filename and 'rp' not in img_filename:
