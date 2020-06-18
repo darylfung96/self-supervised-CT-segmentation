@@ -75,13 +75,14 @@ class LungDataset(Dataset):
                 pil_img_label = TF.vflip(pil_img_label)
 
             # random cutout
-            cutout_size = int(min(imgA.shape[:2]) * 0.4)
-            i, j, w, h = transforms.RandomCrop.get_params(pil_imgA,
+            if random.random() > 0.5:
+                cutout_size = int(min(imgA.shape[:2]) * 0.3)
+                i, j, w, h = transforms.RandomCrop.get_params(pil_imgA,
                                                           output_size=(random.randint(0, cutout_size),
                                                                        random.randint(0, cutout_size)))
-            color_code = random.randint(0, 255)
-            rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
-            pil_imgA.paste(rect, (i, j))
+                color_code = random.randint(0, 255)
+                rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
+                pil_imgA.paste(rect, (i, j))
 
             # convert pil back to numpy
             imgA = np.array(pil_imgA)
