@@ -87,7 +87,7 @@ class LungDataset(Dataset):
             img_label = np.array(pil_img_label)
 
         # only need to process the original dataset, tr and rp already processed
-        if 'tr' in img_filename or 'rp' in img_filename:
+        if 'tr' not in img_filename and 'rp' not in img_filename:
             img_label[img_label < 19] = 0
             img_label[(img_label <= 38) & (img_label >= 19)] = 1
             img_label[img_label > 38] = 2

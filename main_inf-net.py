@@ -452,6 +452,9 @@ torch.cuda.empty_cache()
 
 print('DONE training inpainting self-supervised')
 
+
+
+
 # from models import FCNify_v2
 # iter_ = len(epochs) - 1   ### iter_ = 0 is semantic inpainting model, iter_ > 0 is trained against coach masks
 # net = torch.load(model_root + experiment + str(iter_) + '.ckpt.t7')['context_inpainting_net']

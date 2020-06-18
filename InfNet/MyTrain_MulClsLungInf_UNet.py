@@ -45,6 +45,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     lung_model = Inf_Net_UNet(input_channels, num_classes)  # input_channels=3， n_class=3
+
     print(lung_model)
     lung_model = lung_model.to(device)
 
