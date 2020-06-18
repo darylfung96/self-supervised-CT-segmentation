@@ -128,8 +128,8 @@ if __name__ == "__main__":
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
     parser.add_argument('--epoch', type=int, default=200)
-    parser.add_argument('--is_data_augment', type=bool)
-    parser.add_argument('--is_label_smooth', type=bool)
+    parser.add_argument('--is_data_augment', type=bool, default=False)
+    parser.add_argument('--is_label_smooth', type=bool, default=False)
     parser.add_argument('--batchsize', type=int, default=12)
     parser.add_argument('--device', type=str, default='cuda')
 
