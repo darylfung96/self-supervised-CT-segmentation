@@ -20,13 +20,14 @@ from Code.utils.onehot import onehot
 
 
 class LungDataset(Dataset):
-    def __init__(self, imgs_path, pseudo_path, label_path, transform=None, is_test=False, is_data_augment=False):
+    def __init__(self, imgs_path, pseudo_path, label_path, transform=None, is_test=False, is_data_augment=False, is_label_smooth=False):
         self.transform = transform
         self.imgs_path = imgs_path  # 'data/class3_images/'
         self.pseudo_path = pseudo_path
         self.label_path = label_path    # 'data/class3_label/'
         self.is_test = is_test
         self.is_data_augment = is_data_augment
+        self.is_label_smooth = is_label_smooth
 
     def __len__(self):
         return len(os.listdir(self.imgs_path))
@@ -92,8 +93,12 @@ class LungDataset(Dataset):
             img_label[(img_label <= 38) & (img_label >= 19)] = 1
             img_label[img_label > 38] = 2
 
-        img_label_onehot = (np.arange(3) == img_label[...,None]).astype(int)# onehot(img_label, 3)  # w * H * n_class
+        img_label_onehot = (np.arange(3) == img_label[...,None]).astype(float)# onehot(img_label, 3)  # w * H * n_class
         img_label_onehot = img_label_onehot.transpose(2, 0, 1)  # n_class * w * H
+
+        # label smoothing
+        if self.is_label_smooth:
+            img_label_onehot[0] = img_label_onehot[0] * 0.9 # since there are so many labels on the first axis, we smooth it
 
         onehot_label = torch.FloatTensor(img_label_onehot)
         if self.transform:

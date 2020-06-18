@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 
 
-def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, graph_path, save_path, device):
+def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, graph_path, save_path, device):
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
     train_dataset = LungDataset(
@@ -29,7 +29,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         label_path='./Dataset/TrainingSet/MultiClassInfection-Train/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]), is_data_augment=is_data_augment)
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]), is_data_augment=is_data_augment, is_label_smooth=is_label_smooth)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
 
     # test dataset
@@ -45,6 +45,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     lung_model = Inf_Net_UNet(input_channels, num_classes)  # input_channels=3， n_class=3
+    # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
 
     print(lung_model)
     lung_model = lung_model.to(device)
@@ -127,7 +128,8 @@ if __name__ == "__main__":
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
     parser.add_argument('--epoch', type=int, default=200)
-    parser.add_argument('--is_data_augment', type=str, default=False)
+    parser.add_argument('--is_data_augment', type=bool)
+    parser.add_argument('--is_label_smooth', type=bool)
     parser.add_argument('--batchsize', type=int, default=12)
     parser.add_argument('--device', type=str, default='cuda')
 
@@ -139,6 +141,7 @@ if __name__ == "__main__":
           batch_size=arg.batchsize,
           lr=1e-2,
           is_data_augment=arg.is_data_augment,
+          is_label_smooth=arg.is_label_smooth,
           graph_path=arg.graph_path,
           save_path=arg.save_path,
           device=arg.device)
