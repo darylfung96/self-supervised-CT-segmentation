@@ -75,7 +75,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             global_iteration += 1
 
             img = img.to(device)
-            # pseudo = pseudo.to(device)
+            pseudo = pseudo.to(device)
             img_mask = img_mask.to(device)
 
             optimizer.zero_grad()
@@ -109,6 +109,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         total_test_loss = []
         for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
             img = img.to(device)
+            pseudo = pseudo.to(device)
             img_mask = img_mask.to(device)
             output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
 
