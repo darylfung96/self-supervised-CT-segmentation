@@ -20,7 +20,7 @@ from Code.utils.onehot import onehot
 
 
 class LungDataset(Dataset):
-    def __init__(self, imgs_path, pseudo_path, label_path, transform=None, is_test=False, is_data_augment=False, is_label_smooth=False, is_random_cutout=False):
+    def __init__(self, imgs_path, pseudo_path, label_path, transform=None, is_test=False, is_data_augment=False, is_label_smooth=False, random_cutout=0):
         self.transform = transform
         self.imgs_path = imgs_path  # 'data/class3_images/'
         self.pseudo_path = pseudo_path
@@ -28,7 +28,7 @@ class LungDataset(Dataset):
         self.is_test = is_test
         self.is_data_augment = is_data_augment
         self.is_label_smooth = is_label_smooth
-        self.is_random_cutout = is_random_cutout
+        self.random_cutout = random_cutout
 
     def __len__(self):
         return len(os.listdir(self.imgs_path))
@@ -81,9 +81,9 @@ class LungDataset(Dataset):
                 pil_imgC = TF.vflip(pil_imgC)
 
             # random cutout
-            if self.is_random_cutout:
+            if self.random_cutout:
                 if random.random() > 0.5:
-                    cutout_size = int(min(imgA.shape[:2]) * 0.3)
+                    cutout_size = int(min(imgA.shape[:2]) * self.random_cutout)
                     i, j, w, h = transforms.RandomCrop.get_params(pil_imgA,
                                                               output_size=(random.randint(0, cutout_size),
                                                                            random.randint(0, cutout_size)))
