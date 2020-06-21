@@ -47,10 +47,10 @@ dataset_root = './datasets/'
 
 os.makedirs(save_model_location, exist_ok=True)
 
-dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
+dataset = 'medseg'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
 use_coach = True                                       #options are: True or Flase
-self_supervised_split = 'train_crops'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
+pself_supervised_split = 'train_crops'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
 supervised_split = 'train_crops'
 # supervised_split = 'train_10crops'                     #options are: train_10crops, train_25crops, train_50crops, train_crops
 
@@ -126,6 +126,11 @@ elif dataset == 'deepglobe_lands':
     nClasses = 7                ### number of classes for pixelwise classification
     out = None                  ### do not process ground-truth
     ignore_class = 6
+
+elif dataset == 'medseg':
+    train_img_root = 'InfNet/Dataset/TrainingSet/LungInfection-Train/Doctor-label/Imgs'
+    train_image_list_path = ''
+    val_img_root = 'InfNet/Dataset/TestingSet/LungInfection-Test/Imgs'
 
 erase_shape = [16, 16]         ### size of each block used to erase image
 erase_count = 16               ### number of blocks to erase from image
@@ -372,9 +377,9 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
     if best_loss > val_loss[-1]:
         best_loss = val_loss[-1]
         print('Saving..')
-        state = {'context_inpainting_net': net, 'coach': coach}
-
-        torch.save(state, save_model_location + experiment + str(iter_) + '.best.ckpt.t7')
+        # state = {'context_inpainting_net': net.state_dict(), 'coach': coach.state_dict()}
+        torch.save(net.state_dict(), save_model_location + experiment + str(iter_) + '.net.best.ckpt.t7')
+        torch.save(coach.state_dict(), save_model_location + experiment + str(iter_) + '.coach.best.ckpt.t7')
     average_graph_test_loss = sum(graph_test_loss) / len(graph_test_loss)
     return average_graph_test_loss
 

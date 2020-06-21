@@ -52,7 +52,8 @@ class context_inpainting_dataloader(data.Dataset):
 
         self.img_root = img_root
         self.split = split
-        self.image_list = [line.rstrip('\n') for line in open(image_list)]
+        # self.image_list = [line.rstrip('\n') for line in open(image_list)]
+        self.image_list = [os.path.join(img_root, f) for f in os.listdir(img_root) if f.endswith('.jpg') or f.endswith('.png')]
         self.img_suffix = None
         self.gt_suffix = None
         if suffix == 'potsdam' or suffix == 'spacenet':
@@ -82,8 +83,8 @@ class context_inpainting_dataloader(data.Dataset):
         return len(self.files[self.split])
 
     def __getitem__(self, index):
-        image_file_name = self.img_root + self.image_list[index] + self.img_suffix + '.jpg'
-        
+        # image_file_name = self.img_root + self.image_list[index] + self.img_suffix + '.jpg'
+        image_file_name = self.image_list[index]
         image = None
         if os.path.isfile(image_file_name):
             image = cv2.imread(image_file_name)
@@ -115,8 +116,8 @@ class context_inpainting_dataloader(data.Dataset):
         input_ = None
 
         if self.erase_count == 1:                             ### erase a patch in the center of image
-            offset = (image.shape[0] - erase_shape[0])/2
-            end = offset+erase_shape[0]
+            offset = (image.shape[0] - self.erase_shape[0])/2
+            end = offset+self.erase_shape[0]
             mask[offset:end, offset:end, :] = 0
             
         else:   
@@ -130,6 +131,7 @@ class context_inpainting_dataloader(data.Dataset):
 
         return input_, mask, image
 
+    # TODO might have to deal with this preprocessing step as we are using CT images instead of normal bgr images
     def transform(self, mask, image):
         image = image.astype(np.float64)
         image -= self.mean_bgr
