@@ -29,8 +29,24 @@ torch.manual_seed(7)
 np.random.seed(7)
 
 
+# arguments
+save_iter_epoch = 20
+arg_parse = ArgumentParser()
+arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
+arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
+arg_parse.add_argument('--device', required=True, type=str)
+arg_parse.add_argument('--seed', default=25, type=int)
+args = arg_parse.parse_args()
 
-device = 'cpu'
+args = arg_parse.parse_args()
+save_model_location = args.save_path
+graph_path = args.graph_path
+
+os.makedirs(save_model_location, exist_ok=True)
+train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
+test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
+device = args.device
+
 
 dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
 # model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
@@ -65,18 +81,6 @@ val_gt_root = None
 nClasses = None
 ignore_class = None
 
-# arguments
-save_iter_epoch = 20
-arg_parse = ArgumentParser()
-arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
-arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
-args = arg_parse.parse_args()
-save_model_location = args.save_path
-graph_path = args.graph_path
-
-os.makedirs(save_model_location, exist_ok=True)
-train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
-test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
 
 if dataset == 'spacenet':
@@ -129,6 +133,11 @@ elif dataset == 'deepglobe_lands':
     nClasses = 7                ### number of classes for pixelwise classification
     out = None                  ### do not process ground-truth
     ignore_class = 6
+
+elif dataset == 'medseg':
+    train_img_root = 'InfNet/Dataset/TrainingSet/LungInfection-Train/Doctor-label/Imgs'
+    train_image_list_path = ''
+    val_img_root = 'InfNet/Dataset/TestingSet/LungInfection-Test/Imgs'
 
 erase_shape = [16, 16]         ### size of each block used to erase image
 erase_count = 16               ### number of blocks to erase from image

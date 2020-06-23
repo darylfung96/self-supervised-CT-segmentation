@@ -408,6 +408,7 @@ else:
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4]]
 
 progbar_1 = tqdm(total=len(epochs), desc='Iters')
+global_iteration = 0
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
 
@@ -424,6 +425,7 @@ for iter_ in range(0, len(epochs)):
 
     progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
     for epoch in range(epochs[iter_]):
+        global_iteration += 1
         if epoch % 10 == 0:
             if use_coach:
                 visualize_self_sup(cols=4, net=net.eval(), coach=net_coach.eval(), use_coach_masks=use_coach_masks)
@@ -446,8 +448,9 @@ for iter_ in range(0, len(epochs)):
 
         progbar_2.update(1)
 
-    train_writer.add_scalar('train/inpainting_loss', average_train_loss, iter_)
-    test_writer.add_scalar('test/inpainting_loss', average_test_loss, iter_)
+        train_writer.add_scalar('train/inpainting_loss', average_train_loss, global_iteration)
+        test_writer.add_scalar('test/inpainting_loss', average_test_loss, global_iteration)
+        print("finished writing train and test graph loss")
     progbar_1.update(1)
 
 from utils.printing import training_curves_loss
