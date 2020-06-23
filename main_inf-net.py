@@ -44,6 +44,7 @@ torch.cuda.manual_seed(args.seed)
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
+is_visualize = False
 
 dataset_root = './datasets/'
 
@@ -171,6 +172,9 @@ def model_output_to_np(output):
 
 
 def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
+    global is_visualize
+    if not is_visualize:
+        return
     # + 4 for the different lateral maps created by inf-net otherwise just see the target, masks and input
     if cols == 4:
         fig, axs = plt.subplots(nrows=4, ncols=cols+4, figsize=(15, 15))
@@ -408,7 +412,7 @@ else:
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4]]
 
 progbar_1 = tqdm(total=len(epochs), desc='Iters')
-global_iteration = 0
+global_iteration = -1
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
 
