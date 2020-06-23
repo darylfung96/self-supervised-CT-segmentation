@@ -1,5 +1,6 @@
 ## import libraries
 import numpy as np
+import random
 import torch
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
@@ -22,17 +23,13 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True' # for mac
 warnings.filterwarnings('ignore')
 
-## fix seeds
-torch.cuda.manual_seed(7)
-torch.manual_seed(7)
-np.random.seed(7)
-
 # arguments
 save_iter_epoch = 20
 arg_parse = ArgumentParser()
 arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
 arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
 arg_parse.add_argument('--device', required=True, type=str)
+arg_parse.add_argument('--seed', default=25, type=int)
 args = arg_parse.parse_args()
 
 save_model_location = args.save_path
@@ -42,6 +39,11 @@ test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
 
 device = args.device
+# set seeds
+torch.cuda.manual_seed(args.seed)
+torch.manual_seed(args.seed)
+np.random.seed(args.seed)
+random.seed(args.seed)
 
 dataset_root = './datasets/'
 
