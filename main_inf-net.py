@@ -374,7 +374,7 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
 
         total_loss = rec_weight * loss_rec + (1 - rec_weight) * loss_con
 
-        val_loss[-1] += total_loss.data
+        val_loss[-1] += total_loss.item()
         progbar.set_description('Val (loss=%.4f)' % (val_loss[-1] / (batch_idx + 1)))
         progbar.update(1)
         graph_test_loss.append(total_loss.item())
@@ -395,7 +395,7 @@ epochs = []
 lrs = []
 
 if use_coach:
-    epochs = [200, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+    epochs = [1, 1, 60, 60, 60, 60, 60, 60, 60, 60, 60]
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4],
        [1e-5, 1e-5, 1e-5, 1e-5],
        [1e-5, 1e-5, 1e-5, 1e-5],
