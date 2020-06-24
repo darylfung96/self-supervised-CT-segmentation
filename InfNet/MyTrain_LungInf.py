@@ -171,6 +171,9 @@ if __name__ == '__main__':
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
     parser.add_argument('--testsize', type=int, default=352, help='testing size')
 
+    # load model path
+    parser.add_argument('--load_net_path', type=str)
+
     # save log tensorboard
     parser.add_argument('--graph_path', type=str, default="./graph_log")
 
@@ -191,6 +194,10 @@ if __name__ == '__main__':
     else:
         raise ValueError('Invalid backbone parameters: {}'.format(opt.backbone))
     model = Inf_Net(channel=opt.net_channel, n_class=opt.n_classes).to(opt.device)
+
+    if opt.load_net_path:
+        net_state_dict = torch.load(opt.load_net_path)
+        model.load_state_dict(net_state_dict)
 
     # ---- load pre-trained weights (mode=Semi-Inf-Net) ----
     # - See Sec.2.3 of `README.md` to learn how to generate your own img/pseudo-label from scratch.

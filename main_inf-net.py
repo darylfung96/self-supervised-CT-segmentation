@@ -29,6 +29,8 @@ arg_parse = ArgumentParser()
 arg_parse.add_argument('--save_path', default="./saved_model", required=True, type=str)
 arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, type=str)
 arg_parse.add_argument('--device', required=True, type=str)
+arg_parse.add_argument('--load_net_path', type=str)
+arg_parse.add_argument('--load_coach_path', type=str)
 arg_parse.add_argument('--seed', default=25, type=int)
 args = arg_parse.parse_args()
 
@@ -44,7 +46,7 @@ torch.cuda.manual_seed(args.seed)
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
-is_visualize = False
+is_visualize = True
 
 dataset_root = './datasets/'
 
@@ -229,8 +231,16 @@ visualize_self_sup()
 net = Inf_Net().to(device)
 net_coach = None
 
+if args.load_net_path:
+    net_state_dict = torch.load(args.load_net_path, map_location=torch.device('cpu'))
+    net.load_state_dict(net_state_dict)
+
 if use_coach:
     net_coach = resnet18_coach_vae(drop_ratio=0.75, device=device).to(device)
+
+if args.load_coach_path:
+    coach_state_dict = torch.load(args.load_coach_path, map_location=torch.device('cpu'))
+    net_coach.load_state_dict(coach_state_dict)
 
 net_optimizer = None
 coach_optimizer = None
