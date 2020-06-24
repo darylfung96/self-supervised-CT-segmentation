@@ -384,8 +384,8 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         best_loss = val_loss[-1]
         print('Saving..')
         # state = {'context_inpainting_net': net.state_dict(), 'coach': coach.state_dict()}
-        torch.save(net.state_dict(), save_model_location + experiment + str(iter_) + '.net.best.ckpt.t7')
-        torch.save(coach.state_dict(), save_model_location + experiment + str(iter_) + '.coach.best.ckpt.t7')
+        torch.save(net.state_dict(), os.path.join(save_model_location, experiment + str(iter_) + '.net.best.ckpt.t7'))
+        torch.save(coach.state_dict(), os.path.join(save_model_location, experiment + str(iter_) + '.coach.best.ckpt.t7'))
     average_graph_test_loss = sum(graph_test_loss) / len(graph_test_loss)
     return average_graph_test_loss
 
