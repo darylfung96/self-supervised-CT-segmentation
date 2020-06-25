@@ -193,7 +193,7 @@ def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
             masked_prior = prior * masks.float()
         else:
             masks, _, _ = coach.forward(inputs_.to(device), alpha=100, use_coach=use_coach_masks)
-            inputs_ = inputs_ * masks.float().cpu()
+            inputs_ = inputs_ * masks.float()
             masked_prior = prior * masks.float()
 
         output = None
