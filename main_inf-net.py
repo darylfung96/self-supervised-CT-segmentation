@@ -46,7 +46,7 @@ torch.cuda.manual_seed(args.seed)
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
-is_visualize = True
+is_visualize = False
 
 dataset_root = './datasets/'
 
@@ -316,10 +316,16 @@ def train_coach(epoch, net, coach, coach_optimizer):
 
         masks, mu, logvar = coach.forward(inputs_, alpha=1)
 
-        outputs = net.forward_inpainting(inputs_ * masks).detach()
-        mse_loss = (outputs - targets) ** 2
-        mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-        loss_rec = torch.sum(mse_loss * (1 - masks)) / (3 * torch.sum(1 - masks))
+        loss_rec = None
+        outputs_1 = net.forward_inpainting(inputs_ * masks)
+        for output_1 in outputs_1:
+            mse_loss = (output_1 - targets) ** 2
+            mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+            # calculate reconstruction loss
+            if loss_rec is None:
+                loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+            else:
+                loss_rec += torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
 
         mu = mu.mean(dim=2).mean(dim=2)
         logvar = logvar.mean(dim=2).mean(dim=2)
@@ -426,7 +432,7 @@ global_iteration = -1
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
 
-    if use_coach and iter_ > 0:
+    if use_coach and iter_ >= 0:
         use_coach_masks = True
         progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
         optimizer_coach = optim.Adam(net_coach.parameters(), lr=1e-5)
