@@ -1,13 +1,14 @@
 ## import libraries
 import numpy as np
 import torch
+import random
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import torch.optim as optim
 import torch.nn.functional as F
 from argparse import ArgumentParser
-from utils.dataloaders import context_inpainting_dataloader, segmentation_data_loader
+from utils.dataloaders import context_inpainting_dataloader, multi_context_inpainting_data_loader, segmentation_data_loader
 from models import resnet18_encoderdecoder, resnet18_encoderdecoder_wbottleneck
 from models import resnet18_coach_vae
 
@@ -22,11 +23,6 @@ import os
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True' # for mac
 warnings.filterwarnings('ignore')
-
-## fix seeds
-torch.cuda.manual_seed(7)
-torch.manual_seed(7)
-np.random.seed(7)
 
 
 # arguments
@@ -47,13 +43,20 @@ train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
 test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 device = args.device
 
+## fix seeds
+torch.cuda.manual_seed(args.seed)
+torch.manual_seed(args.seed)
+np.random.seed(args.seed)
+random.seed(args.seed)
+is_visualize = True
+
 
 dataset_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/datasets/'
 # model_root = '/Users/darylfung/programming/Self-supervision-for-segmenting-overhead-imagery/model/'
 #
 # os.makedirs(model_root, exist_ok=True)
 
-dataset = 'potsdam'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
+dataset = 'medseg'                                    #options are: spacenet, potsdam, deepglobe_roads, deepglobe_lands
 architecture = 'resnet18_autoencoder_no_bottleneck'    #options are: resnet18_autoencoder, resnet18_encoderdecoder_wbottleneck
 use_coach = True                                       #options are: True or Flase
 self_supervised_split = 'train_crops'                  #options are: train_10crops, train_25crops, train_50crops, train_crops
@@ -135,22 +138,24 @@ elif dataset == 'deepglobe_lands':
     ignore_class = 6
 
 elif dataset == 'medseg':
-    train_img_root = 'InfNet/Dataset/TrainingSet/LungInfection-Train/Doctor-label/Imgs'
+    train_img_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/Imgs'
+    train_prior_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/prior'
     train_image_list_path = ''
-    val_img_root = 'InfNet/Dataset/TestingSet/LungInfection-Test/Imgs'
+    val_img_root = 'InfNet/Dataset/TestingSet/MultiClassInfection-Test/Imgs'
+    val_prior_root = 'InfNet/Results/Lung infection segmentation/Semi-Inf-Net/'
 
 erase_shape = [16, 16]         ### size of each block used to erase image
 erase_count = 16               ### number of blocks to erase from image
 rec_weight = 0.99            ### loss = rec_weight*loss_rec+ (1-rec_weight)*loss_con
 
 train_loader = torch.utils.data.DataLoader(
-    context_inpainting_dataloader(img_root = train_img_root, image_list = train_image_list_path+self_supervised_split+'.txt', suffix=dataset,
+    multi_context_inpainting_data_loader(img_root = train_img_root, prior_root=train_prior_root, image_list = '', suffix=dataset,
                                   mirror = True, resize=True, crop=True, resize_shape=[352, 352], rotate = True,
                                   erase_shape = erase_shape, erase_count = erase_count),
     batch_size=128, shuffle = True)
 
 val_loader = torch.utils.data.DataLoader(
-    context_inpainting_dataloader(img_root = val_img_root, image_list = val_image_list, suffix=dataset,
+    multi_context_inpainting_data_loader(img_root = val_img_root, prior_root=val_prior_root, image_list = '', suffix=dataset,
                                   mirror = False, resize=False, resize_shape=[352, 352], rotate = False,
                                   crop = True, erase_shape = erase_shape, erase_count = erase_count),
     batch_size=32, shuffle = False)
@@ -176,18 +181,25 @@ def model_output_to_np(output):
 
 
 def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
+    global is_visualize
+    if not is_visualize:
+        return
+
     fig, axs = plt.subplots(nrows=4, ncols=cols, figsize=(9, 9))
 
-    for batch_idx, (inputs_, masks, targets) in enumerate(val_loader):
+    for batch_idx, (inputs_, masks, targets, prior) in enumerate(val_loader):
         if coach is None:
             inputs_ = inputs_ * masks.float()
+            masked_prior = prior * masks.float()
         else:
             masks, _, _ = coach.forward(inputs_.to(device), alpha=100, use_coach=use_coach_masks)
             inputs_ = inputs_ * masks.float().cpu()
+            masked_prior = prior * masks.float()
 
         output = None
         if cols == 4:
-            output = net.forward_inpainting(inputs_).to(device).cpu().data
+            output = net.forward_inpainting(torch.cat((inputs_, masked_prior), dim=1)).to(device).cpu().data
+            output, prior = torch.split(output, 3, dim=1)
             input_, mask, target, output = torch_to_np(inputs_[0].cpu(), masks[0].cpu(), targets[0].cpu(),
                                                        output[0].cpu())
         else:
@@ -210,7 +222,7 @@ def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
 
 visualize_self_sup()
 
-net = Inf_Net_UNet(n_channels=3, n_classes=3).to(device)
+net = Inf_Net_UNet(n_channels=6, n_classes=3).to(device)
 net_coach = None
 
 if use_coach:
@@ -234,37 +246,47 @@ def train_context_inpainting(epoch, net, net_optimizer, coach=None, use_coach_ma
         coach.eval()
 
     train_loss.append(0)
-    for batch_idx, (inputs_, masks, targets) in enumerate(train_loader):
+    for batch_idx, (inputs_, masks, targets, prior) in enumerate(train_loader):
         net_optimizer.zero_grad()
         inputs_, masks, targets = Variable(inputs_.to(device)), Variable(masks.to(device).float()), Variable(targets.to(device))
+        prior = Variable(prior.to(device))
 
         if coach is not None:
             masks, _, _ = coach.forward(inputs_, alpha=100, use_coach=use_coach_masks)
 
-        outputs_1 = net.forward_inpainting(inputs_ * masks)
-        loss_rec = None
-        loss_con = None
-        for output_1 in outputs_1:
-            mse_loss = (output_1 - targets) ** 2
-            mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-            # calculate reconstruction loss
-            if loss_rec is None:
-                loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
-            else:
-                loss_rec += torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+        masked_inputs_ = inputs_ * masks
+        masked_prior = prior * masks
+        outputs = net.forward_inpainting(torch.cat((masked_inputs_, masked_prior), dim=1))
+        g_outputs, g_priors = torch.split(outputs, 3, dim=1)
 
-            # calculate con loss
-            if coach is not None:
-                loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
-            else:
-                outputs_2 = net.forward_inpainting(inputs_ * (1 - masks))
-                for output_2 in outputs_2:
-                    mse_loss = (output_2 - targets) ** 2
-                    mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-                    if loss_con is None:
-                        loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
-                    else:
-                        loss_con += torch.sum(mse_loss * masks) / torch.sum(masks)
+        mse_loss = (g_outputs - targets) ** 2
+        mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+
+        prior_mse_loss = (g_priors - prior) ** 2
+        prior_mse_loss = -1 * F.threshold(-1 * prior_mse_loss, -2, -2)
+
+        loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+        prior_loss_rec = torch.sum(prior_mse_loss * (1 - masks)) / torch.sum(1 - masks)
+
+        # calculate con loss
+        if coach is not None:
+            loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+            prior_loss_con = torch.sum(prior_mse_loss * masks) / torch.sum(masks)
+
+        else:
+            outputs = net.forward_inpainting(inputs_ * (1 - masks))
+            g_outputs, g_priors = torch.split(outputs, 3, dim=1)
+
+            mse_loss = (g_outputs - targets) ** 2
+            mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+
+            prior_mse_loss = (g_priors - prior) ** 2
+            prior_mse_loss = -1 * F.threshold(-1 * prior_mse_loss, -2, -2)
+            loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+            prior_loss_con = torch.sum(prior_mse_loss * masks) / torch.sum(masks)
+
+        loss_rec = loss_rec + prior_loss_rec
+        loss_con = loss_con + prior_loss_con
 
         total_loss = rec_weight * loss_rec + (1 - rec_weight) * loss_con
         total_loss.backward()
@@ -333,40 +355,51 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
     if coach is not None:
         coach.eval()
     val_loss.append(0)
-    for batch_idx, (inputs_, masks, targets) in enumerate(val_loader):
-        inputs_, masks, targets = Variable(inputs_.to(device)), Variable(masks.to(device).float()), Variable(targets.to(device))
+    for batch_idx, (inputs_, masks, targets, prior) in enumerate(val_loader):
+        inputs_, masks, targets, prior = Variable(inputs_.to(device)), Variable(masks.to(device).float()), Variable(targets.to(device)), Variable(prior.to(device))
 
         if coach is not None:
             masks, _, _ = coach.forward(inputs_, alpha=100, use_coach=use_coach_masks)
 
         loss_rec = None
         loss_con = None
-        outputs_1 = net.forward_inpainting(inputs_ * masks)
-        for output_1 in outputs_1:
-            mse_loss = (output_1 - targets) ** 2
-            mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-            # calculate reconstruction loss
-            if loss_rec is None:
-                loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
-            else:
-                loss_rec += torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+        masked_inputs = inputs_ * masks
+        masked_prior = prior * masks
+        outputs = net.forward_inpainting(torch.cat((masked_inputs, masked_prior), dim=1))
+        g_outputs, g_priors = torch.split(outputs, 3, dim=1)
 
-            # calculate con loss
-            if coach is not None:
-                loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
-            else:
-                outputs_2 = net.forward_inpainting(inputs_ * (1 - masks))
-                for output_2 in outputs_2:
-                    mse_loss = (output_2 - targets) ** 2
-                    mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
-                    if loss_con is None:
-                        loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
-                    else:
-                        loss_con += torch.sum(mse_loss * masks) / torch.sum(masks)
+        mse_loss = (g_outputs - targets) ** 2
+        mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+
+        prior_mse_loss = (g_priors - prior) ** 2
+        prior_mse_loss = -1 * F.threshold(-1 * prior_mse_loss, -2, -2)
+
+        loss_rec = torch.sum(mse_loss * (1 - masks)) / torch.sum(1 - masks)
+        prior_loss_rec = torch.sum(prior_mse_loss * (1 - masks)) / torch.sum(1 - masks)
+
+        # calculate con loss
+        if coach is not None:
+            loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+            prior_loss_con = torch.sum(prior_mse_loss * masks) / torch.sum(masks)
+
+        else:
+            outputs = net.forward_inpainting(inputs_ * (1 - masks))
+            g_outputs, g_priors = torch.split(outputs, 3, dim=1)
+
+            mse_loss = (g_outputs - targets) ** 2
+            mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
+
+            prior_mse_loss = (g_priors - prior) ** 2
+            prior_mse_loss = -1 * F.threshold(-1 * prior_mse_loss, -2, -2)
+            loss_con = torch.sum(mse_loss * masks) / torch.sum(masks)
+            prior_loss_con = torch.sum(prior_mse_loss * masks) / torch.sum(masks)
+
+        loss_rec = loss_rec + prior_loss_rec
+        loss_con = loss_con + prior_loss_con
 
         total_loss = rec_weight * loss_rec + (1 - rec_weight) * loss_con
 
-        val_loss[-1] += total_loss.data
+        val_loss[-1] += total_loss.item()
         progbar.set_description('Val (loss=%.4f)' % (val_loss[-1] / (batch_idx + 1)))
         progbar.update(1)
         graph_test_loss.append(total_loss.item())
@@ -378,16 +411,16 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
     if best_loss > val_loss[-1]:
         best_loss = val_loss[-1]
         print('Saving..')
-        state = {'context_inpainting_net': net, 'coach': coach}
-
-        torch.save(state, save_model_location + experiment + str(iter_) + '.best.ckpt.t7')
+        torch.save(net.state_dict(), os.path.join(save_model_location, experiment + str(iter_) + '.net.best.ckpt.t7'))
+        torch.save(coach.state_dict(),
+                   os.path.join(save_model_location, experiment + str(iter_) + '.coach.best.ckpt.t7'))
 
 use_coach_masks = False
 epochs = []
 lrs = []
 
 if use_coach:
-    epochs = [100, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+    epochs = [200, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4],
        [1e-5, 1e-5, 1e-5, 1e-5],
        [1e-5, 1e-5, 1e-5, 1e-5],
@@ -404,7 +437,7 @@ else:
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4]]
 
 progbar_1 = tqdm(total=len(epochs), desc='Iters')
-
+global_iteration = -1
 
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
@@ -423,6 +456,7 @@ for iter_ in range(0, len(epochs)):
 
     progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
     for epoch in range(epochs[iter_]):
+        global_iteration += 1
         if epoch % 10 == 0:
             if use_coach:
                 visualize_self_sup(cols=4, net=net.eval(), coach=net_coach.eval(), use_coach_masks=use_coach_masks)
@@ -444,8 +478,8 @@ for iter_ in range(0, len(epochs)):
 
         progbar_2.update(1)
 
-    train_writer.add_scalar('train/inpainting_loss', average_train_loss, iter_)
-    test_writer.add_scalar('test/inpainting_loss', average_test_loss, iter_)
+        train_writer.add_scalar('train/inpainting_loss', average_train_loss, global_iteration)
+        test_writer.add_scalar('test/inpainting_loss', average_test_loss, global_iteration)
     progbar_1.update(1)
 
 from utils.printing import training_curves_loss
@@ -455,7 +489,7 @@ del(net_coach)
 del(net)
 torch.cuda.empty_cache()
 
-print('DONE training inpainting self-supervised')
+print('DONE training inpainting multi inf-net self-supervised')
 
 # from models import FCNify_v2
 # iter_ = len(epochs) - 1   ### iter_ = 0 is semantic inpainting model, iter_ > 0 is trained against coach masks

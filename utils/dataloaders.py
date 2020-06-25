@@ -54,6 +54,7 @@ class context_inpainting_dataloader(data.Dataset):
         self.split = split
         # self.image_list = [line.rstrip('\n') for line in open(image_list)]
         self.image_list = [os.path.join(img_root, f) for f in os.listdir(img_root) if f.endswith('.jpg') or f.endswith('.png')]
+        self.image_list = sorted(self.image_list)
         self.img_suffix = None
         self.gt_suffix = None
         if suffix == 'potsdam' or suffix == 'spacenet':
@@ -172,6 +173,109 @@ class context_inpainting_dataloader(data.Dataset):
         crop_im = im[r_offset: r_offset + crop_shape[0], c_offset: c_offset + crop_shape[1], :]
 
         return crop_im
+
+
+class multi_context_inpainting_data_loader(context_inpainting_dataloader):
+    def __init__(self, img_root, prior_root, image_list, split = 'train', suffix = '',
+                 mirror = True, resize = False, resize_shape = [256, 256], rotate = True,
+                 crop = True, crop_shape = [128, 128], erase_shape = [16, 16], erase_count = 16):
+
+        super(multi_context_inpainting_data_loader, self).__init__(img_root, image_list, split =split, suffix = suffix,
+                 mirror = mirror, resize = resize, resize_shape = resize_shape, rotate = rotate,
+                 crop = crop, crop_shape = crop_shape, erase_shape = erase_shape, erase_count = erase_count)
+
+        self.prior_list = [os.path.join(prior_root, f) for f in os.listdir(prior_root) if f.endswith('.jpg') or f.endswith('.png')]
+        self.prior_list = sorted(self.prior_list)
+
+    def __getitem__(self, index):
+        # image_file_name = self.img_root + self.image_list[index] + self.img_suffix + '.jpg'
+        image_file_name = self.image_list[index]
+        prior_file_name = self.prior_list[index]
+        image = None
+        if os.path.isfile(image_file_name):
+            image = cv2.imread(image_file_name)
+        else:
+            print('couldn\'t find image -> ', image_file_name)
+        if os.path.isfile(prior_file_name):
+            prior = cv2.imread(prior_file_name)
+        else:
+            print('could\'t find prior -> ', prior_file_name)
+
+        if self.mirror:  ### mirror image with probability of 0.5
+            flip = torch.LongTensor(1).random_(0, 2)[0] * 2 - 1
+            image = image[:, ::flip, :]
+            prior = prior[:, ::flip, :]
+
+        if self.rotate:  ### randomly rotate image
+            choice = torch.LongTensor(1).random_(0, 4)[0]
+            angles = [0, 90, 180, 270]
+            angle = angles[choice]
+            center = tuple(np.array(image.shape)[:2] / 2)
+            rot_mat = None
+            rot_mat = cv2.getRotationMatrix2D(center, angle, 1)
+            image = cv2.warpAffine(image, rot_mat, image.shape[:2], flags=cv2.INTER_LINEAR)
+            prior = cv2.warpAffine(prior, rot_mat, prior.shape[:2], flags=cv2.INTER_LINEAR)
+
+        if self.resize == True and torch.LongTensor(1).random_(0, 2)[0] == 1:  ### resize image with probability of 0.5
+            if self.resize_shape[0] != image.shape[0] or self.resize_shape[1] != image.shape[1]:
+                image = cv2.resize(image, (self.resize_shape[1], self.resize_shape[0]),
+                                   interpolation=cv2.INTER_LINEAR)
+                prior = cv2.resize(prior, (self.resize_shape[1], self.resize_shape[0]),
+                                   interpolation=cv2.INTER_LINEAR)
+
+        if self.crop:
+            image = self.get_random_crop(image, self.crop_shape)
+            prior = self.get_random_crop(prior, self.crop_shape)
+
+        mask = np.ones((image.shape[0], image.shape[1], 3), np.uint8)
+        input_ = None
+
+        if self.erase_count == 1:  ### erase a patch in the center of image
+            offset = (image.shape[0] - self.erase_shape[0]) / 2
+            end = offset + self.erase_shape[0]
+            mask[offset:end, offset:end, :] = 0
+
+        else:
+            for c_ in range(self.erase_count):
+                row = torch.LongTensor(1).random_(0, image.shape[0] - self.erase_shape[0] - 1)[0]
+                col = torch.LongTensor(1).random_(0, image.shape[1] - self.erase_shape[1] - 1)[0]
+
+                mask[row:row + self.erase_shape[0], col:col + self.erase_shape[1], :] = 0
+
+        input_, mask, image, prior = self.multi_transform(mask, image, prior)
+
+        return input_, mask, image, prior
+
+    # TODO might have to deal with this preprocessing step as we are using CT images instead of normal bgr images
+    def multi_transform(self, mask, image, prior):
+        image = image.astype(np.float64)
+        image -= self.mean_bgr
+
+        input_ = image.copy()
+
+        image[:, :, 0] /= 3 * self.std_bgr[0]
+        image[:, :, 1] /= 3 * self.std_bgr[1]
+        image[:, :, 2] /= 3 * self.std_bgr[2]
+
+        index_ = image > 1
+        image[index_] = 1
+        index_ = image < -1
+        image[index_] = -1
+        image = image.transpose(2, 0, 1)
+        image = torch.from_numpy(image.copy()).float()
+
+        input_ = input_.transpose(2, 0, 1)
+        input_ = torch.from_numpy(input_.copy()).float()
+
+        mask = mask.transpose(2, 0, 1)
+        mask = torch.from_numpy(mask.copy())
+
+        prior = prior.transpose(2, 0, 1)
+        prior = torch.from_numpy(prior.copy()).float()
+
+        return input_, mask, image, prior
+
+
 
 
 class segmentation_data_loader(data.Dataset):
