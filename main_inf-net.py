@@ -31,7 +31,7 @@ arg_parse.add_argument('--graph_path', default="./graph_logs", required=True, ty
 arg_parse.add_argument('--device', required=True, type=str)
 arg_parse.add_argument('--load_net_path', type=str)
 arg_parse.add_argument('--load_coach_path', type=str)
-arg_parse.add_argument('--seed', default=25, type=int)
+arg_parse.add_argument('--seed', default=7, type=int)
 args = arg_parse.parse_args()
 
 save_model_location = args.save_path
