@@ -434,7 +434,7 @@ global_iteration = -1
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
 
-    if use_coach and iter_ >= 0:
+    if use_coach and iter_ > 0:
         use_coach_masks = True
         progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
         optimizer_coach = optim.Adam(net_coach.parameters(), lr=1e-5)
