@@ -188,6 +188,11 @@ def visualize_self_sup(cols=3, net=None, coach=None, use_coach_masks=False):
     fig, axs = plt.subplots(nrows=4, ncols=cols, figsize=(9, 9))
 
     for batch_idx, (inputs_, masks, targets, prior) in enumerate(val_loader):
+        inputs_ = inputs_.to(device)
+        masks = masks.to(device)
+        targets = targets.to(device)
+        prior = prior.to(device)
+
         if coach is None:
             inputs_ = inputs_ * masks.float()
             masked_prior = prior * masks.float()
