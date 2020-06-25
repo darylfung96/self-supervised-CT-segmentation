@@ -32,6 +32,8 @@ arg_parse.add_argument('--device', required=True, type=str)
 arg_parse.add_argument('--load_net_path', type=str)
 arg_parse.add_argument('--load_coach_path', type=str)
 arg_parse.add_argument('--seed', default=7, type=int)
+arg_parse.add_argument('--batchsize', default=128, type=int)
+
 args = arg_parse.parse_args()
 
 save_model_location = args.save_path
@@ -145,7 +147,7 @@ train_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = train_img_root, image_list = '', suffix=dataset,
                                   mirror = True, resize=True, crop=True, resize_shape=[352, 352], rotate = True,
                                   erase_shape = erase_shape, erase_count = erase_count),
-    batch_size=128, shuffle = True)
+    batch_size=args.batchsize, shuffle = True)
 
 val_loader = torch.utils.data.DataLoader(
     context_inpainting_dataloader(img_root = val_img_root, image_list = '', suffix=dataset,
