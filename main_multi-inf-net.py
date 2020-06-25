@@ -139,7 +139,7 @@ elif dataset == 'deepglobe_lands':
 
 elif dataset == 'medseg':
     train_img_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/Imgs'
-    train_prior_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/prior'
+    train_prior_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/Prior'
     train_image_list_path = ''
     val_img_root = 'InfNet/Dataset/TestingSet/MultiClassInfection-Test/Imgs'
     val_prior_root = 'InfNet/Results/Lung infection segmentation/Semi-Inf-Net/'
