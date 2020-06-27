@@ -166,6 +166,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_save', type=str, default=None,
                         help='If you use custom save path, please edit `--is_semi=True` and `--is_pseudo=True`')
     parser.add_argument('--is_data_augment', type=bool, default=False)
+    parser.add_argument('--random_cutout', type=float, default=0)
 
     # testing dataset
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
@@ -240,7 +241,7 @@ if __name__ == '__main__':
 
     train_loader = get_loader(image_root, gt_root, edge_root,
                               batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers,
-                              is_data_augment=opt.is_data_augment)
+                              is_data_augment=opt.is_data_augment, random_cutout=opt.random_cutout)
 
     test_image_root = '{}/Imgs/'.format(opt.test_path)
     test_gt_root = '{}/GT/'.format(opt.test_path)

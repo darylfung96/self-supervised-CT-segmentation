@@ -17,9 +17,10 @@ import random
 
 
 class COVIDDataset(data.Dataset):
-    def __init__(self, image_root, gt_root, edge_root, trainsize, is_data_augment=False):
+    def __init__(self, image_root, gt_root, edge_root, trainsize, is_data_augment=False, random_cutout=0):
         self.trainsize = trainsize
         self.is_data_augment = is_data_augment
+        self.random_cutout = random_cutout
         self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]
         self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]
 
@@ -68,12 +69,13 @@ class COVIDDataset(data.Dataset):
                 gt = TF.vflip(gt)
 
             # random cutout
-            cutout_size = int(min(image.size) * 0.4)
-            i, j, w, h = transforms.RandomCrop.get_params(image,
-                                                          output_size=(random.randint(0, cutout_size), random.randint(0, cutout_size)))
-            color_code = random.randint(0, 255)
-            rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
-            image.paste(rect, (i, j))
+            if self.random_cutout:
+                cutout_size = int(min(image.size) * self.random_cutout)
+                i, j, w, h = transforms.RandomCrop.get_params(image,
+                                                              output_size=(random.randint(0, cutout_size), random.randint(0, cutout_size)))
+                color_code = random.randint(0, 255)
+                rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
+                image.paste(rect, (i, j))
 
         # transform image and gt
         image = self.img_transform(image)
