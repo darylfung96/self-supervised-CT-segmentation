@@ -127,8 +127,8 @@ class COVIDDataset(data.Dataset):
 
 
 def get_loader(image_root, gt_root, edge_root, batchsize, trainsize, shuffle=True, num_workers=0, pin_memory=True,
-               is_data_augment=False):
-    dataset = COVIDDataset(image_root, gt_root, edge_root, trainsize, is_data_augment)
+               is_data_augment=False, random_cutout=0):
+    dataset = COVIDDataset(image_root, gt_root, edge_root, trainsize, is_data_augment, random_cutout)
     data_loader = data.DataLoader(dataset=dataset,
                                   batch_size=batchsize,
                                   shuffle=shuffle,
