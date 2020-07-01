@@ -9,7 +9,7 @@ import csv
 import os
 from urllib.error import HTTPError
 
-start_index = 34
+start_index = 41
 output_directory = 'scrape'
 URL = 'http://ictcf.biocuckoo.cn/Resource.php'
 domain = 'http://ictcf.biocuckoo.cn/'
