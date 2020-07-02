@@ -31,11 +31,14 @@ The $\lambda$ is set to 1 for this experiment. The segmentation loss is adapted 
 	\caption{Pseudo code for Inf-Net}
 	\label{alg:baseline}
 \begin{algorithmic}
-\STATE \textbf{Input:} Labeled data $D_{labeled}$
+\STATE \textbf{Input:} Train data $D_{labeled}$,  test data $D_{t-labeled}$ ground truth $G_t$,
 \FOR {each batch of $D_{labeled}$:}
 \STATE $P_{labeled}$ = Preprocess $D_{labeled}$
-\STATE Perform training of baseline Inf-Net, \textit{M}, on $P_{labeled}$
-\STATE calculate test performance of \textit{M} on testing labeled data.
+\STATE $L_{seg}(G_t, S_g), L_{edge}, L_{seg}(G_t, S_3), L_{seg}(G_t, S_4), L_{seg}(G_t, S_5)	$  = train(\textit{M},  $P_{labeled}$)
+\STATE $L_{traintotal} = L_{seg}(G_t, S_g) + L_{edge} + L_{seg}(G_t, S_3) + L_{seg}(G_t, S_4) + L_{seg}(G_t, S_5)$
+\STATE plot($L_{traintotal}$)
+\STATE = test(\textit{M}, $D_{t-labeled}$)
+\STATE plot(test loss)
 \STATE save model weights, \textit{w}.
 \ENDFOR
 \end{algorithmic}
@@ -78,26 +81,30 @@ After the self-supervision training is finished, both the network would reuse th
 	\caption{Pseudo code for self-supervised with Inf-Net}
 	\label{alg:self-inf-net}
 	\begin{algorithmic}
-		\STATE \textbf{Input:} Labeled data $D_{labeled}$
+		\STATE \textbf{Input:} $D_{labeled}$ = [($inputImage_1$, $G_{t1}$), ...]
 		\FOR {each epoch}
 			\FOR{each coach step}
-			\STATE Generate Mask using coach network
-			\STATE Use the generated mask to masks the CT images
-			\STATE calculate the loss for coach network
-			\STATE backpropagate and adjust the mask accordingly
+			\STATE mask = M(x)
+			\STATE maskedInput = $mask \odot inputImage$
+			\STATE $ predictedImage =network(maskedInput), inputImage$
+			\STATE $L_{rec} = CrossEntropy(predictedImage, inputImage)$
+			\STATE $L_{coach}(x) = 1 - L_{rec}$
+			\STATE update coach weights
 			\ENDFOR
 			\FOR {each network step}
-			\STATE Preprocessed $D_{labeled}$ with data augmentation to create $P_{labeled}$
-			\STATE Generate inpainted output using inf-net network with last layer replaced by an inpaint layer
-			\STATE Calculate inpainting loss and back-propagate
+			\STATE $P_{labeled} = Preprocess(D_{labeled})$ // data aug
+			\STATE $inpaintingOutput = network(P_{labeled})$
+			\STATE $L_{rec} = CrossEntropy(InpaintingOutput, inputImage)$
+			\STATE backpropogate and save network weights
 			\ENDFOR
 		\ENDFOR 
 		
 
 		\FOR {each batch of $D_{labeled}$:}
-		\STATE $P_{labeled}$ = Preprocess $D_{labeled}$
-		\STATE Perform training of baseline Inf-Net, \textit{M}, on $P_{labeled}$
-		\STATE calculate test performance of \textit{M} on testing labeled data.
+		\STATE $P_{labeled}$ = Preprocess ($D_{labeled}$)
+		\STATE $trainLoss = train(P_{labeled})$
+		\STATE Backpropagate train loss
+		\STATE $testLoss = test(P_{labeled})$
 		\STATE save model weights, \textit{w}.
 		\ENDFOR
 	\end{algorithmic}

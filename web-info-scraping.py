@@ -120,7 +120,7 @@ for patient in all_patients:
     if 'Patient' not in patient:
         continue
 
-    if patient == 'Patient 1241':
+    if patient == 'Patient 1152':
         start = True
 
     if start:
