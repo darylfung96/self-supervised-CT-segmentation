@@ -16,45 +16,39 @@
 \@writefile{toc}{\contentsline {section}{\numberline {III}Problem Statements}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {IV}Methodology}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Supervised InfNet for imaging segmentation}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The architecture of our self-supervised inf-net model. The original inf-net model would generate 5 different predictions: the edge segmentation prediction, and the other 4 are segmentation of the infected regions but of different sizes. In order to utilise the ability of self-supervised method for inf-net segmentation, we generate masks to be fed into the inf-net model. The last layer for each output prediction is not used for the self-supervised case. However, the last layer is replace with a different layer to reconstruct the image and the edge appropriately. Everything else is kept the same as the Inf-Net architecture. This way the network will learn meaningful representations of the CT images and we can use these meaningful representations to learn the segmentation of the infection regions of the CT lung images. After learning the self-supervised features for inf-net, the training continues as normal similar to the inf-net algorithm. \relax }}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The architecture of our self-supervised inf-net model. The original inf-net model would generate 5 different predictions: the edge segmentation prediction, and the other 4 are segmentation of the infected regions but of different sizes. In order to utilise the ability of self-supervised method for inf-net segmentation, we generate masks to be fed into the inf-net model. The last layer for each output prediction is not used for the self-supervised case. However, the last layer is replace with a different layer to reconstruct the image and the edge appropriately. Everything else is kept the same as the Inf-Net architecture. This way the network will learn meaningful representations of the CT images and we can use these meaningful representations to learn the segmentation of the infection regions of the CT lung images. After learning the self-supervised features for inf-net, the training continues as normal similar to the inf-net algorithm. The training will start with the weights trained using the self-supervised inpainting method. The last layer will be changed to its original layer instead of the replaced activation layer. \relax }}{}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:inf-net_arch}{{1}{}}
-\@LN@col{1}
-\@LN@col{2}
 \citation{ref25}
 \citation{ref25}
 \citation{ref20}
-\citation{ref7,ref15,ref16}
-\citation{ref11}
-\citation{ref10}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The architecture of our self-supervised multi segmentation inf-net model. Similar to the supervised version of multiple inf-net, we use the same network weights and architectures. However, the last layer of the multiple segmentation inf-net is replace with a linear activation layer to predict the inpainting for the CT images. After the self-supervised inf-net has been trained, we will train the multiple segmentation for multiple segmentation Inf-Net using the weights of the self-supervised Inf-Net. The last layer however will be changed to its original form instead of using the replaced linear activation layer. This way, all the network weights are loaded from the self-supervised version except for the last layer.\relax }}{}\protected@file@percent }
 \@LN@col{1}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Pseudo code for Inf-Net\relax }}{}\protected@file@percent }
 \newlabel{alg:baseline}{{1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Self-supervised InfNet for imaging segmentation}{}\protected@file@percent }
 \@LN@col{2}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Pseudo code for self-supervised with Inf-Net\relax }}{}\protected@file@percent }
-\newlabel{alg:self-inf-net}{{2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Estimation of Severity of COVID-19 from CT images}{}\protected@file@percent }
+\citation{ref7,ref15,ref16}
+\citation{ref11}
+\citation{ref10}
 \citation{ref12}
 \citation{ref13,ref14}
 \citation{ref13}
 \citation{ref14}
 \citation{ref23}
+\@LN@col{1}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Pseudo code for self-supervised with Inf-Net\relax }}{}\protected@file@percent }
+\newlabel{alg:self-inf-net}{{2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Estimation of Severity of COVID-19 from CT images}{}\protected@file@percent }
+\@LN@col{2}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Experiments}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Datasets}{}\protected@file@percent }
 \citation{ref14}
 \citation{ref26}
 \citation{ref14}
 \citation{ref21}
 \citation{ref22}
 \citation{ref24}
-\@LN@col{1}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Experiments}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Datasets}{}\protected@file@percent }
-\@LN@col{2}
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparison of supervised inf-net (SInf-Net) model with added data augmentation. The values listed in the table represent the test loss. The floating value after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. \relax }}{}\protected@file@percent }
-\newlabel{tab:table_compare}{{I}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Performance evaluation of image segmentation}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Data Augmentation}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{}\protected@file@percent }
 \bibcite{ref1}{1}
 \bibcite{ref2}{2}
 \bibcite{ref3}{3}
@@ -79,8 +73,15 @@
 \bibcite{ref22}{22}
 \bibcite{ref23}{23}
 \bibcite{ref24}{24}
+\@LN@col{1}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparison of supervised inf-net (SInf-Net) model with added data augmentation. The values listed in the table represent the test loss. The floating value after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. \relax }}{}\protected@file@percent }
+\newlabel{tab:table_compare}{{I}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Performance evaluation of image segmentation}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Data Augmentation}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{}\protected@file@percent }
+\@LN@col{2}
+\@writefile{toc}{\contentsline {section}{References}{}\protected@file@percent }
 \bibcite{ref25}{25}
 \bibcite{ref26}{26}
 \@LN@col{1}
-\@writefile{toc}{\contentsline {section}{References}{}\protected@file@percent }
 \@LN@col{2}
