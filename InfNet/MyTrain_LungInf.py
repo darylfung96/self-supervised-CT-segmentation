@@ -19,6 +19,7 @@ import torch.nn.functional as F
 from tensorboardX import SummaryWriter
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
+from metric import dice_similarity_coefficient
 
 global_current_iteration = 0
 
@@ -106,14 +107,21 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 loss4 = joint_loss(lateral_map_4, gt)
                 loss3 = joint_loss(lateral_map_3, gt)
                 loss2 = joint_loss(lateral_map_2, gt)
-                loss = loss2 + loss3 + loss4 + loss5
+                scalar_testing_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
+                dice_map_5 = dice_similarity_coefficient(lateral_map_5, gt)
+                dice_map_4 = dice_similarity_coefficient(lateral_map_4, gt)
+                dice_map_3 = dice_similarity_coefficient(lateral_map_3, gt)
+                dice_map_2 = dice_similarity_coefficient(lateral_map_2, gt)
+                total_dice = dice_map_5.item() + dice_map_4.item() + dice_map_3.item() + dice_map_2.item()
+                average_dice = total_dice / 4
+
 
                 test_writer.add_scalar('test/loss2', loss2.item(), global_current_iteration)
                 test_writer.add_scalar('test/loss3', loss3.item(), global_current_iteration)
                 test_writer.add_scalar('test/loss4', loss4.item(), global_current_iteration)
                 test_writer.add_scalar('test/loss5', loss5.item(), global_current_iteration)
-                scalar_testing_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
                 test_writer.add_scalar('test/total_loss', scalar_testing_total_loss, global_current_iteration)
+                test_writer.add_scalar('test/dice', average_dice, global_current_iteration)
 
 
     # ---- save model_lung_infection ----
