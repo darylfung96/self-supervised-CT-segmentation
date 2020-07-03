@@ -316,16 +316,28 @@ def train_coach(epoch, net, coach, coach_optimizer):
     coach_loss.append(0)
 
     graph_coach_loss = []
-    for batch_idx, (inputs_, masks, targets) in enumerate(train_loader):
+    for batch_idx, (inputs_, masks, targets, prior) in enumerate(train_loader):
         coach_optimizer.zero_grad()
         inputs_, targets = Variable(inputs_.to(device)), Variable(targets.to(device))
+        prior = Variable(prior.to(device))
 
         masks, mu, logvar = coach.forward(inputs_, alpha=1)
 
-        outputs = net.forward_inpainting(inputs_ * masks).detach()
-        mse_loss = (outputs - targets) ** 2
+        masked_inputs_ = inputs_ * masks
+        masked_prior = prior * masks
+        outputs = net.forward_inpainting(torch.cat((masked_inputs_, masked_prior), dim=1)).detach()
+        g_outputs, g_priors = torch.split(outputs, 3, dim=1)
+
+        mse_loss = (g_outputs - targets) ** 2
         mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
         loss_rec = torch.sum(mse_loss * (1 - masks)) / (3 * torch.sum(1 - masks))
+
+
+        prior_mse_loss = (g_priors - prior) ** 2
+        prior_mse_loss = -1 * F.threshold(-1 * prior_mse_loss, -2, -2)
+        prior_loss_rec = torch.sum(prior_mse_loss * (1 - masks)) / (3 * torch.sum(1 - masks))
+
+        total_loss_rec = loss_rec + prior_loss_rec
 
         mu = mu.mean(dim=2).mean(dim=2)
         logvar = logvar.mean(dim=2).mean(dim=2)
@@ -336,7 +348,7 @@ def train_coach(epoch, net, coach, coach_optimizer):
         except:
             KLD = 0
 
-        total_loss = 1 - loss_rec + 1e-6 * KLD
+        total_loss = 1 - total_loss_rec + 1e-6 * KLD
 
         total_loss.backward()
         coach_optimizer.step()
@@ -448,7 +460,7 @@ global_iteration = -1
 for iter_ in range(0, len(epochs)):
     best_loss = 1e5
 
-    if use_coach and iter_ > 0:
+    if use_coach and iter_ >= 0:
         use_coach_masks = True
         progbar_2 = tqdm(total=epochs[iter_], desc='Epochs')
         optimizer_coach = optim.Adam(net_coach.parameters(), lr=1e-5)
