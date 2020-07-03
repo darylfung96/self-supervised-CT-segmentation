@@ -17,7 +17,7 @@ from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
 from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
-
+from metric import dice_similarity_coefficient
 
 def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout, graph_path, save_path, device):
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
@@ -107,6 +107,8 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         del img
         del img_mask
         total_test_loss = []
+        total_test_dice = []
+        lung_model.eval()
         for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
             img = img.to(device)
             pseudo = pseudo.to(device)
@@ -117,9 +119,13 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             loss = criterion(output, img_mask)
             print(f'test loss is {loss.item()}')
             total_test_loss.append(loss.item())
+            dice = dice_similarity_coefficient(output, img_mask)
+            total_test_dice.append(dice.item())
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
+        average_test_dice = sum(total_test_dice) / len(total_test_dice)
         test_writer.add_scalar('test/loss', average_test_loss, epo)
+        test_writer.add_scalar('test/dice', average_test_dice, epo)
         del img
         del img_mask
 

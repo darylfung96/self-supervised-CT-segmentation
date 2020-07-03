@@ -96,7 +96,19 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
         # check testing error
         if global_current_iteration % 20 == 0:
+            total_test_step = 0
+            total_loss_5 = 0
+            total_loss_4 = 0
+            total_loss_3 = 0
+            total_loss_2 = 0
+
+            total_dice_5 = 0
+            total_dice_4 = 0
+            total_dice_3 = 0
+            total_dice_2 = 0
+            model.eval()
             for pack in test_loader:
+                total_test_step += 1
                 image, gt, name = pack
                 image = Variable(image).to(device)
                 gt = Variable(gt).to(device)
@@ -107,22 +119,23 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 loss4 = joint_loss(lateral_map_4, gt)
                 loss3 = joint_loss(lateral_map_3, gt)
                 loss2 = joint_loss(lateral_map_2, gt)
-                scalar_testing_total_loss = loss2.item() + loss3.item() + loss4.item() + loss5.item()
-                dice_map_5 = dice_similarity_coefficient(lateral_map_5, gt)
-                dice_map_4 = dice_similarity_coefficient(lateral_map_4, gt)
-                dice_map_3 = dice_similarity_coefficient(lateral_map_3, gt)
-                dice_map_2 = dice_similarity_coefficient(lateral_map_2, gt)
-                total_dice = dice_map_5.item() + dice_map_4.item() + dice_map_3.item() + dice_map_2.item()
-                average_dice = total_dice / 4
+                total_loss_5 += loss5.item()
+                total_loss_4 += loss4.item()
+                total_loss_3 += loss3.item()
+                total_loss_2 += loss2.item()
 
+                total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
+                total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt).item()
+                total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
+                total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
 
-                test_writer.add_scalar('test/loss2', loss2.item(), global_current_iteration)
-                test_writer.add_scalar('test/loss3', loss3.item(), global_current_iteration)
-                test_writer.add_scalar('test/loss4', loss4.item(), global_current_iteration)
-                test_writer.add_scalar('test/loss5', loss5.item(), global_current_iteration)
-                test_writer.add_scalar('test/total_loss', scalar_testing_total_loss, global_current_iteration)
-                test_writer.add_scalar('test/dice', average_dice, global_current_iteration)
-
+            test_writer.add_scalar('test/loss2', total_loss_2/total_test_step, global_current_iteration)
+            test_writer.add_scalar('test/loss3', total_loss_3/total_test_step, global_current_iteration)
+            test_writer.add_scalar('test/loss4', total_loss_4/total_test_step, global_current_iteration)
+            test_writer.add_scalar('test/loss5', total_loss_5/total_test_step, global_current_iteration)
+            test_writer.add_scalar('test/total_loss', (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step, global_current_iteration)
+            test_writer.add_scalar('test/dice', (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step, global_current_iteration)
+            model.train()
 
     # ---- save model_lung_infection ----
     save_path = './Snapshots/save_weights/{}/'.format(train_save)
