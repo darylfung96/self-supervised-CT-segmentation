@@ -422,8 +422,6 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         progbar.update(1)
         graph_test_loss.append(total_loss.item())
 
-    average_graph_test_loss = sum(graph_test_loss) / len(graph_test_loss)
-    return average_graph_test_loss
 
     val_loss[-1] = val_loss[-1] / len(val_loader)
     if best_loss > val_loss[-1]:
@@ -432,6 +430,9 @@ def val_context_inpainting(iter_, epoch, net, coach=None, use_coach_masks=False)
         torch.save(net.state_dict(), os.path.join(save_model_location, experiment + str(iter_) + '.net.best.ckpt.t7'))
         torch.save(coach.state_dict(),
                    os.path.join(save_model_location, experiment + str(iter_) + '.coach.best.ckpt.t7'))
+
+    average_graph_test_loss = sum(graph_test_loss) / len(graph_test_loss)
+    return average_graph_test_loss
 
 use_coach_masks = False
 epochs = []

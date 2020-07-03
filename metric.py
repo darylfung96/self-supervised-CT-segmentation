@@ -14,3 +14,9 @@ def performMetrics(hist):
     fwavacc = (freq[freq > 0] * mean_iou[freq > 0]).sum()
         
     return 100*np.nanmean(mean_iou), 100*pixel_accuracy, 100*fwavacc
+
+
+def dice_similarity_coefficient(predicted_seg, ground_truth_seg):
+    k = 1
+    dice = np.sum(predicted_seg[ground_truth_seg==k]) * 2 / (np.sum(predicted_seg[predicted_seg==k]==k) + np.sum(ground_truth_seg[ground_truth_seg==k]==k))
+    return dice
