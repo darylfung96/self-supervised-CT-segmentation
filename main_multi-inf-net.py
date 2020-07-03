@@ -332,7 +332,6 @@ def train_coach(epoch, net, coach, coach_optimizer):
         mse_loss = -1 * F.threshold(-1 * mse_loss, -2, -2)
         loss_rec = torch.sum(mse_loss * (1 - masks)) / (3 * torch.sum(1 - masks))
 
-
         prior_mse_loss = (g_priors - prior) ** 2
         prior_mse_loss = -1 * F.threshold(-1 * prior_mse_loss, -2, -2)
         prior_loss_rec = torch.sum(prior_mse_loss * (1 - masks)) / (3 * torch.sum(1 - masks))
@@ -439,7 +438,7 @@ epochs = []
 lrs = []
 
 if use_coach:
-    epochs = [200, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+    epochs = [200, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
     lrs = [[1e-1, 1e-2, 1e-3, 1e-4],
        [1e-5, 1e-5, 1e-5, 1e-5],
        [1e-5, 1e-5, 1e-5, 1e-5],
