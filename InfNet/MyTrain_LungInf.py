@@ -22,7 +22,7 @@ from InfNet.Code.utils.dataloader_LungInf import test_dataset
 from metric import dice_similarity_coefficient
 
 global_current_iteration = 0
-
+best_loss = 1e9
 
 def joint_loss(pred, mask):
     weit = 1 + 5*torch.abs(F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
@@ -38,6 +38,7 @@ def joint_loss(pred, mask):
 
 def train(train_loader, test_loader, model, optimizer, epoch, train_save, device):
     global global_current_iteration
+    global best_loss
 
     model.train()
     # ---- multi-scale training ----
@@ -129,22 +130,62 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
                 total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
 
+            total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
             test_writer.add_scalar('test/loss2', total_loss_2/total_test_step, global_current_iteration)
             test_writer.add_scalar('test/loss3', total_loss_3/total_test_step, global_current_iteration)
             test_writer.add_scalar('test/loss4', total_loss_4/total_test_step, global_current_iteration)
             test_writer.add_scalar('test/loss5', total_loss_5/total_test_step, global_current_iteration)
-            test_writer.add_scalar('test/total_loss', (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step, global_current_iteration)
-            test_writer.add_scalar('test/dice', (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step, global_current_iteration)
+            test_writer.add_scalar('test/total_loss', total_average_loss, global_current_iteration)
+            test_writer.add_scalar('test/dice', (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4, global_current_iteration)
             model.train()
 
-    # ---- save model_lung_infection ----
-    save_path = './Snapshots/save_weights/{}/'.format(train_save)
-    os.makedirs(save_path, exist_ok=True)
+            if total_average_loss < best_loss:
+                best_loss = total_average_loss
+                # ---- save model_lung_infection ----
+                save_path = './Snapshots/save_weights/{}/'.format(train_save)
+                os.makedirs(save_path, exist_ok=True)
+                torch.save(model.state_dict(), save_path + 'Inf-Net-%d.pth' % (epoch + 1))
+                print('[Saving Snapshot:]', save_path + 'Inf-Net-%d.pth' % (epoch + 1))
 
-    if (epoch+1) % 10 == 0:
-        torch.save(model.state_dict(), save_path + 'Inf-Net-%d.pth' % (epoch+1))
-        print('[Saving Snapshot:]', save_path + 'Inf-Net-%d.pth' % (epoch+1))
 
+def eval(test_loader, model, device):
+    total_test_step = 0
+    total_loss_5 = 0
+    total_loss_4 = 0
+    total_loss_3 = 0
+    total_loss_2 = 0
+
+    total_dice_5 = 0
+    total_dice_4 = 0
+    total_dice_3 = 0
+    total_dice_2 = 0
+    model.eval()
+    for pack in test_loader:
+        total_test_step += 1
+        image, gt, name = pack
+        image = Variable(image).to(device)
+        gt = Variable(gt).to(device)
+        # ---- forward ----
+        lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
+        # ---- loss function ----
+        loss5 = joint_loss(lateral_map_5, gt)
+        loss4 = joint_loss(lateral_map_4, gt)
+        loss3 = joint_loss(lateral_map_3, gt)
+        loss2 = joint_loss(lateral_map_2, gt)
+        total_loss_5 += loss5.item()
+        total_loss_4 += loss4.item()
+        total_loss_3 += loss3.item()
+        total_loss_2 += loss2.item()
+
+        total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
+        total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt).item()
+        total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
+        total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
+
+    total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
+    total_average_dice = (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4
+    print(f'total average loss: {total_average_loss}')
+    print(f'total average dice loss: {total_average_dice}')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -199,6 +240,8 @@ if __name__ == '__main__':
     # save log tensorboard
     parser.add_argument('--graph_path', type=str, default="./graph_log")
 
+    parser.add_argument('--is_eval', type=bool, default=False)
+
     opt = parser.parse_args()
 
     # ---- build models ----
@@ -218,7 +261,8 @@ if __name__ == '__main__':
     model = Inf_Net(channel=opt.net_channel, n_class=opt.n_classes).to(opt.device)
 
     if opt.load_net_path:
-        net_state_dict = torch.load(opt.load_net_path)
+        net_state_dict = torch.load(opt.load_net_path, map_location=torch.device(opt.device))
+        net_state_dict = {k: v for k, v in net_state_dict.items() if k in model.state_dict()}
         model.load_state_dict(net_state_dict)
 
     # ---- load pre-trained weights (mode=Semi-Inf-Net) ----
@@ -278,6 +322,11 @@ if __name__ == '__main__':
                   "And any questions feel free to contact me "
                   "via E-mail (gepengai.ji@163.com)\n----\n".format(opt.backbone, opt), "#"*20)
 
-    for epoch in range(1, opt.epoch):
-        adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
-        train(train_loader,test_loader, model, optimizer, epoch, train_save, opt.device)
+
+    if opt.is_eval:
+        eval(test_loader, model, opt.device)
+    else:
+
+        for epoch in range(1, opt.epoch):
+            adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
+            train(train_loader,test_loader, model, optimizer, epoch, train_save, opt.device)

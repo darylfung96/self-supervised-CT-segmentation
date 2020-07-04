@@ -8,10 +8,12 @@ The datasets that we will be using to compare with for the segmentation results 
 The other datasets that we will be focusing on are COVID-CT-Dataset \cite{ref21} and covid-chestxray-dataset \cite{ref22}. COVID-CT-Dataset can be found at https://github.com/UCSD-AI4H/COVID-CT. COVID-CT-Dataset consist of 349 CT images obtianed from 216 patients. Covid-chestxray-dataset can be found at https://github.com/ieee8023/covid-chestxray-dataset. COVID-CT-Dataset  was created through assembling medical images from publications and websites and contains 123 frontal view X-rays of the lungs. An additional dataset that we can use is from Cell \cite{ref24}, http://ncov-ai.big.ac.cn/download?lang=en if we have enough capacity to load the dataset as the dataset can be huge. This dataset is constructed from the China Consortium of Chest CT Image investigation (CC-CCII). The CT images are classified into novel coronavirus pneumonia (NCP) caused by SARS-CoV-2 virus, common pneumonia and normal controls. It consists of 617,775 CT images obtained from 4,154 patients.
 
 \subsection{Data Augmentation}
-We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure ?????.
+We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure TODO????.
 
 \subsection{Performance evaluation of image segmentation}
-We have trained the supervised inf-net as baseline with comparison to the supervised inf-net with additional data augmentation. The comparison for the methods can be seen in \ref{tab:table_compare}. We can see that the additional data augmentation improves the performance of the baseline model. The performance of the multiple segmentation inf-net improves by more than 50 percent with data augmentation of random cutout with a value of 0.5.
+We have trained the supervised inf-net as baseline with comparison to the supervised inf-net with additional data augmentation. The comparison for the methods can be seen in \ref{tab:table_compare}. We can see that the additional data augmentation improves the performance of the baseline model. For the single segmentation Inf-Net comparison, we can see the performance of the single segmentation Inf-Net improves the most when the random cutout is set to a value of 0.5 without any self-supervised training. 
+
+However, the loss calculation does not truly evaluate the performance of the model. We use an additional performance metrics to calculate the model performance. The performance metrics we will be using is called dice similarity coefficient. As shown in \ref{tab:dice_compare}, we see that the best performing model is the self-supervised single Inf-Net using the dice similarity coefficient. 
 
 
 
@@ -22,17 +24,34 @@ We have trained the supervised inf-net as baseline with comparison to the superv
 	\begin{tabular}{|l|l|l|}
 		\hline
 		& single Inf-Net & multi Inf-Net \\\hline
-		SInfNet & 7.95 & 1.17 \\\hline
-		SInfNet+data aug (0.2)& 3.87 & 0.78 \\\hline
-		SInfNet+data aug (0.4)& 5.09 & 0.71 \\\hline
-		SInfNet+data aug (0.5)& 5.09 & \textbf{0.66} \\\hline
-		Self-super & \textbf{n} & \\\hline
+		SInfNet &  &  \\\hline
+		SInfNet+data aug (0.4)& 0.67 &  \\\hline
+		SInfNet+data aug (0.5)& \textbf{0.65} & \textbf{} \\\hline
+		Self-super &  & \\\hline
 		Self-super+data aug & & \\
 		\hline
 		
 	\end{tabular}
 	\caption{Comparison of supervised inf-net (SInf-Net) model with added data augmentation. The values listed in the table represent the test loss. The floating value  after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. }
 	\label{tab:table_compare}
+\end{table}
+
+\begin{table}
+	\centering
+	
+	\begin{tabular}{|l|l|l|}
+		\hline
+		& single Inf-Net & multi Inf-Net \\\hline
+		SInfNet &  &  \\\hline
+		SInfNet+data aug (0.4)&  0.31 &  \\\hline
+		SInfNet+data aug (0.5)& 0.30 & \textbf{} \\\hline
+		Self-super &  & \\\hline
+		Self-super+data aug &  & \\
+		\hline
+		
+	\end{tabular}
+	\caption{Comparison of supervised inf-net (SInf-Net) model with added data augmentation. The values listed in the table represent the  dice similarity coefficient. The floating value  after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. }
+	\label{tab:dice_compare}
 \end{table}
 
 \iffalse
@@ -51,6 +70,6 @@ We have trained the supervised inf-net as baseline with comparison to the superv
 		
 	\end{tabular}
 	\caption{Tasks scheduled}
-	\label{tab:1}
+	\label{tab:2}
 \end{table*}
 \fi

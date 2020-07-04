@@ -19,7 +19,10 @@ from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 from metric import dice_similarity_coefficient
 
+best_loss = 1e9
+
 def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout, graph_path, save_path, device):
+    global best_loss
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
     train_dataset = LungDataset(
@@ -95,11 +98,13 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             if np.mod(index, 20) == 0:
                 print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader), iter_loss))
 
-        os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
-        if np.mod(epo+1, 10) == 0:
-            torch.save(lung_model.state_dict(),
-                       './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo+1))
-            print('Saving checkpoints: unet_model_{}.pkl'.format(epo+1))
+
+        # old saving method
+        # os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
+        # if np.mod(epo+1, 10) == 0:
+        #     torch.save(lung_model.state_dict(),
+        #                './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
+        #     print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
 
         average_train_loss = sum(total_train_loss) / len(total_train_loss)
         train_writer.add_scalar('train/loss', average_train_loss, epo)
@@ -126,6 +131,13 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         average_test_dice = sum(total_test_dice) / len(total_test_dice)
         test_writer.add_scalar('test/loss', average_test_loss, epo)
         test_writer.add_scalar('test/dice', average_test_dice, epo)
+
+        if average_test_loss < best_loss:
+            best_loss = average_test_loss
+            torch.save(lung_model.state_dict(),
+                       './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
+            print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
+
         del img
         del img_mask
 
