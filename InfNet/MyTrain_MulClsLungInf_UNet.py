@@ -8,6 +8,7 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 """
 
 import os
+import torch
 import numpy as np
 import torch.optim as optim
 from tensorboardX import SummaryWriter
@@ -21,7 +22,10 @@ from metric import dice_similarity_coefficient
 
 best_loss = 1e9
 
-def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout, graph_path, save_path, device):
+
+def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout,
+          graph_path, save_path,
+          device, load_net_path):
     global best_loss
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
@@ -55,6 +59,12 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
 
     criterion = nn.BCELoss().to(device)
     optimizer = optim.SGD(lung_model.parameters(), lr=lr, momentum=0.7)
+
+    # load model if available
+    if load_net_path:
+        net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
+        net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
+        lung_model.load_state_dict(net_state_dict)
 
     # summary writers
     train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
@@ -152,6 +162,7 @@ if __name__ == "__main__":
     parser.add_argument('--random_cutout', type=float, default=0)
     parser.add_argument('--batchsize', type=int, default=12)
     parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--load_net_path', type=str)
 
     arg = parser.parse_args()
 
@@ -165,4 +176,5 @@ if __name__ == "__main__":
           random_cutout=arg.random_cutout,
           graph_path=arg.graph_path,
           save_path=arg.save_path,
-          device=arg.device)
+          device=arg.device,
+          load_net_path=arg.load_net_path)

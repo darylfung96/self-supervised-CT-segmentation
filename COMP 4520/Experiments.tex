@@ -15,7 +15,7 @@ We have trained the supervised inf-net as baseline with comparison to the superv
 
 However, the loss calculation does not truly evaluate the performance of the model. We use an additional performance metrics to calculate the model performance. The performance metrics we will be using is called dice similarity coefficient. As shown in \ref{tab:dice_compare}, we see that the best performing model is the self-supervised single Inf-Net using the dice similarity coefficient. 
 
-
+\subsection{severity estimation results}
 
 
 \begin{table}
@@ -24,11 +24,11 @@ However, the loss calculation does not truly evaluate the performance of the mod
 	\begin{tabular}{|l|l|l|}
 		\hline
 		& single Inf-Net & multi Inf-Net \\\hline
-		SInfNet &  &  \\\hline
+		SInfNet & \textbf{0.60} &  \\\hline
 		SInfNet+data aug (0.4)& 0.67 &  \\\hline
-		SInfNet+data aug (0.5)& \textbf{0.65} & \textbf{} \\\hline
-		Self-super &  & \\\hline
-		Self-super+data aug & & \\
+		SInfNet+data aug (0.5)& 0.65 & \textbf{} \\\hline
+		Self-super & 0.67 & \\\hline
+		Self-super+data aug & 0.71 & \\
 		\hline
 		
 	\end{tabular}
@@ -42,11 +42,11 @@ However, the loss calculation does not truly evaluate the performance of the mod
 	\begin{tabular}{|l|l|l|}
 		\hline
 		& single Inf-Net & multi Inf-Net \\\hline
-		SInfNet &  &  \\\hline
+		SInfNet &  0.26 &  \\\hline
 		SInfNet+data aug (0.4)&  0.31 &  \\\hline
 		SInfNet+data aug (0.5)& 0.30 & \textbf{} \\\hline
-		Self-super &  & \\\hline
-		Self-super+data aug &  & \\
+		Self-super & 0.31  & \\\hline
+		Self-super+data aug & \textbf{0.34} & \\
 		\hline
 		
 	\end{tabular}
