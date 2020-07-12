@@ -8,7 +8,14 @@ The datasets that we will be using to compare with for the segmentation results 
 The other datasets that we will be focusing on are COVID-CT-Dataset \cite{ref21} and covid-chestxray-dataset \cite{ref22}. COVID-CT-Dataset can be found at https://github.com/UCSD-AI4H/COVID-CT. COVID-CT-Dataset consist of 349 CT images obtianed from 216 patients. Covid-chestxray-dataset can be found at https://github.com/ieee8023/covid-chestxray-dataset. COVID-CT-Dataset  was created through assembling medical images from publications and websites and contains 123 frontal view X-rays of the lungs. An additional dataset that we can use is from Cell \cite{ref24}, http://ncov-ai.big.ac.cn/download?lang=en if we have enough capacity to load the dataset as the dataset can be huge. This dataset is constructed from the China Consortium of Chest CT Image investigation (CC-CCII). The CT images are classified into novel coronavirus pneumonia (NCP) caused by SARS-CoV-2 virus, common pneumonia and normal controls. It consists of 617,775 CT images obtained from 4,154 patients.
 
 \subsection{Data Augmentation}
-We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure TODO????.
+We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure \ref{fig:data_aug}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{data_aug.png}
+	\caption{Example CT lung images of our data augmentation. The left column is the original CT lung images while the right column is the augmented CT lung images. The first row of the CT lung images involves random cropping and random cutout. The second row of the CT lung images involves random cropping and random cutout. The third row of the CT lung images involves random cropping and vertical flipping. We can see the random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.}
+	\label{fig:data_aug}
+\end{figure}
 
 \subsection{Performance evaluation of image segmentation}
 We have trained the supervised inf-net as baseline with comparison to the supervised inf-net with additional data augmentation. The comparison for the methods can be seen in \ref{tab:table_compare}. We can see that the additional data augmentation improves the performance of the baseline model. For the single segmentation Inf-Net comparison, we can see the performance of the single segmentation Inf-Net improves the most when the random cutout is set to a value of 0.5 without any self-supervised training. 
@@ -24,8 +31,8 @@ However, the loss calculation does not truly evaluate the performance of the mod
 	\begin{tabular}{|l|l|l|}
 		\hline
 		& single Inf-Net & multi Inf-Net \\\hline
-		SInfNet & \textbf{0.60} &  \\\hline
-		SInfNet+data aug (0.4)& 0.67 &  \\\hline
+		SInfNet & \textbf{0.60} & 0.93  \\\hline
+		SInfNet+data aug (0.4)& 0.67 & 2.74  \\\hline
 		SInfNet+data aug (0.5)& 0.65 & \textbf{} \\\hline
 		Self-super & 0.67 & \\\hline
 		Self-super+data aug & 0.71 & \\
@@ -42,8 +49,8 @@ However, the loss calculation does not truly evaluate the performance of the mod
 	\begin{tabular}{|l|l|l|}
 		\hline
 		& single Inf-Net & multi Inf-Net \\\hline
-		SInfNet &  0.26 &  \\\hline
-		SInfNet+data aug (0.4)&  0.31 &  \\\hline
+		SInfNet &  0.26 & 0.12  \\\hline
+		SInfNet+data aug (0.4)&  0.31 & 0.66  \\\hline
 		SInfNet+data aug (0.5)& 0.30 & \textbf{} \\\hline
 		Self-super & 0.31  & \\\hline
 		Self-super+data aug & \textbf{0.34} & \\

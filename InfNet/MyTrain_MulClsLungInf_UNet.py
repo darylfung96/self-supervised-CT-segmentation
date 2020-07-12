@@ -70,7 +70,6 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
     train_writer = SummaryWriter(os.path.join(graph_path, 'training'))
     test_writer = SummaryWriter(os.path.join(graph_path, 'testing'))
 
-
     print("#" * 20, "\nStart Training (Inf-Net)\nThis code is written for 'Inf-Net: Automatic COVID-19 Lung "
                     "Infection Segmentation from CT Scans', 2020, arXiv.\n"
                     "----\nPlease cite the paper if you use this code and dataset. "
@@ -152,6 +151,50 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         del img_mask
 
 
+def eval(device, load_net_path, batch_size, input_channels, num_classes):
+    # test dataset
+    test_dataset = LungDataset(
+        imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
+        pseudo_path='./Results/Lung infection segmentation/Semi-Inf-Net/',  # NOTES: generated from Semi-Inf-Net
+        label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+        is_test=False
+    )
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    lung_model = Inf_Net_UNet(input_channels, num_classes)  # input_channels=3， n_class=3
+    # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
+
+    net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
+    net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
+    lung_model.load_state_dict(net_state_dict)
+
+    criterion = nn.BCELoss().to(device)
+
+    total_test_loss = []
+    total_test_dice = []
+    lung_model.eval()
+    for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
+        img = img.to(device)
+        pseudo = pseudo.to(device)
+        img_mask = img_mask.to(device)
+        output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
+
+        output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
+        loss = criterion(output, img_mask)
+        print(f'test loss is {loss.item()}')
+        total_test_loss.append(loss.item())
+        dice = dice_similarity_coefficient(output, img_mask)
+        total_test_dice.append(dice.item())
+
+    average_test_loss = sum(total_test_loss) / len(total_test_loss)
+    average_test_dice = sum(total_test_dice) / len(total_test_dice)
+    print(f'average test loss: {average_test_loss}')
+    print(f'average test dice: {average_test_dice}')
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
@@ -161,20 +204,24 @@ if __name__ == "__main__":
     parser.add_argument('--is_label_smooth', type=bool, default=False)
     parser.add_argument('--random_cutout', type=float, default=0)
     parser.add_argument('--batchsize', type=int, default=12)
+    parser.add_argument('--is_eval', type=bool, default=False)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--load_net_path', type=str)
 
     arg = parser.parse_args()
 
-    train(epo_num=arg.epoch,
-          num_classes=3,
-          input_channels=6,
-          batch_size=arg.batchsize,
-          lr=1e-2,
-          is_data_augment=arg.is_data_augment,
-          is_label_smooth=arg.is_label_smooth,
-          random_cutout=arg.random_cutout,
-          graph_path=arg.graph_path,
-          save_path=arg.save_path,
-          device=arg.device,
-          load_net_path=arg.load_net_path)
+    if arg.is_eval:
+        eval(arg.device, arg.load_net_path, batch_size=1, input_channels=6, num_classes=3)
+    else:
+        train(epo_num=arg.epoch,
+              num_classes=3,
+              input_channels=6,
+              batch_size=arg.batchsize,
+              lr=1e-2,
+              is_data_augment=arg.is_data_augment,
+              is_label_smooth=arg.is_label_smooth,
+              random_cutout=arg.random_cutout,
+              graph_path=arg.graph_path,
+              save_path=arg.save_path,
+              device=arg.device,
+              load_net_path=arg.load_net_path)
