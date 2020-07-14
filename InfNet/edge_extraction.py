@@ -15,7 +15,7 @@ if __name__ == '__main__':
         img_filename = os.path.join(args.gt_folder, img_str)
         img = io.imread(img_filename)
         edge = feature.canny(img).astype(np.uint8)
-
+        edge[edge >= 1] = 255
         new_img_str = img_str.replace('parenchyma', 'edge')
         output_filename = os.path.join(args.output_folder, new_img_str)
         io.imsave(output_filename, edge)
