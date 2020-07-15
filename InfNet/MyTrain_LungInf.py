@@ -24,6 +24,7 @@ from metric import dice_similarity_coefficient
 global_current_iteration = 0
 best_loss = 1e9
 
+
 def joint_loss(pred, mask):
     weit = 1 + 5*torch.abs(F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
     wbce = F.binary_cross_entropy_with_logits(pred, mask, reduce='none')
@@ -187,6 +188,7 @@ def eval(test_loader, model, device):
     print(f'total average loss: {total_average_loss}')
     print(f'total average dice loss: {total_average_dice}')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # hyper-parameters
@@ -321,7 +323,6 @@ if __name__ == '__main__':
                   "----\nPlease cite the paper if you use this code and dataset. "
                   "And any questions feel free to contact me "
                   "via E-mail (gepengai.ji@163.com)\n----\n".format(opt.backbone, opt), "#"*20)
-
 
     if opt.is_eval:
         eval(test_loader, model, opt.device)
