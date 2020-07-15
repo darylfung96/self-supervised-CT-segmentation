@@ -19,7 +19,7 @@ import torch.nn.functional as F
 from tensorboardX import SummaryWriter
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
-from metric import dice_similarity_coefficient
+from metric import dice_similarity_coefficient, jaccard_similarity_coefficient
 
 global_current_iteration = 0
 best_loss = 1e9
@@ -160,6 +160,11 @@ def eval(test_loader, model, device):
     total_dice_4 = 0
     total_dice_3 = 0
     total_dice_2 = 0
+
+    total_jaccard_5 = 0
+    total_jaccard_4 = 0
+    total_jaccard_3 = 0
+    total_jaccard_2 = 0
     model.eval()
     for pack in test_loader:
         total_test_step += 1
@@ -183,10 +188,18 @@ def eval(test_loader, model, device):
         total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
         total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
 
+        total_jaccard_5 += jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
+        total_jaccard_4 += jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt).item()
+        total_jaccard_3 += jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
+        total_jaccard_2 += jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
+
     total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
     total_average_dice = (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4
+    total_average_jaccard = (total_jaccard_2 + total_jaccard_3 + total_jaccard_4 + total_jaccard_5) / total_test_step / 4
+
     print(f'total average loss: {total_average_loss}')
-    print(f'total average dice loss: {total_average_dice}')
+    print(f'total average dice: {total_average_dice}')
+    print(f'total average jaccard: {total_average_jaccard}')
 
 
 if __name__ == '__main__':
