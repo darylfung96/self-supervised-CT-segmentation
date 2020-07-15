@@ -195,30 +195,37 @@ def eval(test_loader, model, device):
         total_loss_3 += loss3.item()
         total_loss_2 += loss2.item()
 
-        total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
-        total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt).item()
-        total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
-        total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
+        total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt)
+        total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt)
+        total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt)
+        total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt)
 
-        total_jaccard_5 += jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
-        total_jaccard_4 += jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt).item()
-        total_jaccard_3 += jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
-        total_jaccard_2 += jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
+        total_jaccard_5 += jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt)
+        total_jaccard_4 += jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt)
+        total_jaccard_3 += jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt)
+        total_jaccard_2 += jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt)
 
-        total_sens_5 += sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
-        total_sens_4 += sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt).item()
-        total_sens_3 += sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt).item()
-        total_sens_2 += sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt).item()
+        total_sens_5 += sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt)
+        total_sens_4 += sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt)
+        total_sens_3 += sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt)
+        total_sens_2 += sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt)
 
-        total_spec_5 += specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt).item()
+        total_spec_5 += specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt)
+        total_spec_4 += specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt)
+        total_spec_3 += specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt)
+        total_spec_2 += specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt)
 
     total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
     total_average_dice = (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4
     total_average_jaccard = (total_jaccard_2 + total_jaccard_3 + total_jaccard_4 + total_jaccard_5) / total_test_step / 4
+    total_average_sensitivity = (total_sens_2 + total_sens_3 + total_sens_4 + total_sens_5) / total_test_step / 4
+    total_average_specificity = (total_spec_2 + total_spec_3 + total_spec_4 + total_spec_5) / total_test_step / 4
 
     print(f'total average loss: {total_average_loss}')
     print(f'total average dice: {total_average_dice}')
     print(f'total average jaccard: {total_average_jaccard}')
+    print(f'total average sensitivity: {total_average_sensitivity}')
+    print(f'total average specificity: {total_average_specificity}')
 
 
 if __name__ == '__main__':
