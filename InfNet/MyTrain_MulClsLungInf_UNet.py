@@ -139,7 +139,14 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             print(f'test loss is {loss.item()}')
             total_test_loss.append(loss.item())
             dice = dice_similarity_coefficient(output, img_mask)
+            jaccard = jaccard_similarity_coefficient(output, img_mask)
+            sensitivity = sensitivity_similarity_coefficient(output, img_mask)
+            specificity = specificity_similarity_coefficient(output, img_mask)
+
             total_test_dice.append(dice)
+            total_test_jaccard.append(jaccard)
+            total_test_sensitivity.append(sensitivity)
+            total_test_specificity.append(specificity)
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
         average_test_dice = sum(total_test_dice) / len(total_test_dice)
