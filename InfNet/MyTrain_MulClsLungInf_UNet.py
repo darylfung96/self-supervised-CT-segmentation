@@ -123,6 +123,10 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         del img_mask
         total_test_loss = []
         total_test_dice = []
+        total_test_jaccard = []
+        total_test_sensitivity = []
+        total_test_specificity = []
+
         lung_model.eval()
         for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
             img = img.to(device)
@@ -135,12 +139,18 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             print(f'test loss is {loss.item()}')
             total_test_loss.append(loss.item())
             dice = dice_similarity_coefficient(output, img_mask)
-            total_test_dice.append(dice.item())
+            total_test_dice.append(dice)
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
         average_test_dice = sum(total_test_dice) / len(total_test_dice)
+        average_test_jaccard = sum(total_test_jaccard) / len(total_test_jaccard)
+        average_test_sensitivity = sum(total_test_sensitivity) / len(total_test_sensitivity)
+        average_test_specificity = sum(total_test_specificity) / len(total_test_specificity)
         test_writer.add_scalar('test/loss', average_test_loss, epo)
         test_writer.add_scalar('test/dice', average_test_dice, epo)
+        test_writer.add_scalar('test/jaccard', average_test_jaccard, epo)
+        test_writer.add_scalar('test/sensitivity', average_test_sensitivity, epo)
+        test_writer.add_scalar('test/specificity', average_test_specificity, epo)
 
         if average_test_loss < best_loss:
             best_loss = average_test_loss
