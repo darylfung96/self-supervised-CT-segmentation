@@ -135,7 +135,7 @@ elif dataset == 'deepglobe_lands':
     ignore_class = 6
 
 elif dataset == 'medseg':
-    train_img_root = 'InfNet/Dataset/TrainingSet/LungInfection-Train/Doctor-label/Imgs'
+    train_img_root = dataset_root + 'medseg'
     train_image_list_path = ''
     val_img_root = 'InfNet/Dataset/TestingSet/LungInfection-Test/Imgs'
 
