@@ -273,6 +273,7 @@ if __name__ == '__main__':
 
     # testing dataset
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
+    parser.add_argument('--val_path', type=str, default="./Dataset/ValSet/LungInfection-Val")
     parser.add_argument('--testsize', type=int, default=352, help='testing size')
 
     # load model path
@@ -354,6 +355,11 @@ if __name__ == '__main__':
     test_data = test_dataset(test_image_root, test_gt_root, opt.testsize)
     test_loader = DataLoader(test_data, batch_size=opt.batchsize, num_workers=opt.num_workers)
 
+    val_image_root = '{}/Imgs/'.format(opt.val_path)
+    val_gt_root = '{}/GT/'.format(opt.val_path)
+    val_data = test_dataset(val_image_root, val_gt_root, opt.valsize)
+    val_loader = DataLoader(val_data, batch_size=opt.batchsize, num_workers=opt.num_workers)
+
     total_step = len(train_loader)
 
     # ---- start !! -----
@@ -369,4 +375,4 @@ if __name__ == '__main__':
 
         for epoch in range(1, opt.epoch):
             adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
-            train(train_loader,test_loader, model, optimizer, epoch, train_save, opt.device)
+            train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device)
