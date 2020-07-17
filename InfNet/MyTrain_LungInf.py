@@ -275,6 +275,8 @@ if __name__ == '__main__':
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
     parser.add_argument('--val_path', type=str, default="./Dataset/ValSet/LungInfection-Val")
     parser.add_argument('--testsize', type=int, default=352, help='testing size')
+    parser.add_argument('--valsize', type=int, default=352, help='validation size')
+
 
     # load model path
     parser.add_argument('--load_net_path', type=str)
