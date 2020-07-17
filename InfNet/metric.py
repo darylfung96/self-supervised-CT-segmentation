@@ -45,7 +45,7 @@ def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg):
     false_negative = (b - a).detach().cpu().numpy()
     false_negative[false_negative < 0] = 0
     false_negative = false_negative.sum()
-    sensitivity = true_positive/(false_negative + true_positive)
+    sensitivity = true_positive/(false_negative + true_positive + 1e-6)
     return sensitivity
 
 
@@ -60,7 +60,7 @@ def specificity_similarity_coefficient(predicted_seg, ground_truth_seg):
     false_positive = (inverted_b - inverted_a).detach().cpu().numpy()
     false_positive[false_positive < 0] = 0
     false_positive = false_positive.sum()
-    specificity = true_negative / (false_positive + true_negative)
+    specificity = true_negative / (false_positive + true_negative + 1e-6)
     return specificity
 
 
