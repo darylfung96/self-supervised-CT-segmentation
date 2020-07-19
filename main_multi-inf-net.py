@@ -142,8 +142,8 @@ elif dataset == 'medseg':
     train_img_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/Imgs'
     train_prior_root = 'InfNet/Dataset/TrainingSet/MultiClassInfection-Train/Prior'
     train_image_list_path = ''
-    val_img_root = 'InfNet/Dataset/TestingSet/MultiClassInfection-Test/Imgs'
-    val_prior_root = 'InfNet/Results/Lung infection segmentation/Semi-Inf-Net/'
+    val_img_root = 'InfNet/Dataset/ValSet/MultiClassInfection-Val/Imgs'
+    val_prior_root = 'InfNet/Dataset/ValSet/MultiClassInfection-Val/Prior'
 
 erase_shape = [16, 16]         ### size of each block used to erase image
 erase_count = 16               ### number of blocks to erase from image

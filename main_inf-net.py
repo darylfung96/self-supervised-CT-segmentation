@@ -137,7 +137,7 @@ elif dataset == 'deepglobe_lands':
 elif dataset == 'medseg':
     train_img_root = dataset_root + 'medseg'
     train_image_list_path = ''
-    val_img_root = 'InfNet/Dataset/TestingSet/LungInfection-Test/Imgs'
+    val_img_root = 'InfNet/Dataset/ValSet/LungInfection-Val/Imgs'
 
 erase_shape = [16, 16]         ### size of each block used to erase image
 erase_count = 16               ### number of blocks to erase from image
