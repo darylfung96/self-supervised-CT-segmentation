@@ -1,12 +1,27 @@
 \section{Experiments}
 
+\begin{table}
+	\centering
+	\begin{tabular}{|c||c|c|c|c|} \hline
+		Data split & Source & Segmented & Images & Patients \\\hline
+		Training & \vtop{\hbox{\strut Med-Seg}\hbox{\strut ICTCF}}&
+		\vtop{\hbox{\strut Yes}\hbox{\strut No}} & 
+		\vtop{\hbox{\strut 699}\hbox{\strut 6654}}&
+		\vtop{\hbox{\strut 39}\hbox{\strut 1338}}\\\hline
+		Validation & Med-Seg & Yes & 115 & 35 \\\hline
+		Testing & Med-Seg & Yes & 118 & 35 \\\hline
+	\end{tabular}
+	\caption{This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.}
+	\label{tab:dataset}
+\end{table}
+
 \begin{table*}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|} \hline
 		& Dice & Jaccard & Sensitivity & Specificity \\\hline
-		single SInfNet & 0.673 & 0.654 & 0.457 & 0.993 \\\hline
-		single SInfNet + data aug(0.4) & 0.649 & 0.642 & 0.445 & 0.993 \\\hline
-		single SInfNet + data aug(0.5) & 0.671 & 0.652 &0.467 & 0.993 \\\hline \hline
+		single SInfNet &  &  &  &  \\\hline
+		single SInfNet + data aug(0.4) &  &  &  &  \\\hline
+		single SInfNet + data aug(0.5) &  &  & &  \\\hline \hline
 		single Self-super & & & & \\\hline
 		single Self-super+data aug & & & & \\\hline \hline
 		multi SInfNet & & & & \\\hline
@@ -16,15 +31,19 @@
 		multi Self-super+data aug & & & & \\\hline \hline
 		
 	\end{tabular}
-	\caption{Comparison of supervised inf-net (SInf-Net) model with added data augmentation.  The floating value  after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. }
+	\caption{Comparison of supervised inf-net (SInf-Net) model with added data augmentation.  The floating value  after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. The evaluation are done on the test set. }
 \end{table*}
 
+
 \subsection{Datasets}
-The dataset that we will be using is an integrative resource of chest computed tomography images and clinical features of patients with COVID-19 pneumonia (ICTCF) \cite{ref23} which contains the severity score for each CT lung image. ICTCF contains 127 types of clinical features and laboratory confirmed cases of COVID-19 from 1170 patients. The dataset can be found here: http://ictcf.biocuckoo.cn/ . 
+The dataset that we will be using is an integrative resource of chest computed tomography images and clinical features of patients with COVID-19 pneumonia (ICTCF) \cite{ref23} which contains the severity score for each CT lung image and CT lung images from medical segmentation website \cite{ref26}. 
 
-The datasets that we will be using to compare with for the segmentation results will be the datasets from Inf-Net\cite{ref14} and the datasets from medseg\cite{ref26}. The dataset from Inf-Net\cite{ref14} contains 68 labeled CT images while the dataset from medseg contains 911 labeled CT images. In total, the number of labeled segmented CT images is 979.
+ICTCF contains 127 types of clinical features and laboratory confirmed cases of COVID-19 from 1170 patients including the severity for the CT lung images. However, ICTCF dataset does not contain the segmentation labels for the ground-glass opacities and the consolidation in the CT lung images. In total, there are 6654 of CT lung images in ICTCF dataset. Originally, there were 1521 patients. However, some of the patients are missing CT lung images. We remove these patients that are missing CT lung images. After preprocessing the patients, the dataset was left with 1338 patients that contains CT lung images. The dataset can be found here: http://ictcf.biocuckoo.cn/. 
 
-The other datasets that we will be focusing on are COVID-CT-Dataset \cite{ref21} and covid-chestxray-dataset \cite{ref22}. COVID-CT-Dataset can be found at https://github.com/UCSD-AI4H/COVID-CT. COVID-CT-Dataset consist of 349 CT images obtianed from 216 patients. Covid-chestxray-dataset can be found at https://github.com/ieee8023/covid-chestxray-dataset. COVID-CT-Dataset  was created through assembling medical images from publications and websites and contains 123 frontal view X-rays of the lungs. An additional dataset that we can use is from Cell \cite{ref24}, http://ncov-ai.big.ac.cn/download?lang=en if we have enough capacity to load the dataset as the dataset can be huge. This dataset is constructed from the China Consortium of Chest CT Image investigation (CC-CCII). The CT images are classified into novel coronavirus pneumonia (NCP) caused by SARS-CoV-2 virus, common pneumonia and normal controls. It consists of 617,775 CT images obtained from 4,154 patients.
+As for the medical segmentation dataset, they contain ground truth label for the segmentation for ground-glass opacities and consolidation of the CT lung images but does not contain the severity score for the CT Lung images. The total amount of CT lung images contain in medical segmentation dataset is 932 CT lung images. We randomly assign the CT lung images into training set, validation set, and testing set of which the training set contains 699 CT lung images, the validation set contains 115 CT lung images, and the testing set contains 118 CT lung images. 
+
+The assignment of the dataset can be seen in \ref{tab:dataset}.
+
 
 \begin{figure}
 	\centering

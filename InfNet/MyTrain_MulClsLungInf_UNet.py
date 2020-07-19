@@ -42,9 +42,9 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
 
     # test dataset
     test_dataset = LungDataset(
-        imgs_path='./Dataset/ValSet/MultiClassInfection-Test/Imgs/',
-        pseudo_path='./Dataset/ValSet/MultiClassInfection-Test/Prior/',  # NOTES: generated from Semi-Inf-Net
-        label_path='./Dataset/ValSet/MultiClassInfection-Test/GT/',
+        imgs_path='./Dataset/ValSet/MultiClassInfection-Val/Imgs/',
+        pseudo_path='./Dataset/ValSet/MultiClassInfection-Val/Prior/',  # NOTES: generated from Semi-Inf-Net
+        label_path='./Dataset/ValSet/MultiClassInfection-Val/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),

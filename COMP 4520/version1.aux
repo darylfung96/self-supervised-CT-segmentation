@@ -27,32 +27,25 @@
 \@LN@col{2}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Pseudo code for self-supervised with InfNet\relax }}{}\protected@file@percent }
 \newlabel{alg:self-inf-net}{{1}{}}
-\citation{ref11}
-\citation{ref10}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces The architecture of our self-supervised InfNet model. The original InfNet model would generate 5 different predictions: the edge segmentation prediction, and the other 4 are segmentation of the infected regions but of different sizes. In order to utilise the ability of self-supervised method for InfNet segmentation, we generate masks to be fed into the InfNet model. The last layer for each output prediction is not used for the self-supervised case. However, the last layer is replace with a different layer to reconstruct the image and the edge appropriately. Everything else is kept the same as the InfNet architecture. This way the network will learn meaningful representations of the CT images and we can use these meaningful representations to learn the segmentation of the infected regions of the CT lung images. After learning the self-supervised features for InfNet, the training continues as normal similar to the InfNet algorithm. The training will start with the weights trained using the self-supervised inpainting method. The last layer will be changed to its original layer instead of the replaced convolutional layer. \relax }}{}\protected@file@percent }
 \newlabel{fig:inf-net_arch}{{3}{}}
 \@LN@col{1}
 \@LN@col{2}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Estimation of Severity of COVID-19 from CT images}{}\protected@file@percent }
-\citation{ref12}
 \citation{ref13,ref14}
 \citation{ref13}
 \citation{ref14}
 \citation{ref23}
-\citation{ref14}
 \citation{ref26}
-\citation{ref14}
-\citation{ref21}
-\citation{ref22}
-\citation{ref24}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces The architecture of our self-supervised multi segmentation InfNet model. Similar to the supervised version of multiple InfNet, we use the same network weights and architectures. However, the last layer of the multiple segmentation InfNet is replace with a linear activation layer to predict the inpainting for the CT images. After the self-supervised InfNet has been trained, we will train the multiple segmentation for multiple segmentation InfNet using the weights of the self-supervised InfNet. The last layer however will be changed to its original form instead of using the replaced linear activation layer. This way, all the network weights are loaded from the self-supervised version except for the last layer.\relax }}{}\protected@file@percent }
 \newlabel{fig:multi-inf-net_arch}{{4}{}}
 \@LN@col{1}
 \@LN@col{2}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.\relax }}{}\protected@file@percent }
+\newlabel{tab:dataset}{{I}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {V}Experiments}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Datasets}{}\protected@file@percent }
-\bibcite{ref1}{1}
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comparison of supervised inf-net (SInf-Net) model with added data augmentation. The floating value after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. \relax }}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Comparison of supervised inf-net (SInf-Net) model with added data augmentation. The floating value after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. The evaluation are done on the test set. \relax }}{}\protected@file@percent }
 \@LN@col{1}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Data Augmentation}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Performance evaluation of image segmentation}{}\protected@file@percent }
@@ -60,6 +53,7 @@
 \@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Example CT lung images of our data augmentation. The left column is the original CT lung images while the right column is the augmented CT lung images. The first row of the CT lung images involves random cropping and random cutout. The second row of the CT lung images involves random cropping and random cutout. The third row of the CT lung images involves random cropping and vertical flipping. We can see the random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.\relax }}{}\protected@file@percent }
 \newlabel{fig:data_aug}{{5}{}}
+\bibcite{ref1}{1}
 \bibcite{ref2}{2}
 \bibcite{ref3}{3}
 \bibcite{ref4}{4}
