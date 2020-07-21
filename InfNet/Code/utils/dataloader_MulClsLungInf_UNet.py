@@ -60,12 +60,13 @@ class LungDataset(Dataset):
             pil_img_label = TF.to_pil_image(img_label)
             pil_imgC = TF.to_pil_image(imgC)
 
-            # random cropping
-            crop_size = int(min(imgA.shape[:2]) * 0.8)
-            i, j, w, h = transforms.RandomCrop.get_params(pil_imgA, output_size=(crop_size, crop_size))
-            pil_imgA = TF.crop(pil_imgA, i, j, w, h)
-            pil_img_label = TF.crop(pil_img_label, i, j, w, h)
-            pil_imgC = TF.crop(pil_imgC, i, j, w, h)
+            if random.random() > 0.5:
+                # random cropping
+                crop_size = int(min(imgA.shape[:2]) * 0.8)
+                i, j, w, h = transforms.RandomCrop.get_params(pil_imgA, output_size=(crop_size, crop_size))
+                pil_imgA = TF.crop(pil_imgA, i, j, w, h)
+                pil_img_label = TF.crop(pil_img_label, i, j, w, h)
+                pil_imgC = TF.crop(pil_imgC, i, j, w, h)
 
 
             # -- data augmentation --

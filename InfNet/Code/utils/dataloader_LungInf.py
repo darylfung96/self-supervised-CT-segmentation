@@ -51,11 +51,12 @@ class COVIDDataset(data.Dataset):
 
         # augment data
         if self.is_data_augment:
-            crop_size = int(min(image.size) * 0.8)
-            # random cropping
-            i, j, w, h = transforms.RandomCrop.get_params(image, output_size=(crop_size, crop_size))
-            image = TF.crop(image, i, j, w, h)
-            gt = TF.crop(gt, i, j, w, h)
+            if random.random() > 0.5:
+                crop_size = int(min(image.size) * 0.8)
+                # random cropping
+                i, j, w, h = transforms.RandomCrop.get_params(image, output_size=(crop_size, crop_size))
+                image = TF.crop(image, i, j, w, h)
+                gt = TF.crop(gt, i, j, w, h)
 
             # -- data augmentation --
             # Random horizontal flipping
@@ -159,6 +160,17 @@ class test_dataset:
 
     def __len__(self):
         return self.size
+
+    def load_data(self):
+        image = self.rgb_loader(self.images[self.index])
+        image = self.transform(image).unsqueeze(0)
+        gt = self.binary_loader(self.gts[self.index])
+        name = self.images[self.index].split('/')[-1]
+        if name.endswith('.jpg'):
+            name = name.split('.jpg')[0] + '.png'
+        self.index += 1
+        # return image, gt, name, np.array(F.interpolate(image, gt.size, mode='bilinear'))
+        return image, gt, name
 
     def __getitem__(self, index):
         image = self.rgb_loader(self.images[index])

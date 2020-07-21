@@ -169,11 +169,11 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         del img_mask
 
 
-def eval(device, load_net_path, batch_size, input_channels, num_classes):
+def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, num_classes):
     # test dataset
     test_dataset = LungDataset(
         imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
-        pseudo_path='./Results/Lung infection segmentation/Semi-Inf-Net/',  # NOTES: generated from Semi-Inf-Net
+        pseudo_path=pseudo_test_path,  # NOTES: generated from Semi-Inf-Net
         label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
@@ -191,11 +191,18 @@ def eval(device, load_net_path, batch_size, input_channels, num_classes):
 
     criterion = nn.BCELoss().to(device)
 
-    total_test_loss = []
-    total_test_dice = []
-    total_test_jaccard = []
-    total_test_sensitivity = []
-    total_test_specificity = []
+    gg_total_test_loss = []
+    gg_total_test_dice = []
+    gg_total_test_jaccard = []
+    gg_total_test_sensitivity = []
+    gg_total_test_specificity = []
+
+    cons_total_test_loss = []
+    cons_total_test_dice = []
+    cons_total_test_jaccard = []
+    cons_total_test_sensitivity = []
+    cons_total_test_specificity = []
+
 
     lung_model.eval()
     for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
@@ -205,61 +212,117 @@ def eval(device, load_net_path, batch_size, input_channels, num_classes):
         output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
 
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
-        # loss = criterion(output, img_mask)
-        loss = torch.mean(torch.abs(output - img_mask))
-        print(f'test loss is {loss.item()}')
-        total_test_loss.append(loss.item())
-        dice = dice_similarity_coefficient(output, img_mask)
-        jaccard = jaccard_similarity_coefficient(output, img_mask)
-        sensitivity = sensitivity_similarity_coefficient(output, img_mask)
-        specificity = specificity_similarity_coefficient(output, img_mask)
 
-        total_test_dice.append(dice)
-        total_test_jaccard.append(jaccard)
-        total_test_sensitivity.append(sensitivity)
-        total_test_specificity.append(specificity)
+        gg_output = output[0, 1]
+        cons_output = output[0, 2]
+        gg_img_mask = img_mask[0, 1]
+        cons_img_mask = img_mask[0, 2]
 
-    np_total_test_loss = np.array(total_test_loss)
-    mean_test_loss = np.mean(np_total_test_loss)
-    error_test_loss = np.std(np_total_test_loss) / np.sqrt(np_total_test_loss.size) * 1.96
+        # calculate ground-glass opacities metrics
+        loss = torch.mean(torch.abs(gg_output - gg_img_mask))
+        dice = dice_similarity_coefficient(gg_output, gg_img_mask)
+        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask)
+        sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask)
+        specificity = specificity_similarity_coefficient(gg_output, gg_img_mask)
+        gg_total_test_loss.append(loss.item())
+        gg_total_test_dice.append(dice)
+        gg_total_test_jaccard.append(jaccard)
+        gg_total_test_sensitivity.append(sensitivity)
+        gg_total_test_specificity.append(specificity)
 
-    np_total_test_dice = np.array(total_test_dice)
-    mean_test_dice = np.mean(np_total_test_dice)
-    error_test_dice = np.std(np_total_test_dice) / np.sqrt(np_total_test_dice.size) * 1.96
+        # calculate consolidation metrics
+        loss = torch.mean(torch.abs(cons_output - cons_img_mask))
+        dice = dice_similarity_coefficient(cons_output, cons_img_mask)
+        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask)
+        sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask)
+        specificity = specificity_similarity_coefficient(cons_output, cons_img_mask)
+        cons_total_test_loss.append(loss.item())
+        cons_total_test_dice.append(dice)
+        cons_total_test_jaccard.append(jaccard)
+        cons_total_test_sensitivity.append(sensitivity)
+        cons_total_test_specificity.append(specificity)
 
-    np_total_test_jaccard = np.array(total_test_jaccard)
-    mean_test_jaccard = np.mean(np_total_test_jaccard)
-    error_test_jaccard = np.std(np_total_test_jaccard) / np.sqrt(np_total_test_jaccard.size) * 1.96
+    # calculate ground-glass metrics
+    gg_np_total_test_loss = np.array(gg_total_test_loss)
+    gg_mean_test_loss = np.mean(gg_np_total_test_loss)
+    gg_error_test_loss = np.std(gg_np_total_test_loss) / np.sqrt(gg_np_total_test_loss.size) * 1.96
 
-    np_total_test_sensitivity = np.array(total_test_sensitivity)
-    mean_test_sensitivity = np.mean(np_total_test_sensitivity)
-    error_test_sensitivity = np.std(np_total_test_sensitivity) / np.sqrt(np_total_test_sensitivity.size) * 1.96
+    gg_np_total_test_dice = np.array(gg_total_test_dice)
+    gg_mean_test_dice = np.mean(gg_np_total_test_dice)
+    gg_error_test_dice = np.std(gg_np_total_test_dice) / np.sqrt(gg_np_total_test_dice.size) * 1.96
 
-    np_total_test_specificity = np.array(total_test_specificity)
-    mean_test_specificity = np.mean(np_total_test_specificity)
-    error_test_specificity = np.std(np_total_test_specificity) / np.sqrt(np_total_test_specificity.size) * 1.96
+    gg_np_total_test_jaccard = np.array(gg_total_test_jaccard)
+    gg_mean_test_jaccard = np.mean(gg_np_total_test_jaccard)
+    gg_error_test_jaccard = np.std(gg_np_total_test_jaccard) / np.sqrt(gg_np_total_test_jaccard.size) * 1.96
 
-    print(f'mean absolute error: {mean_test_loss}')
-    print(f'error absolute error: {error_test_loss}')
+    gg_np_total_test_sensitivity = np.array(gg_total_test_sensitivity)
+    gg_mean_test_sensitivity = np.mean(gg_np_total_test_sensitivity)
+    gg_error_test_sensitivity = np.std(gg_np_total_test_sensitivity) / np.sqrt(gg_np_total_test_sensitivity.size) * 1.96
+
+    gg_np_total_test_specificity = np.array(gg_total_test_specificity)
+    gg_mean_test_specificity = np.mean(gg_np_total_test_specificity)
+    gg_error_test_specificity = np.std(gg_np_total_test_specificity) / np.sqrt(gg_np_total_test_specificity.size) * 1.96
+
+    # calculate consolidation metrics
+    cons_np_total_test_loss = np.array(cons_total_test_loss)
+    cons_mean_test_loss = np.mean(cons_np_total_test_loss)
+    cons_error_test_loss = np.std(cons_np_total_test_loss) / np.sqrt(cons_np_total_test_loss.size) * 1.96
+
+    cons_np_total_test_dice = np.array(cons_total_test_dice)
+    cons_mean_test_dice = np.mean(cons_np_total_test_dice)
+    cons_error_test_dice = np.std(cons_np_total_test_dice) / np.sqrt(cons_np_total_test_dice.size) * 1.96
+
+    cons_np_total_test_jaccard = np.array(cons_total_test_jaccard)
+    cons_mean_test_jaccard = np.mean(cons_np_total_test_jaccard)
+    cons_error_test_jaccard = np.std(cons_np_total_test_jaccard) / np.sqrt(cons_np_total_test_jaccard.size) * 1.96
+
+    cons_np_total_test_sensitivity = np.array(cons_total_test_sensitivity)
+    cons_mean_test_sensitivity = np.mean(cons_np_total_test_sensitivity)
+    cons_error_test_sensitivity = np.std(cons_np_total_test_sensitivity) / np.sqrt(cons_np_total_test_sensitivity.size) * 1.96
+
+    cons_np_total_test_specificity = np.array(cons_total_test_specificity)
+    cons_mean_test_specificity = np.mean(cons_np_total_test_specificity)
+    cons_error_test_specificity = np.std(cons_np_total_test_specificity) / np.sqrt(cons_np_total_test_specificity.size) * 1.96
+
+    print(f'ground-glass mean absolute dice: {gg_mean_test_dice}')
+    print(f'ground-glass error absolute dice: {gg_error_test_dice}')
     print('==============================')
-    print(f'mean absolute dice: {mean_test_dice}')
-    print(f'error absolute dice: {error_test_dice}')
+    print(f'ground-glass mean absolute jaccard: {gg_mean_test_jaccard}')
+    print(f'ground-glass error absolute jaccard: {gg_error_test_jaccard}')
     print('==============================')
-    print(f'mean absolute jaccard: {mean_test_jaccard}')
-    print(f'error absolute jaccard: {error_test_jaccard}')
+    print(f'ground-glass mean absolute sensitivity: {gg_mean_test_sensitivity}')
+    print(f'ground-glass error absolute sensitivity: {gg_error_test_sensitivity}')
     print('==============================')
-    print(f'mean absolute sensitivity: {mean_test_sensitivity}')
-    print(f'error absolute sensitivity: {error_test_sensitivity}')
+    print(f'ground-glass mean absolute specificity: {gg_mean_test_specificity}')
+    print(f'ground-glass error absolute specificity: {gg_error_test_specificity}')
     print('==============================')
-    print(f'mean absolute specificity: {mean_test_specificity}')
-    print(f'error absolute specificity: {error_test_specificity}')
+    print(f'ground-glass mean absolute error: {gg_mean_test_loss}')
+    print(f'ground-glass error absolute error: {gg_error_test_loss}')
     print('==============================')
+    print('==============================')
+    print('==============================')
+    print('==============================')
+    print(f'consolidation mean absolute dice: {cons_mean_test_dice}')
+    print(f'consolidation error absolute dice: {cons_error_test_dice}')
+    print('==============================')
+    print(f'consolidation mean absolute jaccard: {cons_mean_test_jaccard}')
+    print(f'consolidation error absolute jaccard: {cons_error_test_jaccard}')
+    print('==============================')
+    print(f'consolidation mean absolute sensitivity: {cons_mean_test_sensitivity}')
+    print(f'consolidation error absolute sensitivity: {cons_error_test_sensitivity}')
+    print('==============================')
+    print(f'consolidation mean absolute specificity: {cons_mean_test_specificity}')
+    print(f'consolidation error absolute specificity: {cons_error_test_specificity}')
+    print('==============================')
+    print(f'consolidation mean absolute error: {cons_mean_test_loss}')
+    print(f'consolidation error absolute error: {cons_error_test_loss}')
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
+    parser.add_argument('--pseudo_test_path', type=str)
     parser.add_argument('--epoch', type=int, default=200)
     parser.add_argument('--is_data_augment', type=bool, default=False)
     parser.add_argument('--is_label_smooth', type=bool, default=False)
@@ -272,7 +335,7 @@ if __name__ == "__main__":
     arg = parser.parse_args()
 
     if arg.is_eval:
-        eval(arg.device, arg.load_net_path, batch_size=1, input_channels=6, num_classes=3)
+        eval(arg.device, arg.pseudo_test_path, arg.load_net_path, batch_size=1, input_channels=6, num_classes=3)
     else:
         train(epo_num=arg.epoch,
               num_classes=3,

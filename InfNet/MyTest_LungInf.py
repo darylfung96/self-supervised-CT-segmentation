@@ -12,6 +12,7 @@ import torch.nn.functional as F
 import numpy as np
 import os
 import argparse
+import imageio
 from scipy import misc
 from InfNet.Code.model_lung_infection.InfNet_ResNet import Inf_Net as Network
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
@@ -34,9 +35,10 @@ def inference():
     parser.add_argument('--testsize', type=int, default=352, help='testing size')
     parser.add_argument('--data_path', type=str, default='./Dataset/TestingSet/LungInfection-Test/',
                         help='Path to test data')
-    parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/Semi-Inf-Net/Semi-Inf-Net-100.pth',
+    parser.add_argument('--device', default='cpu')
+    parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/inf-net05_random_cutout/Inf-Net-40.pth',
                         help='Path to weights fileif `semi-sup`, edit it to `Semi-Inf-Net/Semi-Inf-Net-100.pth`')
-    parser.add_argument('--save_path', type=str, default='./Results/Lung infection segmentation/Semi-Inf-Net/',
+    parser.add_argument('--save_path', type=str, default='./Results/Lung infection segmentation/inf-net05_random_cutout/',
                         help='Path to save the predictions. if `semi-sup`, edit it to `Semi-Inf-Net`')
     opt = parser.parse_args()
 
@@ -48,8 +50,11 @@ def inference():
 
     model = Network()
     # model = torch.nn.DataParallel(model, device_ids=[0, 1]) # uncomment it if you have multiply GPUs.
-    model.load_state_dict(torch.load(opt.pth_path))
-    model.cuda()
+    net_state_dict = torch.load(opt.pth_path, map_location=torch.device(opt.device))
+    net_state_dict = {k: v for k, v in net_state_dict.items() if k in model.state_dict()}
+    model.load_state_dict(net_state_dict)
+
+    model.to(opt.device)
     model.eval()
 
     image_root = '{}/Imgs/'.format(opt.data_path)
@@ -61,14 +66,14 @@ def inference():
         image, gt, name = test_loader.load_data()
         gt = np.asarray(gt, np.float32)
         gt /= (gt.max() + 1e-8)
-        image = image.cuda()
+        image = image.to(opt.device)
 
         lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
         res = lateral_map_2
         res = F.upsample(res, size=gt.shape, mode='bilinear', align_corners=False)
         res = res.sigmoid().data.cpu().numpy().squeeze()
         res = (res - res.min()) / (res.max() - res.min() + 1e-8)
-        misc.imsave(opt.save_path + name, res)
+        imageio.imwrite(opt.save_path + name, res)
 
     print('Test Done!')
 
