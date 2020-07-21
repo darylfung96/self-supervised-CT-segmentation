@@ -1,6 +1,6 @@
 \section{Experiments}
 
-\begin{table}
+\begin{table}[!h]
 	\centering
 	\begin{tabular}{|c||c|c|c|c|} \hline
 		Data split & Source & Segmented & Images & Patients \\\hline
@@ -15,27 +15,27 @@
 	\label{tab:dataset}
 \end{table}
 
-\begin{table*}
+\begin{table*}[!h]
 	\centering
 	\begin{tabular}{| c | c || c c c c c ||}
-	\hline
-	Methods & & Dice & Jaccard & Sen. & Spec. & MAE \\ \hline
-	Single SInfNet &  Mean & 0.66 & 0.65 & 0.45 & 0.99 & 14.43 \\ \cline{2-7}
-						   & Error & $\pm$ 0.06 & $\pm$ 0.05 & $\pm$ 0.07 & $\pm$ 0.00 & $\pm$ 0.77 \\ \hline
-	Single SInfNet + data aug(0.4) &  Mean & 0.61 & 0.62 & 0.38 & 0.99 & 16.31 \\ \cline{2-7}
-	& Error & $\pm$ 0.06 & $\pm$0.05 &$\pm$0.07 &$\pm$0.00 &$\pm$0.90 \\ \hline
-	Single SInfNet + data aug (0.5) &  Mean &0.64 &0.63 &0.41 &0.99 & 14.67 \\ \cline{2-7}
-	& Error &$\pm$0.06 &$\pm$0.05 &0.07 &$\pm$0.00 & $\pm$0.82 \\ \hline \hline
-	Single Self-SInfNet &  Mean & & & & & \\ \cline{2-7}
-	& Error & & & & & \\ \hline
-	Single Self-SInfNet + data aug &  Mean & & & & & \\ \cline{2-7}
-	& Error & & & & & \\ \hline
+		\hline
+		Methods & & Dice & Jaccard & Sen. & Spec. & MAE \\ \hline
+		Single SInfNet &  Mean & 0.66 & 0.65 & 0.45 & 0.99 & 14.43 \\ \cline{2-7}
+		& Error & $\pm$ 0.06 & $\pm$ 0.05 & $\pm$ 0.07 & $\pm$ 0.00 & $\pm$ 0.77 \\ \hline
+		Single SInfNet + data aug(0.4) &  Mean & 0.61 & 0.62 & 0.38 & 0.99 & 16.31 \\ \cline{2-7}
+		& Error & $\pm$ 0.06 & $\pm$0.05 &$\pm$0.07 &$\pm$0.00 &$\pm$0.90 \\ \hline
+		Single SInfNet + data aug (0.5) &  Mean &0.64 &0.63 &0.41 &0.99 & 14.67 \\ \cline{2-7}
+		& Error &$\pm$0.06 &$\pm$0.05 &0.07 &$\pm$0.00 & $\pm$0.82 \\ \hline \hline
+		Single Self-SInfNet &  Mean & & & & & \\ \cline{2-7}
+		& Error & & & & & \\ \hline
+		Single Self-SInfNet + data aug &  Mean & & & & & \\ \cline{2-7}
+		& Error & & & & & \\ \hline
 	\end{tabular}
 	\caption{Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet}
 	\label{tab:single}
 \end{table*}
 
-\begin{table*}
+\begin{table*}[!h]
 	\centering
 	\begin{tabular}{| c | c || c c c c c || c c c c c |}
 		\hline
@@ -57,9 +57,10 @@
 		& Error & & & & & & & & & &  \\ \hline \hline
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet}
+	\label{tab:multi-weakprior}
 \end{table*}
 
-\begin{table*}
+\begin{table*}[!h]
 	\centering
 	\begin{tabular}{| c | c || c c c c c || c c c c c |}
 		\hline
@@ -81,28 +82,8 @@
 		& Error & & & & & & & & & &  \\ \hline \hline
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the test set.}
+	\label{tab:multi-strongprior}
 \end{table*}
-
-\iffalse
-\begin{table*}
-	\centering
-	\begin{tabular}{|c|c|c|c|c|} \hline
-		& Dice & Jaccard & Sensitivity & Specificity \\\hline
-		single SInfNet &  &  &  &  \\\hline
-		single SInfNet + data aug(0.4) &  &  &  &  \\\hline
-		single SInfNet + data aug(0.5) &  &  & &  \\\hline \hline
-		single Self-super & & & & \\\hline
-		single Self-super+data aug & & & & \\\hline \hline
-		multi SInfNet & & & & \\\hline
-		multi SInfNet + data aug(0.4) & & & & \\\hline
-		multi SInfNet + data aug(0.5) & & & & \\\hline \hline
-		multi Self-super & & & & \\\hline
-		multi Self-super+data aug & & & & \\\hline \hline
-		
-	\end{tabular}
-	\caption{Comparison of supervised inf-net (SInf-Net) model with added data augmentation.  The floating value  after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. The evaluation are done on the test set. }
-\end{table*}
-\fi
 
 
 \subsection{Datasets}
@@ -117,6 +98,7 @@ The assignment of the dataset can be seen in \ref{tab:dataset}.
 
 \begin{figure}
 	\centering
+	\small
 	\includegraphics[width=\linewidth]{data_aug.png}
 	\caption{Example CT lung images of our data augmentation. The left column is the original CT lung images while the right column is the augmented CT lung images. The first row of the CT lung images involves random cropping and random cutout. The second row of the CT lung images involves random cropping and random cutout. The third row of the CT lung images involves random cropping and vertical flipping. We can see the random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.}
 	\label{fig:data_aug}

@@ -40,18 +40,19 @@
 \newlabel{fig:multi-inf-net_arch}{{4}{}}
 \@LN@col{1}
 \@LN@col{2}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Experiments}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.\relax }}{}\protected@file@percent }
 \newlabel{tab:dataset}{{I}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Experiments}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Datasets}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet\relax }}{}\protected@file@percent }
 \newlabel{tab:single}{{II}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet\relax }}{}\protected@file@percent }
+\newlabel{tab:multi-weakprior}{{III}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the test set.\relax }}{}\protected@file@percent }
+\newlabel{tab:multi-strongprior}{{IV}{}}
 \@LN@col{1}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Data Augmentation}{}\protected@file@percent }
 \@LN@col{2}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Results}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Data Augmentation}{}\protected@file@percent }
 \bibcite{ref1}{1}
 \bibcite{ref2}{2}
 \bibcite{ref3}{3}
@@ -69,6 +70,15 @@
 \bibcite{ref15}{15}
 \bibcite{ref16}{16}
 \bibcite{ref17}{17}
+\@LN@col{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Example CT lung images of our data augmentation. The left column is the original CT lung images while the right column is the augmented CT lung images. The first row of the CT lung images involves random cropping and random cutout. The second row of the CT lung images involves random cropping and random cutout. The third row of the CT lung images involves random cropping and vertical flipping. We can see the random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.\relax }}{}\protected@file@percent }
+\newlabel{fig:data_aug}{{5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Results}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Result for self-supervised InfNet}{}\protected@file@percent }
+\@LN@col{2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Result for estimation of severity score}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{}\protected@file@percent }
 \bibcite{ref18}{18}
 \bibcite{ref19}{19}
 \bibcite{ref20}{20}
@@ -79,14 +89,6 @@
 \bibcite{ref25}{25}
 \bibcite{ref26}{26}
 \bibcite{ref27}{27}
-\@LN@col{1}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Example CT lung images of our data augmentation. The left column is the original CT lung images while the right column is the augmented CT lung images. The first row of the CT lung images involves random cropping and random cutout. The second row of the CT lung images involves random cropping and random cutout. The third row of the CT lung images involves random cropping and vertical flipping. We can see the random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.\relax }}{}\protected@file@percent }
-\newlabel{fig:data_aug}{{5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Result for self-supervised InfNet}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Result for estimation of severity score}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion}{}\protected@file@percent }
-\@LN@col{2}
-\@writefile{toc}{\contentsline {section}{References}{}\protected@file@percent }
 \bibcite{ref28}{28}
 \@LN@col{1}
 \@LN@col{2}
