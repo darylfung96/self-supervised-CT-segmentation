@@ -205,7 +205,8 @@ def eval(device, load_net_path, batch_size, input_channels, num_classes):
         output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
 
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
-        loss = criterion(output, img_mask)
+        # loss = criterion(output, img_mask)
+        loss = torch.mean(torch.abs(output - img_mask))
         print(f'test loss is {loss.item()}')
         total_test_loss.append(loss.item())
         dice = dice_similarity_coefficient(output, img_mask)
@@ -218,17 +219,41 @@ def eval(device, load_net_path, batch_size, input_channels, num_classes):
         total_test_sensitivity.append(sensitivity)
         total_test_specificity.append(specificity)
 
-    average_test_loss = sum(total_test_loss) / len(total_test_loss)
-    average_test_dice = sum(total_test_dice) / len(total_test_dice)
-    average_test_jaccard = sum(total_test_jaccard) / len(total_test_jaccard)
-    average_test_sensitivity = sum(total_test_sensitivity) / len(total_test_sensitivity)
-    average_test_specificity = sum(total_test_specificity) / len(total_test_specificity)
+    np_total_test_loss = np.array(total_test_loss)
+    mean_test_loss = np.mean(np_total_test_loss)
+    error_test_loss = np.std(np_total_test_loss) / np.sqrt(np_total_test_loss.size) * 1.96
 
-    print(f'average test loss: {average_test_loss}')
-    print(f'average test dice: {average_test_dice}')
-    print(f'average test jaccard: {average_test_jaccard}')
-    print(f'average test sensitivity: {average_test_sensitivity}')
-    print(f'average test specificity: {average_test_specificity}')
+    np_total_test_dice = np.array(total_test_dice)
+    mean_test_dice = np.mean(np_total_test_dice)
+    error_test_dice = np.std(np_total_test_dice) / np.sqrt(np_total_test_dice.size) * 1.96
+
+    np_total_test_jaccard = np.array(total_test_jaccard)
+    mean_test_jaccard = np.mean(np_total_test_jaccard)
+    error_test_jaccard = np.std(np_total_test_jaccard) / np.sqrt(np_total_test_jaccard.size) * 1.96
+
+    np_total_test_sensitivity = np.array(total_test_sensitivity)
+    mean_test_sensitivity = np.mean(np_total_test_sensitivity)
+    error_test_sensitivity = np.std(np_total_test_sensitivity) / np.sqrt(np_total_test_sensitivity.size) * 1.96
+
+    np_total_test_specificity = np.array(total_test_specificity)
+    mean_test_specificity = np.mean(np_total_test_specificity)
+    error_test_specificity = np.std(np_total_test_specificity) / np.sqrt(np_total_test_specificity.size) * 1.96
+
+    print(f'mean absolute error: {mean_test_loss}')
+    print(f'error absolute error: {error_test_loss}')
+    print('==============================')
+    print(f'mean absolute dice: {mean_test_dice}')
+    print(f'error absolute dice: {error_test_dice}')
+    print('==============================')
+    print(f'mean absolute jaccard: {mean_test_jaccard}')
+    print(f'error absolute jaccard: {error_test_jaccard}')
+    print('==============================')
+    print(f'mean absolute sensitivity: {mean_test_sensitivity}')
+    print(f'error absolute sensitivity: {error_test_sensitivity}')
+    print('==============================')
+    print(f'mean absolute specificity: {mean_test_specificity}')
+    print(f'error absolute specificity: {error_test_specificity}')
+    print('==============================')
 
 
 if __name__ == "__main__":

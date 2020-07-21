@@ -1,5 +1,20 @@
 \section{Experiments}
 
+\begin{table}
+	\centering
+	\begin{tabular}{|c||c|c|c|c|} \hline
+		Data split & Source & Segmented & Images & Patients \\\hline
+		Training & \vtop{\hbox{\strut Med-Seg}\hbox{\strut ICTCF}}&
+		\vtop{\hbox{\strut Yes}\hbox{\strut No}} & 
+		\vtop{\hbox{\strut 699}\hbox{\strut 6654}}&
+		\vtop{\hbox{\strut 39}\hbox{\strut 1338}}\\\hline
+		Validation & Med-Seg & Yes & 115 & 35 \\\hline
+		Testing & Med-Seg & Yes & 118 & 35 \\\hline
+	\end{tabular}
+	\caption{This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.}
+	\label{tab:dataset}
+\end{table}
+
 \begin{table*}
 	\centering
 	\begin{tabular}{| c | c || c c c c c || c c c c c |}
@@ -38,21 +53,6 @@
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set}
 \end{table*}
-
-\begin{table}
-	\centering
-	\begin{tabular}{|c||c|c|c|c|} \hline
-		Data split & Source & Segmented & Images & Patients \\\hline
-		Training & \vtop{\hbox{\strut Med-Seg}\hbox{\strut ICTCF}}&
-		\vtop{\hbox{\strut Yes}\hbox{\strut No}} & 
-		\vtop{\hbox{\strut 699}\hbox{\strut 6654}}&
-		\vtop{\hbox{\strut 39}\hbox{\strut 1338}}\\\hline
-		Validation & Med-Seg & Yes & 115 & 35 \\\hline
-		Testing & Med-Seg & Yes & 118 & 35 \\\hline
-	\end{tabular}
-	\caption{This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.}
-	\label{tab:dataset}
-\end{table}
 
 \iffalse
 \begin{table*}
@@ -96,31 +96,3 @@ The assignment of the dataset can be seen in \ref{tab:dataset}.
 \subsection{Data Augmentation}
 We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure \ref{fig:data_aug}.
 
-\subsection{Performance evaluation of image segmentation}
-We have trained the supervised inf-net as baseline with comparison to the supervised inf-net with additional data augmentation. The comparison for the methods can be seen in \ref{tab:table_compare}. We can see that the additional data augmentation improves the performance of the baseline model. For the single segmentation Inf-Net comparison, we can see the performance of the single segmentation Inf-Net improves the most when the random cutout is set to a value of 0.5 without any self-supervised training. 
-
-However, the loss calculation does not truly evaluate the performance of the model. We use an additional performance metrics to calculate the model performance. The performance metrics we will be using is called dice similarity coefficient. As shown in \ref{tab:dice_compare}, we see that the best performing model is the self-supervised single Inf-Net using the dice similarity coefficient. 
-
-
-
-
-
-\iffalse
-\begin{table*}[t]
-	\centering
-	\small
-	\begin{tabular}{|l|l|}
-		\hline
-		Sub-Tasks & Time  \\\hline
-		Research on related self-supervised tasks to incorporate the methods into COVID-19 pixel-level image segmentation & 1 week  \\\hline
-		Find related COVID-19 dataset for classification labels(for self-supervised) and pixel-level segmentation(for classification) labels & 1 week  \\\hline
-		Find baseline methods to compare against & 2 week  \\\hline
-		Implement self-supervised method for pixel-level segmentation on COVID-19 segmentation & 3 week  \\\hline
-		Experiment and training (including calculating the severity score for lung regions) & 3 week  \\\hline
-		Write and finalize paper if successful & 2 week  \\\hline
-		
-	\end{tabular}
-	\caption{Tasks scheduled}
-	\label{tab:2}
-\end{table*}
-\fi

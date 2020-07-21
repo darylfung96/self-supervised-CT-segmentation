@@ -11,12 +11,14 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.autograd import Variable
 import os
+import numpy as np
 import argparse
 from datetime import datetime
 from Code.utils.dataloader_LungInf import get_loader
 from Code.utils.utils import clip_gradient, adjust_lr, AvgMeter
 import torch.nn.functional as F
 from tensorboardX import SummaryWriter
+import statistics
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
@@ -152,30 +154,30 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
 
 def eval(test_loader, model, device):
     total_test_step = 0
-    total_loss_5 = 0
-    total_loss_4 = 0
-    total_loss_3 = 0
-    total_loss_2 = 0
+    total_loss_5 = []
+    total_loss_4 = []
+    total_loss_3 = []
+    total_loss_2 = []
 
-    total_dice_5 = 0
-    total_dice_4 = 0
-    total_dice_3 = 0
-    total_dice_2 = 0
+    total_dice_5 = []
+    total_dice_4 = []
+    total_dice_3 = []
+    total_dice_2 = []
 
-    total_jaccard_5 = 0
-    total_jaccard_4 = 0
-    total_jaccard_3 = 0
-    total_jaccard_2 = 0
+    total_jaccard_5 = []
+    total_jaccard_4 = []
+    total_jaccard_3 = []
+    total_jaccard_2 = []
 
-    total_sens_5 = 0
-    total_sens_4 = 0
-    total_sens_3 = 0
-    total_sens_2 = 0
+    total_sens_5 = []
+    total_sens_4 = []
+    total_sens_3 = []
+    total_sens_2 = []
 
-    total_spec_5 = 0
-    total_spec_4 = 0
-    total_spec_3 = 0
-    total_spec_2 = 0
+    total_spec_5 = []
+    total_spec_4 = []
+    total_spec_3 = []
+    total_spec_2 = []
 
     model.eval()
     for pack in test_loader:
@@ -186,46 +188,78 @@ def eval(test_loader, model, device):
         # ---- forward ----
         lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
         # ---- loss function ----
-        loss5 = joint_loss(lateral_map_5, gt)
-        loss4 = joint_loss(lateral_map_4, gt)
-        loss3 = joint_loss(lateral_map_3, gt)
-        loss2 = joint_loss(lateral_map_2, gt)
-        total_loss_5 += loss5.item()
-        total_loss_4 += loss4.item()
-        total_loss_3 += loss3.item()
-        total_loss_2 += loss2.item()
+        # loss5 = joint_loss(lateral_map_5, gt)
+        # loss4 = joint_loss(lateral_map_4, gt)
+        # loss3 = joint_loss(lateral_map_3, gt)
+        # loss2 = joint_loss(lateral_map_2, gt)
+        loss5 = torch.mean(torch.abs(lateral_map_5 - gt))
+        loss4 = torch.mean(torch.abs(lateral_map_4 - gt))
+        loss3 = torch.mean(torch.abs(lateral_map_3 - gt))
+        loss2 = torch.mean(torch.abs(lateral_map_2 - gt))
+        total_loss_5.append(loss5.item())
+        total_loss_4.append(loss4.item())
+        total_loss_3.append(loss3.item())
+        total_loss_2.append(loss2.item())
 
-        total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt)
-        total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt)
-        total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt)
-        total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt)
+        total_dice_5.append(dice_similarity_coefficient(lateral_map_5.sigmoid(), gt))
+        total_dice_4.append(dice_similarity_coefficient(lateral_map_4.sigmoid(), gt))
+        total_dice_3.append(dice_similarity_coefficient(lateral_map_3.sigmoid(), gt))
+        total_dice_2.append(dice_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
-        total_jaccard_5 += jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt)
-        total_jaccard_4 += jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt)
-        total_jaccard_3 += jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt)
-        total_jaccard_2 += jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt)
+        total_jaccard_5.append(jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt))
+        total_jaccard_4.append(jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt))
+        total_jaccard_3.append(jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt))
+        total_jaccard_2.append(jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
-        total_sens_5 += sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt)
-        total_sens_4 += sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt)
-        total_sens_3 += sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt)
-        total_sens_2 += sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt)
+        total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
+        total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
+        total_sens_3.append(sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
+        total_sens_2.append(sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
-        total_spec_5 += specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt)
-        total_spec_4 += specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt)
-        total_spec_3 += specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt)
-        total_spec_2 += specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt)
+        total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
+        total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
+        total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
+        total_spec_2.append(specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
-    total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
-    total_average_dice = (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4
-    total_average_jaccard = (total_jaccard_2 + total_jaccard_3 + total_jaccard_4 + total_jaccard_5) / total_test_step / 4
-    total_average_sensitivity = (total_sens_2 + total_sens_3 + total_sens_4 + total_sens_5) / total_test_step / 4
-    total_average_specificity = (total_spec_2 + total_spec_3 + total_spec_4 + total_spec_5) / total_test_step / 4
+    accumulated_loss = (np.array(total_loss_2) + np.array(total_loss_3) + np.array(total_loss_4) + np.array(
+        total_loss_5)) / 4
+    mean_loss = np.mean(accumulated_loss)
+    error_loss = np.std(accumulated_loss) / np.sqrt(accumulated_loss.size) * 1.96
 
-    print(f'total average loss: {total_average_loss}')
-    print(f'total average dice: {total_average_dice}')
-    print(f'total average jaccard: {total_average_jaccard}')
-    print(f'total average sensitivity: {total_average_sensitivity}')
-    print(f'total average specificity: {total_average_specificity}')
+    accumulated_dice = (np.array(total_dice_2) + np.array(total_dice_3) + np.array(total_dice_4) + np.array(
+        total_dice_5)) / 4
+    mean_dice = np.mean(accumulated_dice)
+    error_dice = np.std(accumulated_dice) / np.sqrt(accumulated_dice.size) * 1.96
+
+    accumulated_jaccard = (np.array(total_jaccard_2) + np.array(total_jaccard_3) + np.array(total_jaccard_4) + np.array(
+        total_jaccard_5)) / 4
+    mean_jaccard = np.mean(accumulated_jaccard)
+    error_jaccard = np.std(accumulated_jaccard) / np.sqrt(accumulated_jaccard.size) * 1.96
+
+    accumulated_sens = (np.array(total_sens_2) + np.array(total_sens_3) + np.array(total_sens_4) + np.array(
+        total_sens_5)) / 4
+    mean_sens = np.mean(accumulated_sens)
+    error_sens = np.std(accumulated_sens) / np.sqrt(accumulated_sens.size) * 1.96
+
+    accumulated_spec = (np.array(total_spec_2) + np.array(total_spec_3) + np.array(total_spec_4) + np.array(
+        total_spec_5)) / 4
+    mean_spec = np.mean(accumulated_spec)
+    error_spec = np.std(accumulated_spec) / np.sqrt(accumulated_spec.size) * 1.96
+
+    print(f'mean absolute loss: {mean_loss}')
+    print(f'error absolute loss: {error_loss}')
+    print('=============================')
+    print(f'mean dice: {mean_dice}')
+    print(f'error dice: {error_dice}')
+    print('=============================')
+    print(f'mean jaccard: {mean_jaccard}')
+    print(f'error jaccard: {error_jaccard}')
+    print('=============================')
+    print(f'mean sens: {mean_sens}')
+    print(f'error sens: {error_sens}')
+    print('=============================')
+    print(f'mean spec: {mean_spec}')
+    print(f'error spec: {error_spec}')
 
 
 if __name__ == '__main__':
