@@ -1,5 +1,44 @@
 \section{Experiments}
 
+\begin{table*}
+	\centering
+	\begin{tabular}{| c | c || c c c c c || c c c c c |}
+		\hline
+		& &\multicolumn{5}{c||}{Ground-Glass Opacity} & \multicolumn{5}{c|}{Consolidation}\\ \cline{3-12}
+		Methods & & Dice & Jaccard & Sen. & Spec. & MAE & Dice & Jaccard & Sen. & Spec. & MAE \\\hline
+		Single SInfNet & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Single SInfNet + data aug(0.4) & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Single SInfNet + data aug(0.5) & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Single Self-SInfNet & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Single Self-SInfNet + data aug & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Multi SInfNet & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Multi SInfNet + data aug(0.4) & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Multi SInfNet + data aug(0.5) & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Multi Self-SInfNet & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+		
+		Multi Self-SInfNet + data aug & Mean & & & & & & & & & &  \\ \cline{2-12}
+		& Error & & & & & & & & & &  \\ \hline \hline
+	\end{tabular}
+	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set}
+\end{table*}
+
 \begin{table}
 	\centering
 	\begin{tabular}{|c||c|c|c|c|} \hline
@@ -15,6 +54,7 @@
 	\label{tab:dataset}
 \end{table}
 
+\iffalse
 \begin{table*}
 	\centering
 	\begin{tabular}{|c|c|c|c|c|} \hline
@@ -33,6 +73,7 @@
 	\end{tabular}
 	\caption{Comparison of supervised inf-net (SInf-Net) model with added data augmentation.  The floating value  after the data augmentation refers to the fraction of the image randomly cutout. 0.2 shows that 0.2 of the image is cutout to be empty. The evaluation are done on the test set. }
 \end{table*}
+\fi
 
 
 \subsection{Datasets}
@@ -59,8 +100,6 @@ We used data augmentation to increase our data samples size. The data agumentati
 We have trained the supervised inf-net as baseline with comparison to the supervised inf-net with additional data augmentation. The comparison for the methods can be seen in \ref{tab:table_compare}. We can see that the additional data augmentation improves the performance of the baseline model. For the single segmentation Inf-Net comparison, we can see the performance of the single segmentation Inf-Net improves the most when the random cutout is set to a value of 0.5 without any self-supervised training. 
 
 However, the loss calculation does not truly evaluate the performance of the model. We use an additional performance metrics to calculate the model performance. The performance metrics we will be using is called dice similarity coefficient. As shown in \ref{tab:dice_compare}, we see that the best performing model is the self-supervised single Inf-Net using the dice similarity coefficient. 
-
-\subsection{severity estimation results}
 
 
 

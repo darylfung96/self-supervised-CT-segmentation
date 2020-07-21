@@ -1,10 +1,11 @@
 \section{Methodology}
 
 
-In this section, we will first show the details of the supervised InfNet for imaging segmentation (baseline) model that we will be comparing with including the network architecture, the data preprocessing steps, and the loss function. We will then show our proposed methods using self-supervised learning and how it helps to improve generalisation and performance of the model while having a limited number of data samples. We will also show the extension of our data preprocessing steps which further improves the performance of our model.
+In this section, we will show the details of the self-supervised InfNet for imaging segmentation model including the network architecture, the data preprocessing steps, and the loss function. We will show how self-supervised InfNet helps to improve generalisation and performance of the model while having a limited number of data samples. We will also show the extension of our data preprocessing steps which further improves the performance of our model.
 
-\subsection{Supervised InfNet for imaging segmentation}
 Supervised InfNet	(Lung Infection Segmentation Network) will be used as our baseline to compare without using any semi-supervised learning algorithm. This is to show that the self-supervised learning method  improves the performance of the baseline supervised learning InfNet for imaging segmentation. We will extend our work on supervised InfNet by adding self-supervised method to it.
+
+We will not change the structure of the InfNet model and use the default parameters as included in their GitHub code. There will be two different types of the InfNet model. The first one will create a single-labeled segmentation of the image for the infected region. This model predicts as true of the region is either ground-glass opacities or consolidations. This will act as a prior to be fed into the multple-labeled segmentation model concatenate with the original CT image as proposed by the author of InfNet. The multiple-labeled segmentation model will be used to predict the background, ground-glass opacities, and consolidations for the infected region. The multiple-labeled segmentation model will give each of the label a different value instead of grouping them as one as what the single-segmentation model does. 
 
 \begin{figure}
 	\includegraphics[width=88mm]{supervised-inf-net.png}
@@ -32,7 +33,7 @@ Supervised InfNet	(Lung Infection Segmentation Network) will be used as our base
 	\label{fig:multi-inf-net_arch}
 \end{figure*}
 
-We will not change the structure of the InfNet model and use the default parameters as included in their GitHub code. There will be two different types of the InfNet model. The first one will create a single-labeled segmentation of the image for the infected region. This model predicts as true of the region is either ground-glass opacities or consolidations. This will act as a prior to be fed into the multple-labeled segmentation model concatenate with the original CT image as proposed by the author of InfNet. The multiple-labeled segmentation model will be used to predict the background, ground-glass opacities, and consolidations for the infected region. The multiple-labeled segmentation model will give each of the label a different value instead of grouping them as one as what the single-segmentation model does. 
+
 
 \subsection{Self-supervised InfNet for imaging segmentation}
 
