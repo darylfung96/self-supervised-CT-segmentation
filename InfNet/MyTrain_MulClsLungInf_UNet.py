@@ -230,6 +230,14 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         gg_total_test_sensitivity.append(sensitivity)
         gg_total_test_specificity.append(specificity)
 
+        # print the metrics see which one is lesser
+        print(f'current image: {name}')
+        print(f'loss: {loss}')
+        print(f'dice: {dice}')
+        print(f'jaccard: {jaccard}')
+        print(f'sensitivity: {sensitivity}')
+        print(f'specificity: {specificity}')
+
         # calculate consolidation metrics
         loss = torch.mean(torch.abs(cons_output - cons_img_mask))
         dice = dice_similarity_coefficient(cons_output, cons_img_mask)
@@ -241,6 +249,15 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         cons_total_test_jaccard.append(jaccard)
         cons_total_test_sensitivity.append(sensitivity)
         cons_total_test_specificity.append(specificity)
+
+        # print the metrics to see which one is lesser
+        print('=======================')
+        print(f'multi loss: {loss}')
+        print(f'multi dice: {dice}')
+        print(f'multi jaccard: {jaccard}')
+        print(f'multi sensitivity: {sensitivity}')
+        print(f'multi specificity: {specificity}')
+
 
     # calculate ground-glass metrics
     gg_np_total_test_loss = np.array(gg_total_test_loss)
