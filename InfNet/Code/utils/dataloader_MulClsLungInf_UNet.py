@@ -93,6 +93,10 @@ class LungDataset(Dataset):
                     rect = Image.new('RGB', (w, h), (color_code, color_code, color_code))
                     pil_imgA.paste(rect, (i, j))
 
+            pil_imgA = pil_imgA.resize((352, 352))
+            pil_img_label = pil_img_label.resize((352, 352))
+            pil_imgC = pil_imgC.resize((352, 352))
+
             # convert pil back to numpy
             imgA = np.array(pil_imgA)
             img_label = np.array(pil_img_label)
@@ -115,6 +119,7 @@ class LungDataset(Dataset):
         if self.transform:
             imgA = self.transform(imgA)
             imgC = self.transform(imgC)
+
 
         return imgA, imgC, onehot_label, img_name
 

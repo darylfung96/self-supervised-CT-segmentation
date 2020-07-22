@@ -6,10 +6,10 @@
 		Data split & Source & Segmented & Images & Patients \\\hline
 		Training & \vtop{\hbox{\strut Med-Seg}\hbox{\strut ICTCF}}&
 		\vtop{\hbox{\strut Yes}\hbox{\strut No}} & 
-		\vtop{\hbox{\strut 699}\hbox{\strut 6654}}&
+		\vtop{\hbox{\strut 698}\hbox{\strut 6654}}&
 		\vtop{\hbox{\strut 39}\hbox{\strut 1338}}\\\hline
-		Validation & Med-Seg & Yes & 115 & 35 \\\hline
-		Testing & Med-Seg & Yes & 118 & 35 \\\hline
+		Validation & Med-Seg & Yes & 114 & 35 \\\hline
+		Testing & Med-Seg & Yes & 117 & 35 \\\hline
 	\end{tabular}
 	\caption{This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.}
 	\label{tab:dataset}
@@ -91,7 +91,7 @@ The dataset that we will be using is an integrative resource of chest computed t
 
 ICTCF contains 127 types of clinical features and laboratory confirmed cases of COVID-19 from 1170 patients including the severity for the CT lung images. However, ICTCF dataset does not contain the segmentation labels for the ground-glass opacities and the consolidation in the CT lung images. In total, there are 6654 of CT lung images in ICTCF dataset. Originally, there were 1521 patients. However, some of the patients are missing CT lung images. We remove these patients that are missing CT lung images. After preprocessing the patients, the dataset was left with 1338 patients that contains CT lung images. The dataset can be found here: http://ictcf.biocuckoo.cn/. 
 
-As for the medical segmentation dataset, they contain ground truth label for the segmentation for ground-glass opacities and consolidation of the CT lung images but does not contain the severity score for the CT Lung images. The total amount of CT lung images contain in medical segmentation dataset is 932 CT lung images. We randomly assign the CT lung images into training set, validation set, and testing set of which the training set contains 699 CT lung images, the validation set contains 115 CT lung images, and the testing set contains 118 CT lung images. 
+As for the medical segmentation dataset, they contain ground truth label for the segmentation for ground-glass opacities and consolidation of the CT lung images but does not contain the severity score for the CT Lung images. The total amount of CT lung images contain in medical segmentation dataset is 932 CT lung images. We randomly assign the CT lung images into training set, validation set, and testing set of which the training set contains 698 CT lung images, the validation set contains 114 CT lung images, and the testing set contains 117 CT lung images. 
 
 The assignment of the dataset can be seen in \ref{tab:dataset}.
 
@@ -100,10 +100,18 @@ The assignment of the dataset can be seen in \ref{tab:dataset}.
 	\centering
 	\small
 	\includegraphics[width=\linewidth]{data_aug.png}
-	\caption{Example CT lung images of our data augmentation. The left column is the original CT lung images while the right column is the augmented CT lung images. The first row of the CT lung images involves random cropping and random cutout. The second row of the CT lung images involves random cropping and random cutout. The third row of the CT lung images involves random cropping and vertical flipping. We can see the random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.}
+	\caption{Example of data augmentation on the CT lung images.}
 	\label{fig:data_aug}
 \end{figure}
 
+\subsection{Experimental Settings}
+During the self-supervised image inpainting stage, we train the network for 2000 epochs. The network is trained for the first 200 epochs before we train the coach network for 200 epochs which increases the complexity of the masks generated. After that, we alternate in between training the self-supervised image inpainting and the coach network with 100 epochs in between. For every alternating between the training of the self-supervised image inpainting and the coach network, we set the learning rate to 0.1 at the start of the epoch, we set the learning rate to 0.01 at 40th epoch, we set the learing rate to 0.001 at 80th eochs, and 0.0001 at the 90th epoch.  We use SGD as the optimizer for the self-supervised image inpainting.  We set the momentum to 0.9 and the weight decay to 0.0005. As for the optimizer for the coach network, we use Adam optimizer with learning rate of 0.00001.
+
+For the Single InfNet, we train the network for 500 epochs. We use Adam as the optimizer with learning rate of 0.0001. 
+
+For the Multi InfNet, we train the network for 500 epochs. We use SGD as the optimizer. The momentum is set as 0.7 and the learning rate is set as 0.01.
+
 \subsection{Data Augmentation}
-We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure \ref{fig:data_aug}.
+We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cDuring tutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure \ref{fig:data_aug}.
+The left column is the original CT lung images while the right column is the augmented CT lung images. The first row involves random cropping and random cutout. The second row involves random cropping and random cutout. The third row involves random cropping and vertical flipping. The random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.
 
