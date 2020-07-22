@@ -152,7 +152,7 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 print('[Saving Snapshot:]', save_path + 'Inf-Net-%d.pth' % (epoch + 1))
 
 
-def eval(test_loader, model, device):
+def eval(test_loader, model, device, load_net_path):
     total_test_step = 0
     total_loss_5 = []
     total_loss_4 = []
@@ -245,6 +245,12 @@ def eval(test_loader, model, device):
         total_spec_5)) / 4
     mean_spec = np.mean(accumulated_spec)
     error_spec = np.std(accumulated_spec) / np.sqrt(accumulated_spec.size) * 1.96
+
+    with open('single_metric.txt', 'a') as f:
+        f.write(load_net_path + '\n')
+        for loss in accumulated_dice:
+            f.write(str(loss) + '\n')
+
 
     print(f'mean absolute loss: {mean_loss}')
     print(f'error absolute loss: {error_loss}')
@@ -406,7 +412,7 @@ if __name__ == '__main__':
                   "via E-mail (gepengai.ji@163.com)\n----\n".format(opt.backbone, opt), "#"*20)
 
     if opt.is_eval:
-        eval(test_loader, model, opt.device)
+        eval(test_loader, model, opt.device, opt.load_net_path)
     else:
 
         for epoch in range(1, opt.epoch):

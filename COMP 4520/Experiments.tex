@@ -20,16 +20,16 @@
 	\begin{tabular}{| c | c || c c c c c ||}
 		\hline
 		Methods & & Dice & Jaccard & Sen. & Spec. & MAE \\ \hline
-		Single SInfNet &  Mean & 0.66 & 0.65 & 0.45 & 0.99 & 14.43 \\ \cline{2-7}
+		Single SInfNet &  Mean & \textbf{0.66} & \textbf{0.65} & \textbf{0.45} & 0.99 & 14.43 \\ \cline{2-7}
 		& Error & $\pm$ 0.06 & $\pm$ 0.05 & $\pm$ 0.07 & $\pm$ 0.00 & $\pm$ 0.77 \\ \hline
 		Single SInfNet + data aug(0.4) &  Mean & 0.61 & 0.62 & 0.38 & 0.99 & 16.31 \\ \cline{2-7}
 		& Error & $\pm$ 0.06 & $\pm$0.05 &$\pm$0.07 &$\pm$0.00 &$\pm$0.90 \\ \hline
 		Single SInfNet + data aug (0.5) &  Mean &0.64 &0.63 &0.41 &0.99 & 14.67 \\ \cline{2-7}
 		& Error &$\pm$0.06 &$\pm$0.05 &0.07 &$\pm$0.00 & $\pm$0.82 \\ \hline \hline
-		Single Self-SInfNet &  Mean & & & & & \\ \cline{2-7}
-		& Error & & & & & \\ \hline
-		Single Self-SInfNet + data aug &  Mean & & & & & \\ \cline{2-7}
-		& Error & & & & & \\ \hline
+		Single Self-SInfNet &  Mean & 0.61 & 0.63 & 0.35 & \textbf{0.994} & 16.08 \\ \cline{2-7}
+		& Error & $\pm$0.06 & $\pm$0.05 &$\pm$ \textbf{0.06} & $\pm$0.00 & $\pm$ \textbf{0.72} \\ \hline
+		Single Self-SInfNet + data aug &  Mean & 0.58 & 0.60 & 0.37 & 0.99 & \textbf{14.26} \\ \cline{2-7}
+		& Error & $\pm$0.06 & $\pm$0.05 & $\pm$0.07 & $\pm$0.00 & $\pm$0.75 \\ \hline
 	\end{tabular}
 	\caption{Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet}
 	\label{tab:single}
@@ -50,8 +50,8 @@
 		Multi SInfNet + data aug(0.5) & Mean & 0.30 & 0.42 & 0.37 & 0.993 & 0.01 & 0.15 & 0.45 & 0.15 & 0.997 & 0.007  \\ \cline{2-12}
 		& Error & 0.05 & 0.03 & 0.06 & 0.003 & 0.004 & 0.05 & 0.03 & 0.05 & 0.001 & 0.004  \\ \hline \hline
 		
-		Multi Self-SInfNet & Mean & & & & & & & & & &  \\ \cline{2-12}
-		& Error & & & & & & & & & &  \\ \hline \hline
+		Multi Self-SInfNet & Mean & 0.30 & 0.53 & 0.32 & 0.995 & 0.01 & 0.21 & 0.71 & 0.16 & 0.998 & .0006  \\ \cline{2-12}
+		& Error & 0.05 & 0.04 & 0.06 & 0.002 & 0.004 & 0.05 & 0.05 & 0.06 & 0.001 & 0.003  \\ \hline \hline
 		
 		Multi Self-SInfNet + data aug & Mean & & & & & & & & & &  \\ \cline{2-12}
 		& Error & & & & & & & & & &  \\ \hline \hline
@@ -75,8 +75,8 @@
 		Multi SInfNet + data aug(0.5) & Mean & 0.54 & 0.70 & 0.59 & 0.996 & 0.005 & 0.19 & 0.56 & 0.20 & 0.999 & 0.005  \\ \cline{2-12}
 		& Error & 0.07 & 0.03 & 0.08 & 0.003 & 0.003 & 0.05 & 0.03 & 0.06 & 0.0004 & 0.003  \\ \hline \hline
 		
-		Multi Self-SInfNet & Mean & & & & & & & & & &  \\ \cline{2-12}
-		& Error & & & & & & & & & &  \\ \hline \hline
+		Multi Self-SInfNet & Mean & 0.61 & 0.83 & 0.59 & 0.997 & 0.004 & 0.26 & 0.78 & 0.21 & 0.999 & 0.004  \\ \cline{2-12}
+		& Error & 0.07 & 0.03 & 0.08 & 0.003 & 0.002 & 0.05 & 0.04 & 0.07 & 0.001 & 0.002  \\ \hline \hline
 		
 		Multi Self-SInfNet + data aug & Mean & & & & & & & & & &  \\ \cline{2-12}
 		& Error & & & & & & & & & &  \\ \hline \hline
