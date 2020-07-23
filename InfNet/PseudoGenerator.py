@@ -138,7 +138,10 @@ def train_module(_train_path, _train_save, _resume_snapshot):
 
 def inference_module(_data_path, _save_path, _pth_path):
     model = Network(channel=32, n_class=1)
-    model.load_state_dict(torch.load(_pth_path))
+
+    net_state_dict = torch.load(_pth_path)
+    net_state_dict = {k: v for k, v in net_state_dict.items() if k in model.state_dict()}
+    model.load_state_dict(net_state_dict)
     model.cuda()
     model.eval()
 
