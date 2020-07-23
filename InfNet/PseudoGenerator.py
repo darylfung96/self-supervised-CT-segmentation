@@ -186,16 +186,19 @@ if __name__ == '__main__':
     semi_mask = semi + '/GT'
     semi_edge = semi + '/Edge'
 
-    if (not os.path.exists(semi_img)) or (len(os.listdir(semi_img)) != 50):
-        shutil.copytree('Dataset/TrainingSet/LungInfection-Train/Doctor-label/Imgs',
-                        semi_img)
-        shutil.copytree('Dataset/TrainingSet/LungInfection-Train/Doctor-label/GT',
-                        semi_mask)
-        shutil.copytree('Dataset/TrainingSet/LungInfection-Train/Doctor-label/Edge',
-                        semi_edge)
-        print('Copy done')
-    else:
-        print('Check done')
+    try:
+        if (not os.path.exists(semi_img)) or (len(os.listdir(semi_img)) != 50):
+            shutil.copytree('Dataset/TrainingSet/LungInfection-Train/Doctor-label/Imgs',
+                            semi_img)
+            shutil.copytree('Dataset/TrainingSet/LungInfection-Train/Doctor-label/GT',
+                            semi_mask)
+            shutil.copytree('Dataset/TrainingSet/LungInfection-Train/Doctor-label/Edge',
+                            semi_edge)
+            print('Copy done')
+        else:
+            print('Check done')
+    except FileExistsError:
+        pass
 
     slices_lst = os.listdir(slices_dir)
     random.shuffle(slices_lst)
