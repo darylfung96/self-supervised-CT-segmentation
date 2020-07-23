@@ -36,25 +36,26 @@
 \end{table*}
 
 \begin{table*}[!h]
+	\small
 	\centering
 	\begin{tabular}{| c | c || c c c c c || c c c c c |}
 		\hline
 		& &\multicolumn{5}{c||}{Ground-Glass Opacity} & \multicolumn{5}{c|}{Consolidation}\\ \cline{3-12}
 		Methods & & Dice & Jaccard & Sen. & Spec. & MAE & Dice & Jaccard & Sen. & Spec. & MAE \\\hline
-		Multi SInfNet & Mean & 0.32 & 0.43 & 0.40 & 0.993 & 0.32 & 0.18 & 0.45  & 0.20 & 0.996 & 0.007  \\ \cline{2-12}
-		& Error & 0.004 & 0.05 & 0.06 & 0.003 & 0.004 & 0.05 & 0.04 & 0.06 & 0.001 & 0.003 \\ \hline \hline
+		Multi SInfNet & Mean & \textbf{0.32} & 0.43 & \textbf{0.40} & 0.993 & 0.32 & 0.18 & 0.45  & \textbf{0.20} & 0.996 & 0.007  \\ \cline{2-12}
+		& Error & $\pm$\textbf{0.004} & $\pm$0.05 & $\pm$0.06 & $\pm$0.003 & $\pm$0.004 & $\pm$0.05 & $\pm$0.04 & $\pm$0.06 & $\pm$0.001 & $\pm$0.003 \\ \hline \hline
 		
-		Multi SInfNet + data aug(0.4) & Mean & 0.28 & 0.37 & 0.35 & 0.993 & 0.01 & 0.14 & 0.38 & 0.16 & 0.994 & 0.01  \\ \cline{2-12}
-		& Error & 0.05 & 0.03 & 0.06 & 0.003 & 0.004 & 0.04 & 0.04 & 0.05 & 0.002 & 0.004  \\ \hline \hline
+		Multi SInfNet+data aug(0.4) & Mean & 0.28 & 0.37 & 0.35 & 0.993 & 0.01 & 0.14 & 0.38 & 0.16 & 0.994 & 0.01  \\ \cline{2-12}
+		& Error & $\pm$ 0.05 & $\pm$ 0.03 & $\pm$ 0.06 & $\pm$ 0.003 & $\pm$ 0.004 & $\pm$ 0.04 & $\pm$ 0.04 & $\pm$ \textbf{0.05} & $\pm$ 0.002 & $\pm$ 0.004  \\ \hline \hline
 		
-		Multi SInfNet + data aug(0.5) & Mean & 0.30 & 0.42 & 0.37 & 0.993 & 0.01 & 0.15 & 0.45 & 0.15 & 0.997 & 0.007  \\ \cline{2-12}
-		& Error & 0.05 & 0.03 & 0.06 & 0.003 & 0.004 & 0.05 & 0.03 & 0.05 & 0.001 & 0.004  \\ \hline \hline
+		Multi SInfNet+data aug(0.5) & Mean & 0.30 & 0.42 & 0.37 & 0.993 & 0.01 & 0.15 & 0.45 & 0.15 & 0.997 & 0.007  \\ \cline{2-12}
+		& Error & $\pm$ 0.05 & $\pm$ \textbf{0.03} & $\pm$ 0.06 & $\pm$ 0.003 & $\pm$ 0.004 & $\pm$ 0.05 & $\pm$ \textbf{0.03} & $\pm$ 0.05 & $\pm$ 0.001 & $\pm$ 0.004  \\ \hline \hline
 		
-		Multi Self-SInfNet & Mean & 0.30 & 0.53 & 0.32 & 0.995 & 0.01 & 0.21 & 0.71 & 0.16 & 0.998 & .0006  \\ \cline{2-12}
-		& Error & 0.05 & 0.04 & 0.06 & 0.002 & 0.004 & 0.05 & 0.05 & 0.06 & 0.001 & 0.003  \\ \hline \hline
+		Multi Self-SInfNet & Mean & 0.30 & \textbf{0.53} & 0.32 & \textbf{0.995} & \textbf{0.01} & \textbf{0.21} & \textbf{0.71} & 0.16 & \textbf{0.998} & \textbf{0.001}  \\ \cline{2-12}
+		& Error & $\pm$ 0.05 & $\pm$ 0.04 & $\pm$ 0.06 & $\pm$ \textbf{0.002} & $\pm$ 0.004 & $\pm$ 0.05 & $\pm$ 0.05 & $\pm$ 0.06 & $\pm$ \textbf{0.001} & $\pm$ \textbf{0.003}  \\ \hline \hline
 		
-		Multi Self-SInfNet + data aug & Mean & & & & & & & & & &  \\ \cline{2-12}
-		& Error & & & & & & & & & &  \\ \hline \hline
+		Multi Self-SInfNet+data aug & Mean & 0.29 & 0.45 & 0.30 & 0.993 & 0.01 & 0.14 & 0.49 & 0.15 & 0.997 & 0.01  \\ \cline{2-12}
+		& Error & $\pm$ 0.05 & $\pm$ 0.04 & $\pm$ \textbf{0.05} & $\pm$ 0.003 & $\pm$ \textbf{0.004} & $\pm$ \textbf{0.04} & $\pm$ 0.05 & $\pm$ 0.05 & $\pm$ 0.001 & $\pm$ 0.004  \\ \hline \hline
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet}
 	\label{tab:multi-weakprior}
@@ -62,24 +63,25 @@
 
 \begin{table*}[!h]
 	\centering
+	\small
 	\begin{tabular}{| c | c || c c c c c || c c c c c |}
 		\hline
 		& &\multicolumn{5}{c||}{Ground-Glass Opacity} & \multicolumn{5}{c|}{Consolidation}\\ \cline{3-12}
 		Methods & & Dice & Jaccard & Sen. & Spec. & MAE & Dice & Jaccard & Sen. & Spec. & MAE \\\hline
-		Multi SInfNet & Mean & 0.55 & 0.72 & 0.60 & 0.996 & 0.005 & 0.21 & 0.57  &0.23  &0.998  &0.004   \\ \cline{2-12}
-		& Error & 0.07 & 0.03 & 0.08 & 0.003 & 0.003 & 0.06 & 0.03 & 0.07 & 0.0007 & 0.002 \\ \hline \hline
+		Multi SInfNet & Mean & 0.55 & 0.72 & \textbf{0.60} & 0.996 & 0.005 & 0.21 & 0.57  & \textbf{0.23}  &0.998  &0.004   \\ \cline{2-12}
+		& Error & $\pm$ 0.07 & $\pm$ 0.03 & $\pm$ 0.08 & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.06 & $\pm$ 0.03 & $\pm$ 0.07 & $\pm$ 0.0007 & $\pm$ 0.002 \\ \hline \hline
 		
-		Multi SInfNet + data aug(0.4) & Mean & 0.54 & 0.73 & 0.57 & 0.996 & 0.005 & 0.20 & 0.59 & 0.21 & 0.998 & 0.005  \\ \cline{2-12}
-		& Error & 0.07 & 0.03 & 0.07 & 0.003 & 0.003 & 0.05 & 0.03 & 0.06 & 0.0005 & 0.003  \\ \hline \hline
+		Multi SInfNet+data aug(0.4) & Mean & 0.54 & 0.73 & 0.57 & 0.996 & 0.005 & 0.20 & 0.59 & 0.21 & 0.998 & 0.005  \\ \cline{2-12}
+		& Error & $\pm$ 0.07 & $\pm$ 0.03 & $\pm$ 0.07 & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.05 & $\pm$ 0.03 & $\pm$ 0.06 & $\pm$ 0.0005 & $\pm$ 0.003  \\ \hline \hline
 		
-		Multi SInfNet + data aug(0.5) & Mean & 0.54 & 0.70 & 0.59 & 0.996 & 0.005 & 0.19 & 0.56 & 0.20 & 0.999 & 0.005  \\ \cline{2-12}
-		& Error & 0.07 & 0.03 & 0.08 & 0.003 & 0.003 & 0.05 & 0.03 & 0.06 & 0.0004 & 0.003  \\ \hline \hline
+		Multi SInfNet+data aug(0.5) & Mean & 0.54 & 0.70 & 0.59 & 0.996 & 0.005 & 0.19 & 0.56 & 0.20 & 0.999 & 0.005  \\ \cline{2-12}
+		& Error & $\pm$ 0.07 & $\pm$ 0.03 & $\pm$ 0.08 & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.05 & $\pm$ \textbf{0.03} & $\pm$ 0.06 & $\pm$ \textbf{0.0004} & $\pm$ 0.003  \\ \hline \hline
+
+		Multi Self-SInfNet & Mean & \textbf{0.61} & \textbf{0.83} & 0.59 & \textbf{0.997} & \textbf{0.004} & \textbf{0.26} & \textbf{0.78} & 0.21 & \textbf{0.999} & \textbf{0.004}  \\ \cline{2-12}
+		& Error & $\pm$0.07 & $\pm$0.03 & $\pm$0.08 & $\pm$0.003 & $\pm$\textbf{0.002} & $\pm$0.05 & $\pm$0.04 &$\pm$0.07 & $\pm$0.001 &$\pm$ \textbf{0.002}  \\ \hline \hline
 		
-		Multi Self-SInfNet & Mean & 0.61 & 0.83 & 0.59 & 0.997 & 0.004 & 0.26 & 0.78 & 0.21 & 0.999 & 0.004  \\ \cline{2-12}
-		& Error & 0.07 & 0.03 & 0.08 & 0.003 & 0.002 & 0.05 & 0.04 & 0.07 & 0.001 & 0.002  \\ \hline \hline
-		
-		Multi Self-SInfNet + data aug & Mean & & & & & & & & & &  \\ \cline{2-12}
-		& Error & & & & & & & & & &  \\ \hline \hline
+		Multi Self-SInfNet+data aug & Mean & 0.55 & 0.77 & 0.51 & 0.996 & 0.005 & 0.22 & 0.65 & 0.20 & 0.998 & 0.005  \\ \cline{2-12}
+		& Error & $\pm$ \textbf{0.06} & $\pm$ 0.03 & $\pm$ \textbf{0.07} & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.05 & $\pm$ 0.05 & $\pm$ \textbf{0.06} & $\pm$ 0.001 & $\pm$ 0.003  \\ \hline \hline
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the test set.}
 	\label{tab:multi-strongprior}
