@@ -22,7 +22,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 # ---- custom lib ----
 # NOTES: Here we nly provide Res2Net, you can also replace it with other backbones
-from Code.model_lung_infection.InfNet_Res2Net import Inf_Net as Network
+from Code.model_lung_infection.InfNet_ResNet import Inf_Net as Network
 from Code.utils.dataloader_LungInf import get_loader, test_dataset
 from Code.utils.utils import clip_gradient, adjust_lr, AvgMeter
 from Code.utils.format_conversion import binary2edge
@@ -205,7 +205,7 @@ if __name__ == '__main__':
         test_aux_dir = os.path.join(slices_dir, split_name)
         test_aux_save_dir = os.path.join(slices_pred_seg_dir, split_name)
         if i == 0:
-            snapshot_dir = './Snapshots/save_weights/Inf-Net/Inf-Net-100.pth'
+            snapshot_dir = './Snapshots/save_weights/baseline-inf-net/Inf-Net-27.pth'
         else:
             snapshot_dir = './Snapshots/semi_training/Semi-Inf-Net_{}/Semi-Inf-Net-10.pth'.format(i-1)
 
