@@ -113,7 +113,10 @@ def train_module(_train_path, _train_save, _resume_snapshot):
     torch.cuda.set_device(0)
     model = Network(channel=32, n_class=1).cuda()
 
-    model.load_state_dict(torch.load(opt.resume_snapshot))
+    # load models
+    net_state_dict = torch.load(opt.resume_snapshot)
+    net_state_dict = {k: v for k, v in net_state_dict.items() if k in model.state_dict()}
+    model.load_state_dict(net_state_dict)
 
     params = model.parameters()
     optimizer = torch.optim.Adam(params, opt.lr)
