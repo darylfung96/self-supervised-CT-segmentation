@@ -169,7 +169,7 @@ def movefiles(_src_dir, _dst_dir):
 
 if __name__ == '__main__':
     slices = './Dataset/TrainingSet/LungInfection-Train/Pseudo-label/DataPrepare'
-    slices_dir = slices + '/Imgs_split'
+    slices_dir = slices + '/Imgs_splits'
     slices_pred_seg_dir = slices + '/pred_seg_split'
     slices_pred_edge_dir = slices + '/pred_edge_split'
 
