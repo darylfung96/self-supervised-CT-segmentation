@@ -36,9 +36,9 @@ def inference():
     parser.add_argument('--data_path', type=str, default='./Dataset/TestingSet/LungInfection-Test/',
                         help='Path to test data')
     parser.add_argument('--device', default='cpu')
-    parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/self-inf-net/Inf-Net-37.pth',
+    parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/self-inf-net_improved/Inf-Net-36.pth',
                         help='Path to weights fileif `semi-sup`, edit it to `Semi-Inf-Net/Semi-Inf-Net-100.pth`')
-    parser.add_argument('--save_path', type=str, default='./Results/Lung infection segmentation/self-inf-net/',
+    parser.add_argument('--save_path', type=str, default='./Results/Lung infection segmentation/self-inf-net_improved/',
                         help='Path to save the predictions. if `semi-sup`, edit it to `Semi-Inf-Net`')
     opt = parser.parse_args()
 

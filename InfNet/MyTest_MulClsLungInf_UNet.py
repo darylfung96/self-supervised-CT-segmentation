@@ -21,7 +21,7 @@ import shutil
 def inference(num_classes, input_channels, snapshot_dir, save_path):
     test_dataset = LungDataset(
         imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
-        pseudo_path='./Results/Lung infection segmentation/Semi-Inf-Net/',  # NOTES: generated from Semi-Inf-Net
+        pseudo_path='./Results/Lung infection segmentation/baseline-inf-net/',  # NOTES: generated from Semi-Inf-Net
         label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
@@ -49,6 +49,12 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 
         # output b*n_class*h*w -- > b*h*w
         pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w, h).numpy().squeeze()
+        pred_rgb = (np.arange(3) == pred[..., None]).astype(float)
+        # swap the rgb content so the background is black instead of red
+        pred = np.zeros(pred_rgb.shape)
+        pred[:, :, 0] = pred_rgb[:, :, 1]
+        pred[:, :, 1] = pred_rgb[:, :, 2]
+
         print('Class numbers of prediction in total:', np.unique(pred))
         # pred = misc.imresize(pred, size=(w_gt, h_gt))
         os.makedirs(save_path, exist_ok=True)
@@ -61,6 +67,6 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 if __name__ == "__main__":
     inference(num_classes=3,
               input_channels=6,
-              snapshot_dir='./Snapshots/save_weights/multi_baseline/unet_model_150.pkl',
-              save_path='./Results/Multi-class lung infection segmentation/multi_baseline/'
+              snapshot_dir='./Snapshots/save_weights/baseline-multi-inf-net/unet_model_58.pkl',
+              save_path='./Results/Multi-class lung infection segmentation/weakprior_baseline-multi-inf-net/'
               )
