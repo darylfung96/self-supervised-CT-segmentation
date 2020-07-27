@@ -18,6 +18,7 @@ from Code.utils.dataloader_LungInf import get_loader
 from Code.utils.utils import clip_gradient, adjust_lr, AvgMeter
 import torch.nn.functional as F
 from tensorboardX import SummaryWriter
+from sklearn.metrics import roc_curve, roc_auc_score
 import statistics
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
@@ -179,6 +180,11 @@ def eval(test_loader, model, device, load_net_path):
     total_spec_3 = []
     total_spec_2 = []
 
+    roc_5 = []
+    roc_4 = []
+    roc_3 = []
+    roc_2 = []
+
     model.eval()
     for pack in test_loader:
         total_test_step += 1
@@ -211,15 +217,18 @@ def eval(test_loader, model, device, load_net_path):
         total_jaccard_3.append(jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt))
         total_jaccard_2.append(jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
-        total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
-        total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
-        total_sens_3.append(sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
-        total_sens_2.append(sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
+        roc_5 = lateral_map_5.sigmoid().detach().view(-1).cpu().numpy()
 
-        total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
-        total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
-        total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
-        total_spec_2.append(specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
+
+        # total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
+        # total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
+        # total_sens_3.append(sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
+        # total_sens_2.append(sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
+        #
+        # total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
+        # total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
+        # total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
+        # total_spec_2.append(specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
     accumulated_loss = (np.array(total_loss_2) + np.array(total_loss_3) + np.array(total_loss_4) + np.array(
         total_loss_5)) / 4
@@ -236,15 +245,15 @@ def eval(test_loader, model, device, load_net_path):
     mean_jaccard = np.mean(accumulated_jaccard)
     error_jaccard = np.std(accumulated_jaccard) / np.sqrt(accumulated_jaccard.size) * 1.96
 
-    accumulated_sens = (np.array(total_sens_2) + np.array(total_sens_3) + np.array(total_sens_4) + np.array(
-        total_sens_5)) / 4
-    mean_sens = np.mean(accumulated_sens)
-    error_sens = np.std(accumulated_sens) / np.sqrt(accumulated_sens.size) * 1.96
-
-    accumulated_spec = (np.array(total_spec_2) + np.array(total_spec_3) + np.array(total_spec_4) + np.array(
-        total_spec_5)) / 4
-    mean_spec = np.mean(accumulated_spec)
-    error_spec = np.std(accumulated_spec) / np.sqrt(accumulated_spec.size) * 1.96
+    # accumulated_sens = (np.array(total_sens_2) + np.array(total_sens_3) + np.array(total_sens_4) + np.array(
+    #     total_sens_5)) / 4
+    # mean_sens = np.mean(accumulated_sens)
+    # error_sens = np.std(accumulated_sens) / np.sqrt(accumulated_sens.size) * 1.96
+    #
+    # accumulated_spec = (np.array(total_spec_2) + np.array(total_spec_3) + np.array(total_spec_4) + np.array(
+    #     total_spec_5)) / 4
+    # mean_spec = np.mean(accumulated_spec)
+    # error_spec = np.std(accumulated_spec) / np.sqrt(accumulated_spec.size) * 1.96
 
     with open('single_metric.txt', 'a') as f:
         f.write(load_net_path + '\n')

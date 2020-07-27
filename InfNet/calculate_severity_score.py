@@ -7,6 +7,7 @@ import argparse
 from shutil import copyfile
 import torchvision.transforms as transforms
 import torch.nn.functional as F
+import imageio
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 
@@ -38,7 +39,9 @@ def create_imgs_ictcf(ictcf_input_dir, input_dir, ictcf_output_dir):
         copyfile(patient_img, os.path.join(ictcf_output_dir, f'{patient_filename}.jpg'))
 
 
-def calculate_severity(input_dir, parenchyma_input_dir, severity_dict, model):
+def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, severity_dict, model):
+    os.makedirs(save_segment_path, exist_ok=True)
+
     predictions = []
     ground_truths = []
 
@@ -73,6 +76,7 @@ def calculate_severity(input_dir, parenchyma_input_dir, severity_dict, model):
         res_numerator = res - res.min()
         res_denominator = res.max() - res.min() + 1e-8
         prediction = res_numerator / res_denominator
+        imageio.imwrite(os.path.join(save_segment_path, input_image), prediction)
 
         parenchyma_image = parenchyma_images[index]
         parenchyma_filename = os.path.join(parenchyma_input_dir, parenchyma_image)
@@ -118,6 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('--input_dir', type=str, required=True)
     parser.add_argument('--parenchyma_input_dir', type=str, required=True)
     parser.add_argument('--csv_severity_file', type=str)
+    parser.add_argument('--save_segment_path', type=str)
 
     parser.add_argument('--ictcf_input_dir', type=str)
     parser.add_argument('--ictcf_output_dir', type=str)
@@ -137,5 +142,5 @@ if __name__ == '__main__':
         model.load_state_dict(net_state_dict)
 
     severity_dict = process_csv_to_get_severity(args.csv_severity_file)
-    calculate_severity(args.input_dir, args.parenchyma_input_dir, severity_dict, model)
+    calculate_severity(args.input_dir, args.parenchyma_input_dir, args.save_segment_path, severity_dict, model)
     # create_imgs_ictcf(args.ictcf_input_dir, args.input_dir, args.ictcf_output_dir)

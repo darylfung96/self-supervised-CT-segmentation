@@ -19,21 +19,18 @@ def performMetrics(hist):
 
 
 def dice_similarity_coefficient(predicted_seg, ground_truth_seg):
-    smooth = 1.
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
     intersection = (a * b).sum()
-    return ( (2. * intersection + smooth) / (a.sum() + b.sum() + smooth) ).item()
+    return ((2. * intersection) / (a.sum() + b.sum())).item()
 
 
 def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg):
-    smooth = 100.
-
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
     intersection = (a * b).abs().sum()
     sum_ = torch.sum(a.abs() + b.abs())
-    jaccard = (intersection + smooth) / (sum_ - intersection + smooth)
+    jaccard = (intersection ) / (sum_ - intersection)
     return jaccard.item()
 
 
