@@ -184,6 +184,7 @@ def eval(test_loader, model, device, load_net_path):
     roc_4 = []
     roc_3 = []
     roc_2 = []
+    ground_truth_list = []
 
     model.eval()
     for pack in test_loader:
@@ -217,8 +218,11 @@ def eval(test_loader, model, device, load_net_path):
         total_jaccard_3.append(jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt))
         total_jaccard_2.append(jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt))
 
-        roc_5 = lateral_map_5.sigmoid().detach().view(-1).cpu().numpy()
-
+        roc_5 += lateral_map_5.sigmoid().detach().view(-1).cpu().numpy().tolist()
+        roc_4 += lateral_map_4.sigmoid().detach().view(-1).cpu().numpy().tolist()
+        roc_3 += lateral_map_3.sigmoid().detach().view(-1).cpu().numpy().tolist()
+        roc_2 += lateral_map_2.sigmoid().detach().view(-1).cpu().numpy().tolist()
+        ground_truth_list += gt.detach().view(-1).cpu().numpy().tolist()
 
         # total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt))
         # total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
@@ -229,6 +233,9 @@ def eval(test_loader, model, device, load_net_path):
         # total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt))
         # total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt))
         # total_spec_2.append(specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt))
+
+    roc = roc_curve(ground_truth_list, roc_5)
+    print(roc)
 
     accumulated_loss = (np.array(total_loss_2) + np.array(total_loss_3) + np.array(total_loss_4) + np.array(
         total_loss_5)) / 4

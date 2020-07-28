@@ -153,7 +153,7 @@ class test_dataset:
                                  [0.229, 0.224, 0.225])])
 
         self.gt_transform = transforms.Compose([
-            transforms.Resize((self.testsize, self.testsize)),
+            transforms.Resize((self.testsize, self.testsize), Image.NEAREST),
             transforms.ToTensor()])
         self.size = len(self.images)
         self.index = 0
