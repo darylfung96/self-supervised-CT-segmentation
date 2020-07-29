@@ -13,6 +13,7 @@ import numpy as np
 import torch.optim as optim
 from tensorboardX import SummaryWriter
 from argparse import ArgumentParser
+from sklearn.metrics import auc, roc_curve
 from Code.utils.dataloader_MulClsLungInf_UNet import LungDataset
 from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
@@ -169,7 +170,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         del img_mask
 
 
-def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, num_classes):
+def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold):
     # test dataset
     test_dataset = LungDataset(
         imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
@@ -203,6 +204,10 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     cons_total_test_sensitivity = []
     cons_total_test_specificity = []
 
+    gg_roc = []
+    cons_roc = []
+    gg_gt = []
+    cons_gt = []
 
     lung_model.eval()
     for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
@@ -218,12 +223,18 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         gg_img_mask = img_mask[0, 1]
         cons_img_mask = img_mask[0, 2]
 
+        # append gt
+        gg_gt += gg_img_mask.view(-1).detach().numpy().tolist()
+        cons_gt += cons_img_mask.view(-1).detach().numpy().tolist()
+        gg_roc += gg_output.view(-1).detach().numpy().tolist()
+        cons_roc += cons_output.view(-1).detach().numpy().tolist()
+
         # calculate ground-glass opacities metrics
         loss = torch.mean(torch.abs(gg_output - gg_img_mask))
-        dice = dice_similarity_coefficient(gg_output, gg_img_mask)
-        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask)
-        sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask)
-        specificity = specificity_similarity_coefficient(gg_output, gg_img_mask)
+        dice = dice_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
+        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
+        sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
+        specificity = specificity_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
         gg_total_test_loss.append(loss.item())
         gg_total_test_dice.append(dice)
         gg_total_test_jaccard.append(jaccard)
@@ -232,10 +243,10 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
 
         # calculate consolidation metrics
         loss = torch.mean(torch.abs(cons_output - cons_img_mask))
-        dice = dice_similarity_coefficient(cons_output, cons_img_mask)
-        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask)
-        sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask)
-        specificity = specificity_similarity_coefficient(cons_output, cons_img_mask)
+        dice = dice_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
+        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
+        sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
+        specificity = specificity_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
         cons_total_test_loss.append(loss.item())
         cons_total_test_dice.append(dice)
         cons_total_test_jaccard.append(jaccard)
@@ -253,6 +264,14 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         f.write('===========================')
 
     # calculate ground-glass metrics
+    gg_fpr, gg_tpr, gg_thresholds = roc_curve(gg_gt, gg_roc)
+    roc_auc = auc(gg_fpr, gg_tpr)
+    print(f'ground-glass opacity auc: {roc_auc}')
+    # get threshold cutoff
+    optimal_idx = np.argmax(gg_tpr - gg_fpr)
+    optimal_threshold = gg_thresholds[optimal_idx]
+    print(f'ground-glass opacity optimal threshold: {optimal_threshold} , tpr: {tpr[optimal_idx]}, fpr: {fpr[optimal_idx]}')
+
     gg_np_total_test_loss = np.array(gg_total_test_loss)
     gg_mean_test_loss = np.mean(gg_np_total_test_loss)
     gg_error_test_loss = np.std(gg_np_total_test_loss) / np.sqrt(gg_np_total_test_loss.size) * 1.96
@@ -274,6 +293,14 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     gg_error_test_specificity = np.std(gg_np_total_test_specificity) / np.sqrt(gg_np_total_test_specificity.size) * 1.96
 
     # calculate consolidation metrics
+    cons_fpr, cons_tpr, cons_thresholds = roc_curve(cons_gt, cons_roc)
+    roc_auc = auc(cons_fpr, cons_tpr)
+    print(f'consolidation auc: {roc_auc}')
+    # get threshold cutoff
+    optimal_idx = np.argmax(cons_tpr - cons_fpr)
+    optimal_threshold = cons_thresholds[optimal_idx]
+    print(f'consolidation optimal threshold: {optimal_threshold} , tpr: {tpr[optimal_idx]}, fpr: {fpr[optimal_idx]}')
+
     cons_np_total_test_loss = np.array(cons_total_test_loss)
     cons_mean_test_loss = np.mean(cons_np_total_test_loss)
     cons_error_test_loss = np.std(cons_np_total_test_loss) / np.sqrt(cons_np_total_test_loss.size) * 1.96
@@ -341,11 +368,14 @@ if __name__ == "__main__":
     parser.add_argument('--is_eval', type=bool, default=False)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--load_net_path', type=str)
+    parser.add_argument('--gg_threshold', type=float)
+    parser.add_argument('--cons_threshold', type=float)
 
     arg = parser.parse_args()
 
     if arg.is_eval:
-        eval(arg.device, arg.pseudo_test_path, arg.load_net_path, batch_size=1, input_channels=6, num_classes=3)
+        eval(arg.device, arg.pseudo_test_path, arg.load_net_path, batch_size=1, input_channels=6, num_classes=3,
+             gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold)
     else:
         train(epo_num=arg.epoch,
               num_classes=3,

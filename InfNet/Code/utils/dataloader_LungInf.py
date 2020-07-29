@@ -153,6 +153,10 @@ class test_dataset:
                                  [0.229, 0.224, 0.225])])
 
         self.gt_transform = transforms.Compose([
+            transforms.Resize((self.testsize, self.testsize)),
+            transforms.ToTensor()])
+
+        self.gt_transform_roc = transforms.Compose([
             transforms.Resize((self.testsize, self.testsize), Image.NEAREST),
             transforms.ToTensor()])
         self.size = len(self.images)
@@ -176,13 +180,14 @@ class test_dataset:
         image = self.rgb_loader(self.images[index])
         image = self.transform(image) #.unsqueeze(0)
         gt = self.binary_loader(self.gts[index])
-        gt = self.gt_transform(gt)
+        gt_cont = self.gt_transform(gt)
+        gt_roc = self.gt_transform_roc(gt)
         name = self.images[index].split('/')[-1]
         if name.endswith('.jpg'):
             name = name.split('.jpg')[0] + '.png'
         self.index += 1
         # return image, gt, name, np.array(F.interpolate(image, gt.size, mode='bilinear'))
-        return image, gt, name
+        return image, gt_cont, gt_roc, name
 
     def rgb_loader(self, path):
         with open(path, 'rb') as f:

@@ -17,21 +17,21 @@
 
 \begin{table*}[!h]
 	\centering
-	\begin{tabular}{| c | c || c c c c c ||}
+	\begin{tabular}{| c | c || c c c c c | c ||}
 		\hline
-		Methods & & Dice & Jaccard & Sen. & Spec. & MAE \\ \hline
-		Single SInfNet &  Mean & \textbf{0.66} & \textbf{0.65} & \textbf{0.45} & 0.99 & 14.43 \\ \cline{2-7}
-		& Error & $\pm$ 0.06 & $\pm$ 0.05 & $\pm$ 0.07 & $\pm$ 0.00 & $\pm$ 0.77 \\ \hline
-		Single SInfNet + data aug(0.4) &  Mean & 0.61 & 0.62 & 0.38 & 0.99 & 16.31 \\ \cline{2-7}
-		& Error & $\pm$ 0.06 & $\pm$0.05 &$\pm$0.07 &$\pm$0.00 &$\pm$0.90 \\ \hline
-		Single SInfNet + data aug (0.5) &  Mean &0.64 &0.63 &0.41 &0.99 & 14.67 \\ \cline{2-7}
-		& Error &$\pm$0.06 &$\pm$0.05 &0.07 &$\pm$0.00 & $\pm$0.82 \\ \hline \hline
-		Single Self-SInfNet &  Mean & 0.61 & 0.63 & 0.35 & \textbf{0.994} & 16.08 \\ \cline{2-7}
-		& Error & $\pm$0.06 & $\pm$0.05 &$\pm$ \textbf{0.06} & $\pm$0.00 & $\pm$ \textbf{0.72} \\ \hline
-		Single Self-SInfNet + data aug &  Mean & 0.58 & 0.60 & 0.37 & 0.99 & \textbf{14.26} \\ \cline{2-7}
-		& Error & $\pm$0.06 & $\pm$0.05 & $\pm$0.07 & $\pm$0.00 & $\pm$0.75 \\ \hline
+		Methods & & Dice & Jaccard & Sen. & Spec. & MAE & AUC \\ \hline
+		Single SInfNet &  Mean & \textbf{0.36} & \textbf{0.27} & \textbf{0.58} & 0.9491 & 14.43 & \textbf{0.9909} \\ \cline{2-7}
+		& Error & $\pm$ 0.058 & $\pm$ 0.047 & $\pm$0.084 & $\pm$ 0.015 & $\pm$ 0.77 & \\ \hline
+		Single SInfNet + data aug(0.4) &  Mean & 0.32 & 0.24 & 0.54 & \textbf{0.9562} & 16.31 & 0.9903 \\ \cline{2-7}
+		& Error & $\pm$0.056  & $\pm$0.046  &$\pm$\textbf{0.082} &$\pm$\textbf{0.015} &$\pm$0.90 & \\ \hline
+		Single SInfNet + data aug (0.5) &  Mean & 0.34 & 0.25 & 0.56 & 0.9474 & 14.67 & 0.9893 \\ \cline{2-7}
+		& Error &$\pm$0.058 &$\pm$0.048 &$\pm$0.084 &$\pm$0.016 & $\pm$0.82 & \\ \hline \hline
+		Single Self-SInfNet &  Mean & 0.31 & 0.24 & 0.51 & 0.9299 & 16.08 & 0.9883  \\ \cline{2-7}
+		& Error & $\pm$0.057 & $\pm$0.047 &$\pm$0.083  & $\pm$0.023 & $\pm$ \textbf{0.72} & \\ \hline
+		Single Self-SInfNet + data aug &  Mean & 0.28 & 0.20 & 0.49 & 0.9450 &  \textbf{14.26} & 0.9795 \\ \cline{2-7}
+		& Error & $\pm$ \textbf{0.054}  & $\pm$ \textbf{0.042} & $\pm$ 0.083 & $\pm$0.019 & $\pm$0.75 & \\ \hline
 	\end{tabular}
-	\caption{Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet}
+	\caption{Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet in the test set.}
 	\label{tab:single}
 \end{table*}
 

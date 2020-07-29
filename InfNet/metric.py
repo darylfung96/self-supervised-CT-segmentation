@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import torch
 
@@ -21,22 +22,29 @@ def performMetrics(hist):
 def dice_similarity_coefficient(predicted_seg, ground_truth_seg):
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
+
     intersection = (a * b).sum()
-    return ((2. * intersection) / (a.sum() + b.sum())).item()
+    dice = ((2. * intersection) / (a.sum() + b.sum())).item()
+    return dice
 
 
 def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg):
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
+
     intersection = (a * b).abs().sum()
     sum_ = torch.sum(a.abs() + b.abs())
-    jaccard = (intersection ) / (sum_ - intersection)
-    return jaccard.item()
+    jaccard = ((intersection) / (sum_ - intersection)).item()
+    return jaccard
 
 
-def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg):
+def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
+
+    if threshold:
+        a[a >= threshold] = 1
+        a[a < threshold] = 0
 
     true_positive = (a * b).sum().detach().cpu().numpy()  # because ground truth is 1, and remove all the other false positive
     false_negative = (b - a).detach().cpu().numpy()
@@ -46,9 +54,13 @@ def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg):
     return sensitivity
 
 
-def specificity_similarity_coefficient(predicted_seg, ground_truth_seg):
+def specificity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
+
+    if threshold:
+        a[a >= threshold] = 1
+        a[a < threshold] = 0
 
     inverted_b = 1 - b
     inverted_a = 1 - a
