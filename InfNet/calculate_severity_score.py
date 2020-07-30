@@ -180,6 +180,9 @@ if __name__ == '__main__':
 
     model = Inf_Net(channel=args.net_channel, n_class=args.n_classes).to(args.device)
     multi_model = Inf_Net_UNet(n_channels=6, n_classes=3).to(args.device)
+
+    model.eval()
+    multi_model.eval()
     if args.load_net_path:
         print('loading weights')
         net_state_dict = torch.load(args.load_net_path, map_location=torch.device(args.device))
