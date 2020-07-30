@@ -95,7 +95,7 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         # multi segmentation
         multi_input_image = cv2.imread(input_image_filename)
         multi_input_image = cv2.resize(multi_input_image, (352, 352))
-        pseudo_image_filename = os.path.join(save_segment_path, input_image.replace('.jpg', 'png'))
+        pseudo_image_filename = os.path.join(save_segment_path, input_image.replace('.jpg', '.png'))
         pseudo = cv2.imread(pseudo_image_filename)
         pseudo = cv2.resize(pseudo, (352, 352))
 
