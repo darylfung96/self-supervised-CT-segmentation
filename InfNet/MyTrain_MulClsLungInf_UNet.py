@@ -231,8 +231,8 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
 
         # calculate ground-glass opacities metrics
         loss = torch.mean(torch.abs(gg_output - gg_img_mask))
-        dice = dice_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
-        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
+        dice = dice_similarity_coefficient(gg_output, gg_img_mask)
+        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask)
         sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
         specificity = specificity_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
         gg_total_test_loss.append(loss.item())
@@ -243,8 +243,8 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
 
         # calculate consolidation metrics
         loss = torch.mean(torch.abs(cons_output - cons_img_mask))
-        dice = dice_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
-        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
+        dice = dice_similarity_coefficient(cons_output, cons_img_mask)
+        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask)
         sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
         specificity = specificity_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
         cons_total_test_loss.append(loss.item())
@@ -270,7 +270,8 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     # get threshold cutoff
     optimal_idx = np.argmax(gg_tpr - gg_fpr)
     optimal_threshold = gg_thresholds[optimal_idx]
-    print(f'ground-glass opacity optimal threshold: {optimal_threshold} , tpr: {tpr[optimal_idx]}, fpr: {fpr[optimal_idx]}')
+    print(f'ground-glass opacity optimal threshold: {optimal_threshold} , '
+          f'tpr: {gg_tpr[optimal_idx]}, fpr: {gg_fpr[optimal_idx]}')
 
     gg_np_total_test_loss = np.array(gg_total_test_loss)
     gg_mean_test_loss = np.mean(gg_np_total_test_loss)
@@ -299,7 +300,8 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     # get threshold cutoff
     optimal_idx = np.argmax(cons_tpr - cons_fpr)
     optimal_threshold = cons_thresholds[optimal_idx]
-    print(f'consolidation optimal threshold: {optimal_threshold} , tpr: {tpr[optimal_idx]}, fpr: {fpr[optimal_idx]}')
+    print(f'consolidation optimal threshold: {optimal_threshold} , tpr: {cons_tpr[optimal_idx]}, '
+          f'fpr: {cons_fpr[optimal_idx]}')
 
     cons_np_total_test_loss = np.array(cons_total_test_loss)
     cons_mean_test_loss = np.mean(cons_np_total_test_loss)

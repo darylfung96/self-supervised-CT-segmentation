@@ -36,6 +36,7 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
     print(lung_model)
     lung_model.load_state_dict(torch.load(snapshot_dir, map_location=torch.device(device)))
     lung_model.eval()
+    os.makedirs(save_path, exist_ok=True)
 
     for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
         img = img.to(device)
@@ -56,7 +57,6 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
         pred[:, :, 1] = pred_rgb[:, :, 2]
 
         # pred = misc.imresize(pred, size=(w_gt, h_gt))
-        os.makedirs(save_path, exist_ok=True)
         imageio.imwrite(save_path + name[0].replace('.jpg', '.png'), pred)
         # split_class(save_path, name[0].replace('.jpg', '.png'), w_gt, h_gt) #undo this line for now
 
