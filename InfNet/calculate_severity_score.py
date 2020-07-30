@@ -42,7 +42,7 @@ def create_imgs_ictcf(ictcf_input_dir, input_dir, ictcf_output_dir):
 
 
 def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_binary_segment_path, severity_dict, model,
-                       save_multi_segment_path, save_binary_multi_segment_path, multi_model):
+                       save_multi_segment_path, save_binary_multi_segment_path, multi_model, device):
     os.makedirs(save_segment_path, exist_ok=True)
     os.makedirs(save_binary_segment_path, exist_ok=True)
     os.makedirs(save_multi_segment_path, exist_ok=True)
@@ -79,7 +79,7 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         input_image_filename = os.path.join(input_dir, input_image)
         img = Image.open(input_image_filename)
         img = img.convert('RGB')
-        image = transform(img).unsqueeze(0)
+        image = transform(img).unsqueeze(0).to(device)
 
         lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
         res = lateral_map_2
@@ -99,8 +99,8 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         pseudo = cv2.imread(pseudo_image_filename)
         pseudo = cv2.resize(pseudo, (352, 352))
 
-        multi_input_image = multi_transform(multi_input_image).unsqueeze(0)
-        pseudo = multi_transform(pseudo).unsqueeze(0)
+        multi_input_image = multi_transform(multi_input_image).unsqueeze(0).to(device)
+        pseudo = multi_transform(pseudo).unsqueeze(0).to(device)
 
         output = multi_model(torch.cat((multi_input_image, pseudo), dim=1))
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
@@ -197,5 +197,5 @@ if __name__ == '__main__':
                        severity_dict, model,
                        save_multi_segment_path=args.save_multi_segment_path,
                        save_binary_multi_segment_path=args.save_binary_multi_segment_path,
-                       multi_model=multi_model)
+                       multi_model=multi_model, device=args.device)
     # create_imgs_ictcf(args.ictcf_input_dir, args.input_dir, args.ictcf_output_dir)
