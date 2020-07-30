@@ -89,13 +89,13 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         res_denominator = res.max() - res.min() + 1e-8
         prediction = res_numerator / res_denominator
 
-        imageio.imwrite(os.path.join(save_segment_path, input_image), prediction)
-        cv2.imwrite(os.path.join(save_binary_segment_path, input_image), prediction)
+        imageio.imwrite(os.path.join(save_segment_path, input_image.replace('.jpg', '.png')), prediction)
+        cv2.imwrite(os.path.join(save_binary_segment_path, input_image.replace('.jpg', '.png')), prediction)
 
         # multi segmentation
         multi_input_image = cv2.imread(input_image_filename)
         multi_input_image = cv2.resize(multi_input_image, (352, 352))
-        pseudo_image_filename = os.path.join(save_segment_path, input_image)
+        pseudo_image_filename = os.path.join(save_segment_path, input_image.replace('.jpg', 'png'))
         pseudo = cv2.imread(pseudo_image_filename)
         pseudo = cv2.resize(pseudo, (352, 352))
 
