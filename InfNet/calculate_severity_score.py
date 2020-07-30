@@ -70,11 +70,11 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
             continue
 
         # get ground truth score
-        patient_name = input_image.split('.')[0].split('_')[0]
-        gronud_truth_severity = severity_dict[patient_name]
-        ground_truth_score = severe_to_score.get(gronud_truth_severity, None)
-        if ground_truth_score is None:
-            continue
+        # patient_name = input_image.split('.')[0].split('_')[0]
+        # gronud_truth_severity = severity_dict[patient_name]
+        # ground_truth_score = severe_to_score.get(gronud_truth_severity, None)
+        # if ground_truth_score is None:
+        #     continue
         #
         input_image_filename = os.path.join(input_dir, input_image)
         img = Image.open(input_image_filename)
