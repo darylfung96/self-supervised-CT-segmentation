@@ -36,26 +36,26 @@
 \end{table*}
 
 \begin{table*}[!h]
-	\small
 	\centering
-	\begin{tabular}{| c | c || c c c c c || c c c c c |}
+	\small
+	\begin{tabular}{| c | c || c c c c c | c || c c c c c | c |}
 		\hline
-		& &\multicolumn{5}{c||}{Ground-Glass Opacity} & \multicolumn{5}{c|}{Consolidation}\\ \cline{3-12}
-		Methods & & Dice & Jaccard & Sen. & Spec. & MAE & Dice & Jaccard & Sen. & Spec. & MAE \\\hline
-		Multi SInfNet & Mean & \textbf{0.31} & \textbf{0.22} & \textbf{0.54} & 0.9691 & 0.32 & \textbf{0.17} & \textbf{0.13}  & 0.25 & \textbf{0.9915} & 0.007  \\ \cline{2-12}
-		& Error & $\pm$0.050 & $\pm$0.038 & $\pm$0.074 & $\pm$0.007 & $\pm$0.004 & $\pm$0.052 & $\pm$0.043 & $\pm$\textbf{0.070} & $\pm$\textbf{0.003} & $\pm$0.003 \\ \hline \hline
+		& &\multicolumn{6}{c||}{Ground-Glass Opacity} & \multicolumn{6}{c|}{Consolidation}\\ \cline{3-14}
+		Methods & & Dice & Jac & Sen. & Spec. & MAE & AUC & Dice & Jac & Sen. & Spec. & MAE & AUC \\\hline
+		SInfNet & Mean & \textbf{0.34} & \textbf{0.24} & \textbf{0.41} & 0.9936 & 0.010 & \textbf{0.86} & \textbf{0.18} & \textbf{0.14}  & \textbf{0.20} & 0.9976 & 0.006 & \textbf{0.75}  \\ \cline{2-14}
+		& Error & $\pm$0.052 & $\pm$0.040 & $\pm$0.067 & $\pm$0.003 & $\pm$0.004 & & $\pm$0.055 & $\pm$0.047 & $\pm$0.061 & $\pm$ 0.001 & $\pm$0.003 & \\ \hline \hline
 		
-		\vtop{\hbox{\strut Multi SInfNet+}\hbox{\strut data aug(0.4)}} & Mean & 0.28 & 0.20 & 0.52 & 0.9567 & 0.01 & 0.14 & 0.10 & 0.29 & 0.948 & 0.01  \\ \cline{2-12}
-		& Error & $\pm$ 0.050 & $\pm$ 0.038 & $\pm$ 0.076 & $\pm$ 0.009 & $\pm$ 0.004 & $\pm$ 0.045 & $\pm$ 0.036 & $\pm$ 0.077 & $\pm$ 0.011 & $\pm$ 0.004  \\ \hline \hline
+		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.4)}} & Mean & 0.31 & 0.22 & 0.38 & 0.9939 & 0.009 & 0.87 & 0.15 & 0.11 & 0.17 & 0.9944 & 0.009 & 0.73  \\ \cline{2-14}
+		& Error & $\pm$ 0.053 & $\pm$0.042  & $\pm$0.067 & $\pm$0.003 & $\pm$\textbf{0.003} & & $\pm$0.048 & $\pm$0.039 & $\pm$\textbf{0.055} & $\pm$0.002 & $\pm$0.004 & \\ \hline \hline
 		
-		\vtop{\hbox{\strut Multi SInfNet+}\hbox{\strut data aug(0.5)}} & Mean & 0.29 & 0.21 & 0.53 & 0.9649 & 0.01 & 0.14 & 0.11 & \textbf{0.29} & 0.971 & 0.007  \\ \cline{2-12}
-		& Error & $\pm$ 0.050 & $\pm$ 0.039 & $\pm$ \textbf{0.037} & $\pm$ 0.009 & $\pm$ 0.004 & $\pm$ 0.047 & $\pm$ 0.039 & $\pm$ 0.076 & $\pm$ 0.007 & $\pm$ 0.004  \\ \hline \hline
+		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.5)}} & Mean & 0.31 & 0.22 & 0.37 & 0.9931 & 0.010 & 0.86 & 0.15 & 0.11 & 0.15 & 0.9981 & 0.006 & 0.70 \\ \cline{2-14}
+		& Error & $\pm$ 0.052 & $\pm$ 0.041 & $\pm$ 0.065 & $\pm$0.003 & $\pm$0.004 & & $\pm$0.050 & $\pm$0.042 & $\pm$0.055 & $\pm$0.001 & $\pm$0.004 & \\ \hline \hline
 		
-		\vtop{\hbox{\strut Multi}\hbox{\strut Self-SInfNet}} & Mean & 0.29 & 0.20 & 0.44 & \textbf{0.9796} & \textbf{0.01} & 0.15 & 0.12 & 0.28 & 0.9761 & \textbf{0.001}  \\ \cline{2-12}
-		& Error & $\pm$ 0.050 & $\pm$ 0.038 & $\pm$ 0.069 & $\pm$ \textbf{0.006} & $\pm$ 0.004 & $\pm$ 0.051 & $\pm$ 0.044 & $\pm$ 0.076 & $\pm$ 0.007 & $\pm$ \textbf{0.003}  \\ \hline \hline
+		\vtop{\hbox{\strut SSInfNet}\hbox{\strut }} & Mean & 0.30 & 0.21 & 0.33 & \textbf{0.9947} & \textbf{0.009} & 0.83 & 0.16 & 0.12 & 0.17 & 0.9985 & \textbf{0.005} & 0.72  \\ \cline{2-14}
+		& Error & $\pm$0.052 & $\pm$0.040 & $\pm$0.062 & $\pm$0.003 & $\pm$0.004 & & $\pm$0.053 & $\pm$0.046 & $\pm$0.059 & $\pm$0.001 & $\pm$\textbf{0.003} &  \\ \hline \hline
 		
-		\vtop{\hbox{\strut Multi Self-SInfNet+}\hbox{\strut data aug}} & Mean & 0.28 & 0.19 & 0.48 & 0.9538 & 0.01 & 0.12 & 0.09 & 0.26 & 0.9444 & 0.01  \\ \cline{2-12}
-		& Error & $\pm$ \textbf{0.048} & $\pm$ \textbf{0.036} & $\pm$ 0.073 & $\pm$ 0.017 & $\pm$ \textbf{0.004} & $\pm$ \textbf{0.043} & $\pm$ \textbf{0.035} & $\pm$ 0.074 & $\pm$ 0.016 & $\pm$ 0.004  \\ \hline \hline
+		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut data aug}} & Mean & 0.30 & 0.21 & 0.33 & 0.9928 & 0.01 & 0.83 & 0.12 & 0.09 & 0.15 & \textbf{0.9988} & 0.01 & 0.61 \\ \cline{2-14}
+		& Error & $\pm$\textbf{0.051} & $\pm$\textbf{0.039} & $\pm$0.062 & $\pm$0.003 & $\pm$0.004 & & $\pm$\textbf{0.045} & $\pm$\textbf{0.037} & $\pm$0.056 & $\pm$\textbf{0.001} & $\pm$0.004 & \\ \hline \hline
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet}
 	\label{tab:multi-weakprior}
@@ -64,24 +64,24 @@
 \begin{table*}[!h]
 	\centering
 	\small
-	\begin{tabular}{| c | c || c c c c c || c c c c c |}
+	\begin{tabular}{| c | c || c c c c c | c || c c c c c | c |}
 		\hline
-		& &\multicolumn{5}{c||}{Ground-Glass Opacity} & \multicolumn{5}{c|}{Consolidation}\\ \cline{3-12}
-		Methods & & Dice & Jaccard & Sen. & Spec. & MAE & Dice & Jaccard & Sen. & Spec. & MAE \\\hline
-		Multi SInfNet & Mean & 0.55 & 0.72 & \textbf{0.60} & 0.996 & 0.005 & 0.21 & 0.57  & \textbf{0.23}  &0.998  &0.004   \\ \cline{2-12}
-		& Error & $\pm$ 0.07 & $\pm$ 0.03 & $\pm$ 0.08 & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.06 & $\pm$ 0.03 & $\pm$ 0.07 & $\pm$ 0.0007 & $\pm$ 0.002 \\ \hline \hline
+		& &\multicolumn{6}{c||}{Ground-Glass Opacity} & \multicolumn{6}{c|}{Consolidation}\\ \cline{3-14}
+		Methods & & Dice & Jac & Sen. & Spec. & MAE & AUC & Dice & Jac & Sen. & Spec. & MAE & AUC \\\hline
+		SInfNet & Mean & 0.61 & \textbf{0.57} & 0.61 & 0.9970 & 0.004 & 0.96 & \textbf{0.21} & 0.17 & \textbf{0.22} & 0.9991 & 0.004 & 0.80 \\ \cline{2-14}
+		& Error & $\pm$0.078 & $\pm$0.075 & $\pm$0.078 & $\pm$0.002 & $\pm$0.003 & & $\pm$0.061 & $\pm$0.054 & $\pm$0.067 & $\pm$0.0004 & $\pm$0.002 & \\ \hline \hline
 		
-		Multi SInfNet+data aug(0.4) & Mean & 0.54 & 0.73 & 0.57 & 0.996 & 0.005 & 0.20 & 0.59 & 0.21 & 0.998 & 0.005  \\ \cline{2-12}
-		& Error & $\pm$ 0.07 & $\pm$ 0.03 & $\pm$ 0.07 & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.05 & $\pm$ 0.03 & $\pm$ 0.06 & $\pm$ 0.0005 & $\pm$ 0.003  \\ \hline \hline
+		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.4)}} & Mean & 0.60 & 0.56 & 0.61 & 0.9965 & 0.004 & \textbf{0.98} & 0.20 & \textbf{0.17} & 0.21 & \textbf{0.9996} & 0.004 & 0.76 \\ \cline{2-14}
+		& Error & $\pm$0.079 & $\pm$0.078 & $\pm$0.081 & $\pm$0.003 & $\pm$0.003 & & $\pm$0.060 & $\pm$0.052 & $\pm$0.065 & $\pm$\textbf{0.0002} & $\pm$0.003 &  \\ \hline \hline
 		
-		Multi SInfNet+data aug(0.5) & Mean & 0.54 & 0.70 & 0.59 & 0.996 & 0.005 & 0.19 & 0.56 & 0.20 & 0.999 & 0.005  \\ \cline{2-12}
-		& Error & $\pm$ 0.07 & $\pm$ 0.03 & $\pm$ 0.08 & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.05 & $\pm$ \textbf{0.03} & $\pm$ 0.06 & $\pm$ \textbf{0.0004} & $\pm$ 0.003  \\ \hline \hline
+		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.5)}} & Mean & 0.61 & 0.57 & \textbf{0.62} & 0.9964 & 0.004 & 0.97 & 0.19 & 0.16 & 0.20 & 0.9995 & 0.004 & 0.76 \\ \cline{2-14}
+		& Error & $\pm$0.078 & $\pm$0.077 & $\pm$0.081 & $\pm$0.003 & $\pm$0.003 & & $\pm$0.060 & $\pm$0.052 & $\pm$0.065 & $\pm$0.0002 & $\pm$0.003 & \\ \hline \hline
 
-		Multi Self-SInfNet & Mean & \textbf{0.61} & \textbf{0.83} & 0.59 & \textbf{0.997} & \textbf{0.004} & \textbf{0.26} & \textbf{0.78} & 0.21 & \textbf{0.999} & \textbf{0.004}  \\ \cline{2-12}
-		& Error & $\pm$0.07 & $\pm$0.03 & $\pm$0.08 & $\pm$0.003 & $\pm$\textbf{0.002} & $\pm$0.05 & $\pm$0.04 &$\pm$0.07 & $\pm$0.001 &$\pm$ \textbf{0.002}  \\ \hline \hline
+		SSInfNet & Mean & 0.60 & 0.56 & 0.61 & \textbf{0.9974} & \textbf{0.003} & 0.96 & 0.20 & 0.16 & 0.22 & 0.9991 & \textbf{0.003} & 0.83 \\ \cline{2-14}
+		& Error & $\pm$0.077 & $\pm$0.075 & $\pm$0.078 & $\pm$\textbf{0.002} & $\pm$\textbf{0.002} & & $\pm$0.061 & $\pm$0.054 &$\pm$0.068 & $\pm$0.0005 &$\pm$\textbf{0.002} &  \\ \hline \hline
 		
-		Multi Self-SInfNet+data aug & Mean & 0.55 & 0.77 & 0.51 & 0.996 & 0.005 & 0.22 & 0.65 & 0.20 & 0.998 & 0.005  \\ \cline{2-12}
-		& Error & $\pm$ \textbf{0.06} & $\pm$ 0.03 & $\pm$ \textbf{0.07} & $\pm$ 0.003 & $\pm$ 0.003 & $\pm$ 0.05 & $\pm$ 0.05 & $\pm$ \textbf{0.06} & $\pm$ 0.001 & $\pm$ 0.003  \\ \hline \hline
+		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut data aug}}& Mean & 0.57 & 0.52 & 0.58 & 0.9967 & 0.004 & 0.97 & 0.19 & 0.15 & 0.20 & 0.9994 & 0.004 & \textbf{0.87} \\ \cline{2-14}
+		& Error & $\pm$\textbf{0.075} & $\pm$\textbf{0.071} & $\pm$\textbf{0.076} & $\pm$0.003 & $\pm$0.003 & & $\pm$\textbf{0.058} & $\pm$\textbf{0.050} & $\pm$\textbf{0.064} & $\pm$0.0003 & $\pm$0.002 & \\ \hline \hline
 	\end{tabular}
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the test set.}
 	\label{tab:multi-strongprior}
