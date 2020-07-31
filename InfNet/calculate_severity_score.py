@@ -9,6 +9,7 @@ from shutil import copyfile
 import torchvision.transforms as transforms
 import torch.nn.functional as F
 import imageio
+from skimage import img_as_ubyte
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 
@@ -89,7 +90,7 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         res_denominator = res.max() - res.min() + 1e-8
         prediction = res_numerator / res_denominator
 
-        imageio.imwrite(os.path.join(save_segment_path, input_image.replace('.jpg', '.png')), prediction)
+        imageio.imwrite(os.path.join(save_segment_path, input_image.replace('.jpg', '.png')), img_as_ubyte(prediction))
         cv2.imwrite(os.path.join(save_binary_segment_path, input_image.replace('.jpg', '.png')), prediction)
 
         # multi segmentation
@@ -113,8 +114,8 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         pred[:, :, 0] = pred_rgb[:, :, 1]
         pred[:, :, 1] = pred_rgb[:, :, 2]
 
-        imageio.imwrite(os.path.join(save_multi_segment_path, input_image), pred)
-        cv2.imwrite(os.path.join(save_binary_multi_segment_path, input_image), pred)
+        imageio.imwrite(os.path.join(save_multi_segment_path, input_image.replace('.jpg', '.png')), img_as_ubyte(pred))
+        cv2.imwrite(os.path.join(save_binary_multi_segment_path, input_image.replace('.jpg', '.png')), pred)
 
     #     parenchyma_image = parenchyma_images[index]
     #     parenchyma_filename = os.path.join(parenchyma_input_dir, parenchyma_image)
