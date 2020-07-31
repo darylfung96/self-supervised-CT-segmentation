@@ -227,10 +227,10 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         cons_img_mask = img_mask[0, 2]
 
         # append gt
-        gg_gt += gg_img_mask.view(-1).detach().numpy().tolist()
-        cons_gt += cons_img_mask.view(-1).detach().numpy().tolist()
-        gg_roc += gg_output.view(-1).detach().numpy().tolist()
-        cons_roc += cons_output.view(-1).detach().numpy().tolist()
+        gg_gt += gg_img_mask.view(-1).cpu().detach().numpy().tolist()
+        cons_gt += cons_img_mask.view(-1).cpu().detach().numpy().tolist()
+        gg_roc += gg_output.view(-1).cpu().detach().numpy().tolist()
+        cons_roc += cons_output.view(-1).cpu().detach().numpy().tolist()
 
         # calculate ground-glass opacities metrics
         loss = torch.mean(torch.abs(gg_output - gg_img_mask))
