@@ -50,7 +50,7 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 
         # output b*n_class*h*w -- > b*h*w
         pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w, h).numpy().squeeze()
-        pred_rgb = (np.arange(3) == pred[..., None]).astype(float)
+        pred_rgb = (np.arange(3) == pred[..., None]).astype(np.float64)
         # swap the rgb content so the background is black instead of red
         pred = np.zeros(pred_rgb.shape)
         pred[:, :, 0] = pred_rgb[:, :, 1]

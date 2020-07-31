@@ -90,7 +90,7 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         res_denominator = res.max() - res.min() + 1e-8
         prediction = res_numerator / res_denominator
 
-        imageio.imwrite(os.path.join(save_segment_path, input_image.replace('.jpg', '.png')), img_as_ubyte(prediction))
+        imageio.imwrite(os.path.join(save_segment_path, input_image.replace('.jpg', '.png')), img_as_ubyte(prediction.astype(np.float64)))
         cv2.imwrite(os.path.join(save_binary_segment_path, input_image.replace('.jpg', '.png')), prediction)
 
         # multi segmentation
@@ -108,7 +108,7 @@ def calculate_severity(input_dir, parenchyma_input_dir, save_segment_path, save_
         b, _, w, h = output.size()
         # output b*n_class*h*w -- > b*h*w
         pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, 3).max(1)[1].view(b, w, h).numpy().squeeze()
-        pred_rgb = (np.arange(3) == pred[..., None]).astype(float)
+        pred_rgb = (np.arange(3) == pred[..., None]).astype(np.float64)
         # swap the rgb content so the background is black instead of red
         pred = np.zeros(pred_rgb.shape)
         pred[:, :, 0] = pred_rgb[:, :, 1]
