@@ -217,9 +217,12 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
 
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
+        b, _, w, h = output.size()
+        pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w, h).numpy().squeeze()
+        pred_onehot = (np.arange(3) == pred[..., None]).astype(np.float64)
 
-        gg_output = output[0, 1]
-        cons_output = output[0, 2]
+        gg_output = torch.from_numpy(pred_onehot[:, :, 1])
+        cons_output = torch.from_numpy(pred_onehot[:, :, 2])
         gg_img_mask = img_mask[0, 1]
         cons_img_mask = img_mask[0, 2]
 

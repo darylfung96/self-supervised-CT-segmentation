@@ -25,7 +25,11 @@ def dice_similarity_coefficient(predicted_seg, ground_truth_seg):
 
     intersection = (a * b).sum()
     dice = ((2. * intersection) / (a.sum() + b.sum())).item()
-    return dice
+
+    if math.isnan(dice):
+        return 0
+    else:
+        return dice
 
 
 def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg):
@@ -35,7 +39,11 @@ def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg):
     intersection = (a * b).abs().sum()
     sum_ = torch.sum(a.abs() + b.abs())
     jaccard = ((intersection) / (sum_ - intersection)).item()
-    return jaccard
+
+    if math.isnan(jaccard):
+        return 0
+    else:
+        return jaccard
 
 
 def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
