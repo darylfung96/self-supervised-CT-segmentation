@@ -221,8 +221,8 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w, h).numpy().squeeze()
         pred_onehot = (np.arange(3) == pred[..., None]).astype(np.float64)
 
-        gg_output = torch.from_numpy(pred_onehot[:, :, 1])
-        cons_output = torch.from_numpy(pred_onehot[:, :, 2])
+        gg_output = torch.from_numpy(pred_onehot[:, :, 1]).to(device)
+        cons_output = torch.from_numpy(pred_onehot[:, :, 2]).to(device)
         gg_img_mask = img_mask[0, 1]
         cons_img_mask = img_mask[0, 2]
 
