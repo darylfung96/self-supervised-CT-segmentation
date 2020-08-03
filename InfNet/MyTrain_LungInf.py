@@ -8,7 +8,7 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 """
 
 import torch
-import pandas as pd
+import math
 from torch.utils.data.dataloader import DataLoader
 from torch.autograd import Variable
 import os
@@ -182,6 +182,8 @@ def eval(test_loader, model, device, load_net_path, threshold):
     total_spec_3 = []
     total_spec_2 = []
 
+    total_auc_2 = []
+
     roc_2 = []
     ground_truth_list = []
 
@@ -199,84 +201,116 @@ def eval(test_loader, model, device, load_net_path, threshold):
         # loss4 = joint_loss(lateral_map_4, gt)
         # loss3 = joint_loss(lateral_map_3, gt)
         # loss2 = joint_loss(lateral_map_2, gt)
-        loss5 = torch.mean(torch.abs(lateral_map_5 - gt_cont))
-        loss4 = torch.mean(torch.abs(lateral_map_4 - gt_cont))
-        loss3 = torch.mean(torch.abs(lateral_map_3 - gt_cont))
+        # loss5 = torch.mean(torch.abs(lateral_map_5 - gt_cont))
+        # loss4 = torch.mean(torch.abs(lateral_map_4 - gt_cont))
+        # loss3 = torch.mean(torch.abs(lateral_map_3 - gt_cont))
         loss2 = torch.mean(torch.abs(lateral_map_2 - gt_cont))
-        total_loss_5.append(loss5.item())
-        total_loss_4.append(loss4.item())
-        total_loss_3.append(loss3.item())
+        # total_loss_5.append(loss5.item())
+        # total_loss_4.append(loss4.item())
+        # total_loss_3.append(loss3.item())
         total_loss_2.append(loss2.item())
 
-        total_dice_5.append(dice_similarity_coefficient(lateral_map_5.sigmoid(), gt_cont))
-        total_dice_4.append(dice_similarity_coefficient(lateral_map_4.sigmoid(), gt_cont))
-        total_dice_3.append(dice_similarity_coefficient(lateral_map_3.sigmoid(), gt_cont))
-        total_dice_2.append(dice_similarity_coefficient(lateral_map_2.sigmoid(), gt_cont))
+        # total_dice_5.append(dice_similarity_coefficient(lateral_map_5.sigmoid(), gt_cont))
+        # total_dice_4.append(dice_similarity_coefficient(lateral_map_4.sigmoid(), gt_cont))
+        # total_dice_3.append(dice_similarity_coefficient(lateral_map_3.sigmoid(), gt_cont))
+        current_dice = dice_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        if not math.isnan(current_dice):
+            total_dice_2.append(current_dice)
 
-        total_jaccard_5.append(jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt_cont))
-        total_jaccard_4.append(jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt_cont))
-        total_jaccard_3.append(jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt_cont))
-        total_jaccard_2.append(jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt_cont))
+        # total_jaccard_5.append(jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt_cont))
+        # total_jaccard_4.append(jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt_cont))
+        # total_jaccard_3.append(jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt_cont))
+        current_jaccard = jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        if not math.isnan(current_jaccard):
+            total_jaccard_2.append(current_jaccard)
 
-        # roc_2 += lateral_map_2.sigmoid().detach().view(-1).cpu().numpy().tolist()
-        # ground_truth_list += gt_roc.detach().view(-1).cpu().numpy().tolist()
+        roc_2 += lateral_map_2.sigmoid().detach().view(-1).cpu().numpy().tolist()
+        ground_truth_list += gt_roc.detach().view(-1).cpu().numpy().tolist()
 
-        total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
-        total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
-        total_sens_3.append(sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
-        total_sens_2.append(sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold))
+        # total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
+        # total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
+        # total_sens_3.append(sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
+        current_sens = sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        if not math.isnan(current_sens):
+            total_sens_2.append(current_sens)
 
-        total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
-        total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
-        total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
-        total_spec_2.append(specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold))
+        # total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
+        # total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
+        # total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
+        current_spec = specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        if not math.isnan(current_spec):
+            total_spec_2.append(current_spec)
 
-    # fpr, tpr, thresholds = roc_curve(ground_truth_list, roc_2)
+        fpr, tpr, thresholds = roc_curve(gt_roc.view(-1).detach().cpu().numpy(),
+                                         lateral_map_2.sigmoid().view(-1).detach().cpu().numpy())
+        roc_auc_2 = auc(fpr, tpr)
+        if not math.isnan(roc_auc_2):
+            total_auc_2.append(roc_auc_2)
 
-    # roc_auc = auc(fpr, tpr)
-    # print(f'auc: {roc_auc}')
-    # # get threshold cutoff
-    # optimal_idx = np.argmax(tpr - fpr)
-    # optimal_threshold = thresholds[optimal_idx]
-    # print(f'optimal threshold: {optimal_threshold} , tpr: {tpr[optimal_idx]}, fpr: {fpr[optimal_idx]}')
-    #
-    # plt.figure()
-    # lw = 2
-    # plt.plot(fpr, tpr, color='darkorange',
-    #          lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
-    # plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    # plt.xlim([0.0, 1.0])
-    # plt.ylim([0.0, 1.05])
-    # plt.xlabel('False Positive Rate')
-    # plt.ylabel('True Positive Rate')
-    # plt.title('Receiver operating characteristic example')
-    # plt.legend(loc="lower right")
-    # plt.show()
+    fpr, tpr, thresholds = roc_curve(ground_truth_list, roc_2)
 
-    accumulated_loss = (np.array(total_loss_2) + np.array(total_loss_3) + np.array(total_loss_4) + np.array(
-        total_loss_5)) / 4
+    sensitivity = sensitivity_similarity_coefficient(torch.from_numpy(np.array(roc_2)),
+                                                     torch.from_numpy(np.array(ground_truth_list)), threshold)
+    print(f'the sensitivity of all images: {sensitivity}')
+
+    roc_auc = auc(fpr, tpr)
+    print(f'auc: {roc_auc}')
+    # get threshold cutoff
+    optimal_idx = np.argmax(tpr - fpr)
+    optimal_threshold = thresholds[optimal_idx]
+    optimal_fpr = fpr[optimal_idx]
+    optimal_tpr = tpr[optimal_idx]
+    print(f'optimal threshold: {optimal_threshold} , tpr: {tpr[optimal_idx]}, fpr: {fpr[optimal_idx]}')
+
+    plt.figure()
+    lw = 2
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.plot(optimal_fpr, optimal_tpr, 'go')
+    plt.annotate(f'{optimal_threshold}', (optimal_fpr, optimal_tpr))
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Baseline Single InfNet')
+    plt.legend(loc="lower right")
+    plt.show()
+
+    # accumulated_loss = (np.array(total_loss_2) + np.array(total_loss_3) + np.array(total_loss_4) + np.array(
+    #     total_loss_5)) / 4
+    accumulated_loss = np.array(total_loss_2)
     mean_loss = np.mean(accumulated_loss)
     error_loss = np.std(accumulated_loss) / np.sqrt(accumulated_loss.size) * 1.96
 
-    accumulated_dice = (np.array(total_dice_2) + np.array(total_dice_3) + np.array(total_dice_4) + np.array(
-        total_dice_5)) / 4
+    # accumulated_dice = (np.array(total_dice_2) + np.array(total_dice_3) + np.array(total_dice_4) + np.array(
+    #     total_dice_5)) / 4
+    accumulated_dice = np.array(total_dice_2)
     mean_dice = np.mean(accumulated_dice)
     error_dice = np.std(accumulated_dice) / np.sqrt(accumulated_dice.size) * 1.96
 
-    accumulated_jaccard = (np.array(total_jaccard_2) + np.array(total_jaccard_3) + np.array(total_jaccard_4) + np.array(
-        total_jaccard_5)) / 4
+    # accumulated_jaccard = (np.array(total_jaccard_2) + np.array(total_jaccard_3) + np.array(total_jaccard_4) + np.array(
+    #     total_jaccard_5)) / 4
+    accumulated_jaccard = np.array(total_jaccard_2)
     mean_jaccard = np.mean(accumulated_jaccard)
     error_jaccard = np.std(accumulated_jaccard) / np.sqrt(accumulated_jaccard.size) * 1.96
 
-    accumulated_sens = (np.array(total_sens_2) + np.array(total_sens_3) + np.array(total_sens_4) + np.array(
-        total_sens_5)) / 4
+    # accumulated_sens = (np.array(total_sens_2) + np.array(total_sens_3) + np.array(total_sens_4) + np.array(
+    #     total_sens_5)) / 4
+    accumulated_sens = np.array(total_sens_2)
     mean_sens = np.mean(accumulated_sens)
     error_sens = np.std(accumulated_sens) / np.sqrt(accumulated_sens.size) * 1.96
 
-    accumulated_spec = (np.array(total_spec_2) + np.array(total_spec_3) + np.array(total_spec_4) + np.array(
-        total_spec_5)) / 4
+    # accumulated_spec = (np.array(total_spec_2) + np.array(total_spec_3) + np.array(total_spec_4) + np.array(
+    #     total_spec_5)) / 4
+    accumulated_spec = np.array(total_spec_2)
     mean_spec = np.mean(accumulated_spec)
     error_spec = np.std(accumulated_spec) / np.sqrt(accumulated_spec.size) * 1.96
+
+    accumulated_auc = np.array(total_auc_2)
+    mean_auc = np.mean(accumulated_auc)
+    error_auc = np.std(accumulated_auc) / np.sqrt(accumulated_auc.size) * 1.96
+
 
     with open('single_metric.txt', 'a') as f:
         f.write(load_net_path + '\n')
@@ -298,6 +332,9 @@ def eval(test_loader, model, device, load_net_path, threshold):
     print('=============================')
     print(f'mean spec: {mean_spec}')
     print(f'error spec: {error_spec}')
+    print('=============================')
+    print(f'mean auc: {mean_auc}')
+    print(f'error auc: {error_auc}')
 
 
 if __name__ == '__main__':

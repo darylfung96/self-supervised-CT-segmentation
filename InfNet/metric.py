@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import torch
+from sklearn.metrics import confusion_matrix
 
 
 def fast_hist(a, b, n):
@@ -19,65 +20,61 @@ def performMetrics(hist):
     return 100*np.nanmean(mean_iou), 100*pixel_accuracy, 100*fwavacc
 
 
-def dice_similarity_coefficient(predicted_seg, ground_truth_seg):
+def dice_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
+
+    if threshold:
+        a[a >= threshold] = 1
+        a[a < threshold] = 0
 
     intersection = (a * b).sum()
     dice = ((2. * intersection) / (a.sum() + b.sum())).item()
-
-    if math.isnan(dice):
-        return 0
-    else:
-        return dice
+    return dice
 
 
-def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg):
+def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
     a = predicted_seg.view(-1)
     b = ground_truth_seg.view(-1)
+
+    if threshold:
+        a[a >= threshold] = 1
+        a[a < threshold] = 0
 
     intersection = (a * b).abs().sum()
     sum_ = torch.sum(a.abs() + b.abs())
     jaccard = ((intersection) / (sum_ - intersection)).item()
-
-    if math.isnan(jaccard):
-        return 0
-    else:
-        return jaccard
+    return jaccard
 
 
 def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1)
-    b = ground_truth_seg.view(-1)
+    a = predicted_seg.view(-1).detach().cpu().numpy()
+    b = ground_truth_seg.view(-1).detach().cpu().numpy()
 
     if threshold:
         a[a >= threshold] = 1
         a[a < threshold] = 0
 
-    true_positive = (a * b).sum().detach().cpu().numpy()  # because ground truth is 1, and remove all the other false positive
-    false_negative = (b - a).detach().cpu().numpy()
-    false_negative[false_negative < 0] = 0
-    false_negative = false_negative.sum()
-    sensitivity = true_positive/(false_negative + true_positive + 1e-6)
+    tn, fp, fn, tp = confusion_matrix(b, a, labels=[0, 1]).ravel()
+    sensitivity = tp / (fn + tp)
+    # true_positive = (a * b).sum().detach().cpu().numpy()  # because ground truth is 1, and remove all the other false positive
+    # false_negative = (b - a).detach().cpu().numpy()
+    # false_negative[false_negative < 0] = 0
+    # false_negative = false_negative.sum()
+    # sensitivity = true_positive/(false_negative + true_positive + 1e-6)
     return sensitivity
 
 
 def specificity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1)
-    b = ground_truth_seg.view(-1)
+    a = predicted_seg.view(-1).detach().cpu().numpy()
+    b = ground_truth_seg.view(-1).detach().cpu().numpy()
 
     if threshold:
         a[a >= threshold] = 1
         a[a < threshold] = 0
 
-    inverted_b = 1 - b
-    inverted_a = 1 - a
-
-    true_negative = (inverted_a * inverted_b).sum().detach().cpu().numpy()
-    false_positive = (inverted_b - inverted_a).detach().cpu().numpy()
-    false_positive[false_positive < 0] = 0
-    false_positive = false_positive.sum()
-    specificity = true_negative / (false_positive + true_negative + 1e-6)
+    tn, fp, fn, tp = confusion_matrix(b, a, labels=[0, 1]).ravel()
+    specificity = tn / (tn + fp)
     return specificity
 
 

@@ -19,6 +19,7 @@ from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
 from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
+import matplotlib.pyplot as plt
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
     specificity_similarity_coefficient
 
@@ -273,8 +274,27 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     # get threshold cutoff
     optimal_idx = np.argmax(gg_tpr - gg_fpr)
     optimal_threshold = gg_thresholds[optimal_idx]
+    optimal_fpr = gg_fpr[optimal_idx]
+    optimal_tpr = gg_tpr[optimal_idx]
     print(f'ground-glass opacity optimal threshold: {optimal_threshold} , '
           f'tpr: {gg_tpr[optimal_idx]}, fpr: {gg_fpr[optimal_idx]}')
+
+    plt.figure()
+    lw = 2
+    plt.plot(gg_fpr, gg_tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.plot(optimal_fpr, optimal_tpr, 'go')
+    plt.annotate(f'{optimal_threshold}', (optimal_fpr, optimal_tpr))
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Self Multi InfNet + Data Aug (ground-glass opacities)')
+    plt.legend(loc="lower right")
+    plt.show()
+    plt.clf()
+    plt.close()
 
     gg_np_total_test_loss = np.array(gg_total_test_loss)
     gg_mean_test_loss = np.mean(gg_np_total_test_loss)
@@ -303,8 +323,27 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     # get threshold cutoff
     optimal_idx = np.argmax(cons_tpr - cons_fpr)
     optimal_threshold = cons_thresholds[optimal_idx]
+    optimal_fpr = gg_fpr[optimal_idx]
+    optimal_tpr = gg_tpr[optimal_idx]
     print(f'consolidation optimal threshold: {optimal_threshold} , tpr: {cons_tpr[optimal_idx]}, '
           f'fpr: {cons_fpr[optimal_idx]}')
+
+    plt.figure()
+    lw = 2
+    plt.plot(gg_fpr, gg_tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.plot(optimal_fpr, optimal_tpr, 'go')
+    plt.annotate(f'{optimal_threshold}', (optimal_fpr, optimal_tpr))
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Self Multi InfNet + Data Aug (consolidation)')
+    plt.legend(loc="lower right")
+    plt.show()
+    plt.clf()
+    plt.close()
 
     cons_np_total_test_loss = np.array(cons_total_test_loss)
     cons_mean_test_loss = np.mean(cons_np_total_test_loss)
