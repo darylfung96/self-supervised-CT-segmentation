@@ -9,6 +9,7 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 
 import os
 import torch
+import math
 import numpy as np
 import torch.optim as optim
 from tensorboardX import SummaryWriter
@@ -21,7 +22,7 @@ from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 import matplotlib.pyplot as plt
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
-    specificity_similarity_coefficient
+    precision_similarity_coefficient
 
 best_loss = 1e9
 
@@ -127,7 +128,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         total_test_dice = []
         total_test_jaccard = []
         total_test_sensitivity = []
-        total_test_specificity = []
+        total_test_precision = []
 
         lung_model.eval()
         for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
@@ -143,23 +144,23 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             dice = dice_similarity_coefficient(output, img_mask)
             jaccard = jaccard_similarity_coefficient(output, img_mask)
             sensitivity = sensitivity_similarity_coefficient(output, img_mask)
-            specificity = specificity_similarity_coefficient(output, img_mask)
+            precision = precision_similarity_coefficient(output, img_mask)
 
             total_test_dice.append(dice)
             total_test_jaccard.append(jaccard)
             total_test_sensitivity.append(sensitivity)
-            total_test_specificity.append(specificity)
+            total_test_precision.append(precision)
 
         average_test_loss = sum(total_test_loss) / len(total_test_loss)
         average_test_dice = sum(total_test_dice) / len(total_test_dice)
         average_test_jaccard = sum(total_test_jaccard) / len(total_test_jaccard)
         average_test_sensitivity = sum(total_test_sensitivity) / len(total_test_sensitivity)
-        average_test_specificity = sum(total_test_specificity) / len(total_test_specificity)
+        average_test_precision = sum(total_test_precision) / len(total_test_precision)
         test_writer.add_scalar('test/loss', average_test_loss, epo)
         test_writer.add_scalar('test/dice', average_test_dice, epo)
         test_writer.add_scalar('test/jaccard', average_test_jaccard, epo)
         test_writer.add_scalar('test/sensitivity', average_test_sensitivity, epo)
-        test_writer.add_scalar('test/specificity', average_test_specificity, epo)
+        test_writer.add_scalar('test/precision', average_test_precision, epo)
 
         if average_test_loss < best_loss:
             best_loss = average_test_loss
@@ -193,22 +194,23 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
 
     criterion = nn.BCELoss().to(device)
 
+    background_total_test_loss = []
+    background_total_test_dice = []
+    background_total_test_jaccard = []
+    background_total_test_sensitivity = []
+    background_total_test_precision = []
+
     gg_total_test_loss = []
     gg_total_test_dice = []
     gg_total_test_jaccard = []
     gg_total_test_sensitivity = []
-    gg_total_test_specificity = []
+    gg_total_test_precision = []
 
     cons_total_test_loss = []
     cons_total_test_dice = []
     cons_total_test_jaccard = []
     cons_total_test_sensitivity = []
-    cons_total_test_specificity = []
-
-    gg_roc = []
-    cons_roc = []
-    gg_gt = []
-    cons_gt = []
+    cons_total_test_precision = []
 
     lung_model.eval()
     for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
@@ -222,40 +224,63 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w, h).numpy().squeeze()
         pred_onehot = (np.arange(3) == pred[..., None]).astype(np.float64)
 
+        background_output = torch.from_numpy(pred_onehot[:, :, 0]).to(device)
         gg_output = torch.from_numpy(pred_onehot[:, :, 1]).to(device)
         cons_output = torch.from_numpy(pred_onehot[:, :, 2]).to(device)
+
+        background_img_mask = img_mask[0, 0]
         gg_img_mask = img_mask[0, 1]
         cons_img_mask = img_mask[0, 2]
 
-        # append gt
-        gg_gt += gg_img_mask.view(-1).cpu().detach().numpy().tolist()
-        cons_gt += cons_img_mask.view(-1).cpu().detach().numpy().tolist()
-        gg_roc += gg_output.view(-1).cpu().detach().numpy().tolist()
-        cons_roc += cons_output.view(-1).cpu().detach().numpy().tolist()
+        # calculate background metrics
+        loss = torch.mean(torch.abs(background_output - background_img_mask))
+        dice = dice_similarity_coefficient(background_output, background_img_mask, gg_threshold)
+        jaccard = jaccard_similarity_coefficient(background_output, background_img_mask, gg_threshold)
+        sensitivity = sensitivity_similarity_coefficient(background_output, background_img_mask, gg_threshold)
+        precision = precision_similarity_coefficient(background_output, background_img_mask, gg_threshold)
+        background_total_test_loss.append(loss.item())
+
+        if not math.isnan(dice):
+            background_total_test_dice.append(dice)
+        if not math.isnan(jaccard):
+            background_total_test_jaccard.append(jaccard)
+        if not math.isnan(sensitivity):
+            background_total_test_sensitivity.append(sensitivity)
+        if not math.isnan(precision):
+            background_total_test_precision.append(precision)
 
         # calculate ground-glass opacities metrics
         loss = torch.mean(torch.abs(gg_output - gg_img_mask))
-        dice = dice_similarity_coefficient(gg_output, gg_img_mask)
-        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask)
+        dice = dice_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
+        jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
         sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
-        specificity = specificity_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
+        precision = precision_similarity_coefficient(gg_output, gg_img_mask, gg_threshold)
         gg_total_test_loss.append(loss.item())
-        gg_total_test_dice.append(dice)
-        gg_total_test_jaccard.append(jaccard)
-        gg_total_test_sensitivity.append(sensitivity)
-        gg_total_test_specificity.append(specificity)
+
+        if not math.isnan(dice):
+            gg_total_test_dice.append(dice)
+        if not math.isnan(jaccard):
+            gg_total_test_jaccard.append(jaccard)
+        if not math.isnan(sensitivity):
+            gg_total_test_sensitivity.append(sensitivity)
+        if not math.isnan(precision):
+            gg_total_test_precision.append(precision)
 
         # calculate consolidation metrics
         loss = torch.mean(torch.abs(cons_output - cons_img_mask))
-        dice = dice_similarity_coefficient(cons_output, cons_img_mask)
-        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask)
+        dice = dice_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
+        jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
         sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
-        specificity = specificity_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
+        precision = precision_similarity_coefficient(cons_output, cons_img_mask, cons_threshold)
         cons_total_test_loss.append(loss.item())
-        cons_total_test_dice.append(dice)
-        cons_total_test_jaccard.append(jaccard)
-        cons_total_test_sensitivity.append(sensitivity)
-        cons_total_test_specificity.append(specificity)
+        if not math.isnan(dice):
+            cons_total_test_dice.append(dice)
+        if not math.isnan(jaccard):
+            cons_total_test_jaccard.append(jaccard)
+        if not math.isnan(sensitivity):
+            cons_total_test_sensitivity.append(sensitivity)
+        if not math.isnan(precision):
+            cons_total_test_precision.append(precision)
 
     with open('metric.txt', 'a') as f:
         f.write(load_net_path + '\n')
@@ -267,35 +292,28 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
             f.write(str(cons) + '\n')
         f.write('===========================')
 
-    # calculate ground-glass metrics
-    gg_fpr, gg_tpr, gg_thresholds = roc_curve(gg_gt, gg_roc)
-    roc_auc = auc(gg_fpr, gg_tpr)
-    print(f'ground-glass opacity auc: {roc_auc}')
-    # get threshold cutoff
-    optimal_idx = np.argmax(gg_tpr - gg_fpr)
-    optimal_threshold = gg_thresholds[optimal_idx]
-    optimal_fpr = gg_fpr[optimal_idx]
-    optimal_tpr = gg_tpr[optimal_idx]
-    print(f'ground-glass opacity optimal threshold: {optimal_threshold} , '
-          f'tpr: {gg_tpr[optimal_idx]}, fpr: {gg_fpr[optimal_idx]}')
+    # background
+    background_np_total_test_loss = np.array(background_total_test_loss)
+    background_mean_test_loss = np.mean(background_np_total_test_loss)
+    background_error_test_loss = np.std(background_np_total_test_loss) / np.sqrt(background_np_total_test_loss.size) * 1.96
 
-    plt.figure()
-    lw = 2
-    plt.plot(gg_fpr, gg_tpr, color='darkorange',
-             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.plot(optimal_fpr, optimal_tpr, 'go')
-    plt.annotate(f'{optimal_threshold}', (optimal_fpr, optimal_tpr))
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Self Multi InfNet + Data Aug (ground-glass opacities)')
-    plt.legend(loc="lower right")
-    plt.show()
-    plt.clf()
-    plt.close()
+    background_np_total_test_dice = np.array(background_total_test_dice)
+    background_mean_test_dice = np.mean(background_np_total_test_dice)
+    background_error_test_dice = np.std(background_np_total_test_dice) / np.sqrt(background_np_total_test_dice.size) * 1.96
 
+    background_np_total_test_jaccard = np.array(background_total_test_jaccard)
+    background_mean_test_jaccard = np.mean(background_np_total_test_jaccard)
+    background_error_test_jaccard = np.std(background_np_total_test_jaccard) / np.sqrt(background_np_total_test_jaccard.size) * 1.96
+
+    background_np_total_test_sensitivity = np.array(background_total_test_sensitivity)
+    background_mean_test_sensitivity = np.mean(background_np_total_test_sensitivity)
+    background_error_test_sensitivity = np.std(background_np_total_test_sensitivity) / np.sqrt(background_np_total_test_sensitivity.size) * 1.96
+
+    background_np_total_test_precision = np.array(background_total_test_precision)
+    background_mean_test_precision = np.mean(background_np_total_test_precision)
+    background_error_test_precision = np.std(background_np_total_test_precision) / np.sqrt(background_np_total_test_precision.size) * 1.96
+
+    # ground-glass opacities
     gg_np_total_test_loss = np.array(gg_total_test_loss)
     gg_mean_test_loss = np.mean(gg_np_total_test_loss)
     gg_error_test_loss = np.std(gg_np_total_test_loss) / np.sqrt(gg_np_total_test_loss.size) * 1.96
@@ -312,39 +330,11 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     gg_mean_test_sensitivity = np.mean(gg_np_total_test_sensitivity)
     gg_error_test_sensitivity = np.std(gg_np_total_test_sensitivity) / np.sqrt(gg_np_total_test_sensitivity.size) * 1.96
 
-    gg_np_total_test_specificity = np.array(gg_total_test_specificity)
-    gg_mean_test_specificity = np.mean(gg_np_total_test_specificity)
-    gg_error_test_specificity = np.std(gg_np_total_test_specificity) / np.sqrt(gg_np_total_test_specificity.size) * 1.96
+    gg_np_total_test_precision = np.array(gg_total_test_precision)
+    gg_mean_test_precision = np.mean(gg_np_total_test_precision)
+    gg_error_test_precision = np.std(gg_np_total_test_precision) / np.sqrt(gg_np_total_test_precision.size) * 1.96
 
-    # calculate consolidation metrics
-    cons_fpr, cons_tpr, cons_thresholds = roc_curve(cons_gt, cons_roc)
-    roc_auc = auc(cons_fpr, cons_tpr)
-    print(f'consolidation auc: {roc_auc}')
-    # get threshold cutoff
-    optimal_idx = np.argmax(cons_tpr - cons_fpr)
-    optimal_threshold = cons_thresholds[optimal_idx]
-    optimal_fpr = gg_fpr[optimal_idx]
-    optimal_tpr = gg_tpr[optimal_idx]
-    print(f'consolidation optimal threshold: {optimal_threshold} , tpr: {cons_tpr[optimal_idx]}, '
-          f'fpr: {cons_fpr[optimal_idx]}')
-
-    plt.figure()
-    lw = 2
-    plt.plot(gg_fpr, gg_tpr, color='darkorange',
-             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.plot(optimal_fpr, optimal_tpr, 'go')
-    plt.annotate(f'{optimal_threshold}', (optimal_fpr, optimal_tpr))
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Self Multi InfNet + Data Aug (consolidation)')
-    plt.legend(loc="lower right")
-    plt.show()
-    plt.clf()
-    plt.close()
-
+    # consolidation
     cons_np_total_test_loss = np.array(cons_total_test_loss)
     cons_mean_test_loss = np.mean(cons_np_total_test_loss)
     cons_error_test_loss = np.std(cons_np_total_test_loss) / np.sqrt(cons_np_total_test_loss.size) * 1.96
@@ -361,42 +351,65 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     cons_mean_test_sensitivity = np.mean(cons_np_total_test_sensitivity)
     cons_error_test_sensitivity = np.std(cons_np_total_test_sensitivity) / np.sqrt(cons_np_total_test_sensitivity.size) * 1.96
 
-    cons_np_total_test_specificity = np.array(cons_total_test_specificity)
-    cons_mean_test_specificity = np.mean(cons_np_total_test_specificity)
-    cons_error_test_specificity = np.std(cons_np_total_test_specificity) / np.sqrt(cons_np_total_test_specificity.size) * 1.96
+    cons_np_total_test_precision = np.array(cons_total_test_precision)
+    cons_mean_test_precision = np.mean(cons_np_total_test_precision)
+    cons_error_test_precision = np.std(cons_np_total_test_precision) / np.sqrt(cons_np_total_test_precision.size) * 1.96
 
-    print(f'ground-glass mean absolute dice: {gg_mean_test_dice}')
-    print(f'ground-glass error absolute dice: {gg_error_test_dice}')
+    print('background')
     print('==============================')
-    print(f'ground-glass mean absolute jaccard: {gg_mean_test_jaccard}')
-    print(f'ground-glass error absolute jaccard: {gg_error_test_jaccard}')
-    print('==============================')
-    print(f'ground-glass mean absolute sensitivity: {gg_mean_test_sensitivity}')
-    print(f'ground-glass error absolute sensitivity: {gg_error_test_sensitivity}')
-    print('==============================')
-    print(f'ground-glass mean absolute specificity: {gg_mean_test_specificity}')
-    print(f'ground-glass error absolute specificity: {gg_error_test_specificity}')
-    print('==============================')
-    print(f'ground-glass mean absolute error: {gg_mean_test_loss}')
-    print(f'ground-glass error absolute error: {gg_error_test_loss}')
+    print(f'{round(background_mean_test_dice, 2)} & {round(background_mean_test_jaccard, 2)} &'
+          f' {round(background_mean_test_sensitivity, 2)} & '
+          f'{round(background_mean_test_precision, 2)}')
+    print('============error=============')
+    print(f'$\pm${round(background_error_test_dice, 3)} & $\pm${round(background_error_test_jaccard, 3)} &'
+          f' $\pm${round(background_error_test_sensitivity, 3)} & '
+          f'$\pm${round(background_error_test_precision, 3)}')
     print('==============================')
     print('==============================')
+    print('ground glass opacities')
+    print('==============================')
+    print(f'{round(gg_mean_test_dice, 2)} & {round(gg_mean_test_jaccard, 2)} &'
+          f' {round(gg_mean_test_sensitivity, 2)} & '
+          f'{round(gg_mean_test_precision, 2)}')
+    print('============error=============')
+    print(f'$\pm${round(gg_error_test_dice, 3)} & $\pm${round(gg_error_test_jaccard, 3)} &'
+          f' $\pm${round(gg_error_test_sensitivity, 3)} & '
+          f'$\pm${round(gg_error_test_precision, 3)}')
     print('==============================')
     print('==============================')
-    print(f'consolidation mean absolute dice: {cons_mean_test_dice}')
-    print(f'consolidation error absolute dice: {cons_error_test_dice}')
+    print('consolidation')
     print('==============================')
-    print(f'consolidation mean absolute jaccard: {cons_mean_test_jaccard}')
-    print(f'consolidation error absolute jaccard: {cons_error_test_jaccard}')
+    print(f'{round(cons_mean_test_dice, 2)} & {round(cons_mean_test_jaccard, 2)} &'
+          f' {round(cons_mean_test_sensitivity, 2)} & '
+          f'{round(cons_mean_test_precision, 2)}')
+    print('============error=============')
+    print(f'$\pm${round(cons_error_test_dice, 3)} & $\pm${round(cons_error_test_jaccard, 3)} &'
+          f' $\pm${round(cons_error_test_sensitivity, 3)} & '
+          f'$\pm${round(cons_error_test_precision, 3)}')
     print('==============================')
-    print(f'consolidation mean absolute sensitivity: {cons_mean_test_sensitivity}')
-    print(f'consolidation error absolute sensitivity: {cons_error_test_sensitivity}')
     print('==============================')
-    print(f'consolidation mean absolute specificity: {cons_mean_test_specificity}')
-    print(f'consolidation error absolute specificity: {cons_error_test_specificity}')
+
+
+    overall_dice = (background_mean_test_dice + gg_mean_test_dice + cons_mean_test_dice) / 3
+    overall_jaccard = (background_mean_test_jaccard + gg_mean_test_jaccard + cons_mean_test_jaccard) / 3
+    overall_sensitivity = (background_mean_test_sensitivity + gg_mean_test_sensitivity + cons_mean_test_sensitivity) / 3
+    overall_precision = (background_mean_test_precision + gg_mean_test_precision + cons_mean_test_precision) / 3
+
+    overall_error_dice = (background_error_test_dice + gg_error_test_dice + cons_error_test_dice) / 3
+    overall_error_jaccard = (background_error_test_jaccard + gg_error_test_jaccard + cons_error_test_jaccard) / 3
+    overall_error_sensitivity = (background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
+    overall_error_precision = (background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
+    print('overall')
     print('==============================')
-    print(f'consolidation mean absolute error: {cons_mean_test_loss}')
-    print(f'consolidation error absolute error: {cons_error_test_loss}')
+    print(f'{round(overall_dice, 2)} & {round(overall_jaccard, 2)} &'
+          f' {round(overall_sensitivity, 2)} & '
+          f'{round(overall_precision, 2)}')
+    print('============error=============')
+    print(f'$\pm${round(overall_error_dice, 3)} & $\pm${round(overall_error_jaccard, 3)} &'
+          f' $\pm${round(overall_error_sensitivity, 3)} & '
+          f'$\pm${round(overall_error_precision, 3)}')
+    print('==============================')
+    print('==============================')
 
 
 if __name__ == "__main__":

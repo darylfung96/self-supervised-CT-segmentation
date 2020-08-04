@@ -22,10 +22,11 @@ from tensorboardX import SummaryWriter
 from sklearn.metrics import roc_curve, auc
 import statistics
 import matplotlib.pyplot as plt
+import pickle
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
-    specificity_similarity_coefficient
+    specificity_similarity_coefficient, precision_similarity_coefficient
 
 global_current_iteration = 0
 best_loss = 1e9
@@ -182,6 +183,8 @@ def eval(test_loader, model, device, load_net_path, threshold):
     total_spec_3 = []
     total_spec_2 = []
 
+    total_precision_2 = []
+
     total_auc_2 = []
 
     roc_2 = []
@@ -237,9 +240,9 @@ def eval(test_loader, model, device, load_net_path, threshold):
         # total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
         # total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
         # total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
-        current_spec = specificity_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
-        if not math.isnan(current_spec):
-            total_spec_2.append(current_spec)
+        current_precision = precision_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        if not math.isnan(current_precision):
+            total_precision_2.append(current_precision)
 
         fpr, tpr, thresholds = roc_curve(gt_roc.view(-1).detach().cpu().numpy(),
                                          lateral_map_2.sigmoid().view(-1).detach().cpu().numpy())
@@ -248,10 +251,6 @@ def eval(test_loader, model, device, load_net_path, threshold):
             total_auc_2.append(roc_auc_2)
 
     fpr, tpr, thresholds = roc_curve(ground_truth_list, roc_2)
-
-    sensitivity = sensitivity_similarity_coefficient(torch.from_numpy(np.array(roc_2)),
-                                                     torch.from_numpy(np.array(ground_truth_list)), threshold)
-    print(f'the sensitivity of all images: {sensitivity}')
 
     roc_auc = auc(fpr, tpr)
     print(f'auc: {roc_auc}')
@@ -273,9 +272,17 @@ def eval(test_loader, model, device, load_net_path, threshold):
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('Baseline Single InfNet')
+    plt.title(f'{load_net_path.split(os.sep)[-2]}')
     plt.legend(loc="lower right")
     plt.show()
+
+    roc_dict = {'tpr': tpr, 'fpr': fpr, 'optimal_tpr': optimal_tpr, 'optimal_fpr': optimal_fpr,
+                'optimal_threshold': optimal_threshold}
+    save_roc_dict_dir = './roc_saves'
+    os.makedirs(save_roc_dict_dir, exist_ok=True)
+    save_roc_dict_filename = os.path.join(save_roc_dict_dir, load_net_path.split(os.sep)[-2])
+    with open(save_roc_dict_filename, 'wb') as f:
+        pickle.dump(roc_dict, f, pickle.HIGHEST_PROTOCOL)
 
     # accumulated_loss = (np.array(total_loss_2) + np.array(total_loss_3) + np.array(total_loss_4) + np.array(
     #     total_loss_5)) / 4
@@ -303,9 +310,9 @@ def eval(test_loader, model, device, load_net_path, threshold):
 
     # accumulated_spec = (np.array(total_spec_2) + np.array(total_spec_3) + np.array(total_spec_4) + np.array(
     #     total_spec_5)) / 4
-    accumulated_spec = np.array(total_spec_2)
-    mean_spec = np.mean(accumulated_spec)
-    error_spec = np.std(accumulated_spec) / np.sqrt(accumulated_spec.size) * 1.96
+    accumulated_precision = np.array(total_precision_2)
+    mean_precision = np.mean(accumulated_precision)
+    error_precision = np.std(accumulated_precision) / np.sqrt(accumulated_precision.size) * 1.96
 
     accumulated_auc = np.array(total_auc_2)
     mean_auc = np.mean(accumulated_auc)
@@ -330,8 +337,8 @@ def eval(test_loader, model, device, load_net_path, threshold):
     print(f'mean sens: {mean_sens}')
     print(f'error sens: {error_sens}')
     print('=============================')
-    print(f'mean spec: {mean_spec}')
-    print(f'error spec: {error_spec}')
+    print(f'mean precision: {mean_precision}')
+    print(f'error precision: {error_precision}')
     print('=============================')
     print(f'mean auc: {mean_auc}')
     print(f'error auc: {error_auc}')

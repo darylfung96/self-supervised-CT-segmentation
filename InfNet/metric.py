@@ -78,3 +78,16 @@ def specificity_similarity_coefficient(predicted_seg, ground_truth_seg, threshol
     return specificity
 
 
+def precision_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
+    a = predicted_seg.view(-1).detach().cpu().numpy()
+    b = ground_truth_seg.view(-1).detach().cpu().numpy()
+
+    if threshold:
+        a[a >= threshold] = 1
+        a[a < threshold] = 0
+
+    tn, fp, fn, tp = confusion_matrix(b, a, labels=[0, 1]).ravel()
+    precision = tp / (tp + fp)
+    return precision
+
+
