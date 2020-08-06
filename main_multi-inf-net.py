@@ -15,7 +15,7 @@ from models import resnet18_coach_vae
 from tensorboardX import SummaryWriter
 
 # inf-net models
-from InfNet.Code.model_lung_infection.InfNet_UNet import Inf_Net_UNet
+from InfNet.Code.model_lung_infection.InfNet_UNet import Inf_Net_UNet_Improved as Inf_Net_UNet
 
 
 import warnings
