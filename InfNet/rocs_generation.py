@@ -21,7 +21,7 @@ for index, roc_file in enumerate(all_network_rocs):
              lw=lw, label='ROC curve (area = %0.2f) %s' % (roc_auc, roc_file))
     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
     plt.plot(roc_dict['optimal_fpr'], roc_dict['optimal_tpr'], 'go')
-    plt.annotate(f'{roc_dict["optimal_threshold"]}', (roc_dict['optimal_fpr'], roc_dict['optimal_tpr']))
+    plt.annotate(f'{round(roc_dict["optimal_threshold"], 5)}', (roc_dict['optimal_fpr'], roc_dict['optimal_tpr']))
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')

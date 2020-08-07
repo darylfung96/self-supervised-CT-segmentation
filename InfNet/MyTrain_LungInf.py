@@ -324,7 +324,6 @@ def eval(test_loader, model, device, load_net_path, threshold):
         for loss in accumulated_dice:
             f.write(str(loss) + '\n')
 
-
     print(f'mean absolute loss: {mean_loss}')
     print(f'error absolute loss: {error_loss}')
     print('=============================')
