@@ -163,9 +163,9 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             gg_output = torch.from_numpy(pred_onehot[:, :, :, 1]).to(device)
             cons_output = torch.from_numpy(pred_onehot[:, :, :, 2]).to(device)
 
-            background_img_mask = img_mask[0, 0]
-            gg_img_mask = img_mask[0, 1]
-            cons_img_mask = img_mask[0, 2]
+            background_img_mask = img_mask[:, 0]
+            gg_img_mask = img_mask[:, 1]
+            cons_img_mask = img_mask[:, 2]
 
             loss = criterion(output, img_mask)
             total_test_loss.append(loss.item())

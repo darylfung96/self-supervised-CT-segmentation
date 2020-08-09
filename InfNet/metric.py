@@ -21,8 +21,8 @@ def performMetrics(hist):
 
 
 def dice_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1)
-    b = ground_truth_seg.view(-1)
+    a = predicted_seg.contiguous().view(-1)
+    b = ground_truth_seg.contiguous().view(-1)
 
     if threshold:
         a[a >= threshold] = 1
@@ -34,8 +34,8 @@ def dice_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
 
 
 def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1)
-    b = ground_truth_seg.view(-1)
+    a = predicted_seg.contiguous().view(-1)
+    b = ground_truth_seg.contiguous().view(-1)
 
     if threshold:
         a[a >= threshold] = 1
@@ -48,8 +48,8 @@ def jaccard_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
 
 
 def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1).detach().cpu().numpy()
-    b = ground_truth_seg.view(-1).detach().cpu().numpy()
+    a = predicted_seg.contiguous().view(-1).detach().cpu().numpy()
+    b = ground_truth_seg.contiguous().view(-1).detach().cpu().numpy()
 
     if threshold:
         a[a >= threshold] = 1
@@ -66,8 +66,8 @@ def sensitivity_similarity_coefficient(predicted_seg, ground_truth_seg, threshol
 
 
 def specificity_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1).detach().cpu().numpy()
-    b = ground_truth_seg.view(-1).detach().cpu().numpy()
+    a = predicted_seg.view(-1).contiguous().detach().cpu().numpy()
+    b = ground_truth_seg.view(-1).contiguous().detach().cpu().numpy()
 
     if threshold:
         a[a >= threshold] = 1
@@ -79,8 +79,8 @@ def specificity_similarity_coefficient(predicted_seg, ground_truth_seg, threshol
 
 
 def precision_similarity_coefficient(predicted_seg, ground_truth_seg, threshold):
-    a = predicted_seg.view(-1).detach().cpu().numpy()
-    b = ground_truth_seg.view(-1).detach().cpu().numpy()
+    a = predicted_seg.contiguous().view(-1).detach().cpu().numpy()
+    b = ground_truth_seg.contiguous().view(-1).detach().cpu().numpy()
 
     if threshold:
         a[a >= threshold] = 1
