@@ -117,18 +117,18 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
                 print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader), iter_loss))
 
 
-        old saving method
-        os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
-        if np.mod(epo+1, 10) == 0:
-            torch.save(lung_model.state_dict(),
-                       './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
-            print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
+        # old saving method
+        # os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
+        # if np.mod(epo+1, 10) == 0:
+        #     torch.save(lung_model.state_dict(),
+        #                './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
+        #     print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
 
-        average_train_loss = sum(total_train_loss) / len(total_train_loss)
-        train_writer.add_scalar('train/loss', average_train_loss, epo)
-
-        del img
-        del img_mask
+        # average_train_loss = sum(total_train_loss) / len(total_train_loss)
+        # train_writer.add_scalar('train/loss', average_train_loss, epo)
+        #
+        # del img
+        # del img_mask
         total_test_loss = []
 
         background_test_dice = []
