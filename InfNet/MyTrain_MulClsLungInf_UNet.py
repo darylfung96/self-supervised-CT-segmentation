@@ -28,8 +28,6 @@ from lookahead import Lookahead
 
 best_loss = 1e9
 
-
-
 def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout,
           graph_path, save_path,
           device, load_net_path):
@@ -255,7 +253,7 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     )
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
-    lung_model = Inf_Net_UNet(input_channels, num_classes).to(device)  # input_channels=3， n_class=3
+    lung_model = Inf_Net_UNet_Improved(input_channels, num_classes).to(device)  # input_channels=3， n_class=3
     # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
 
     net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
