@@ -92,43 +92,43 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         lung_model.train()
 
         total_train_loss = []
-        # for index, (img, pseudo, img_mask, _) in enumerate(train_dataloader):
-        #     global_iteration += 1
-        #
-        #     img = img.to(device)
-        #     pseudo = pseudo.to(device)
-        #     img_mask = img_mask.to(device)
-        #
-        #     optimizer.zero_grad()
-        #     output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
-        #
-        #     output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
-        #     loss = criterion(output, img_mask)
-        #
-        #     loss.backward()
-        #     iter_loss = loss.item()
-        #
-        #     train_loss += iter_loss
-        #     total_train_loss.append(train_loss)
-        #
-        #     optimizer.step()
-        #
-        #     if np.mod(index, 20) == 0:
-        #         print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader), iter_loss))
+        for index, (img, pseudo, img_mask, _) in enumerate(train_dataloader):
+            global_iteration += 1
+
+            img = img.to(device)
+            pseudo = pseudo.to(device)
+            img_mask = img_mask.to(device)
+
+            optimizer.zero_grad()
+            output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
+
+            output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
+            loss = criterion(output, img_mask)
+
+            loss.backward()
+            iter_loss = loss.item()
+
+            train_loss += iter_loss
+            total_train_loss.append(train_loss)
+
+            optimizer.step()
+
+            if np.mod(index, 20) == 0:
+                print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader), iter_loss))
 
 
-        # old saving method
-        # os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
-        # if np.mod(epo+1, 10) == 0:
-        #     torch.save(lung_model.state_dict(),
-        #                './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
-        #     print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
+        old saving method
+        os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
+        if np.mod(epo+1, 10) == 0:
+            torch.save(lung_model.state_dict(),
+                       './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
+            print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
 
-        # average_train_loss = sum(total_train_loss) / len(total_train_loss)
-        # train_writer.add_scalar('train/loss', average_train_loss, epo)
-        #
-        # del img
-        # del img_mask
+        average_train_loss = sum(total_train_loss) / len(total_train_loss)
+        train_writer.add_scalar('train/loss', average_train_loss, epo)
+
+        del img
+        del img_mask
         total_test_loss = []
 
         background_test_dice = []
