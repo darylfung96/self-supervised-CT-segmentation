@@ -9,7 +9,7 @@ We will not change the structure of the InfNet model and use the default paramet
 
 The single InfNet will create a single-labeled segmentation of the image for the infected region. The single InfNet predicts if the region is either ground-glass opacities or consolidations. It represents ground-glass opacities or consolidations as the same label. This means that the single InfNet will only predict the infected region without classifying them more specifically.  The CT lung image is first passed into the initial convolutional layers of the single InfNet to extract the features of the CT lung image. Then, the features generated from the convolutional layer are fed into the partial decoder module, reverse attention module and the edge detection module. The edge detection module is to help the network with detection of the boundaries of the segmentation. The reverse attention and the partial decoder generates the segmentation of the infection regions of the CT lung images.
 
-The prediction from the single InfNet will act as a prior to be fed into the multi InfNet. The prior will be concatenate with the original CT image to be fed into the multi InfNet network. The multi InfNet network will be used to predict multiple-labeled segmentation. The multiple-labeled segmentation includes predicting the background, ground-glass opacities, and consolidations for the infected region. The multiple-labeled segmentation model will give each of the label a different value instead of grouping them as one as what the single-segmentation model does. 
+The prediction from the single InfNet represent the infected region and will act as a prior to be fed into the multi InfNet. The prior will be concatenate with the original CT image to be fed into the multi InfNet network. The multi InfNet network will be used to predict multiple-labeled segmentation. The multiple-labeled segmentation includes predicting the background, ground-glass opacities, and consolidations for the infected region. The multiple-labeled segmentation model will give each of the label a different value instead of grouping them as one as what the single-segmentation model does. 
 
 \begin{figure}
 	\small
@@ -35,8 +35,8 @@ The prediction from the single InfNet will act as a prior to be fed into the mul
 
 \begin{figure*}
 	\centering
-	\includegraphics[width=100mm]{self-super-multi-inf-net.png}
-	\caption{The architecture of our self-supervised multi segmentation InfNet model.}
+	\includegraphics[width=\linewidth]{self-super-multi-inf-net.png}
+	\caption{The architecture of our self-supervised multi segmentation InfNet model. Highlighted green block is the difference between the original multi InfNet and our self-supervised multi InfNet.}
 	\label{fig:multi-inf-net_arch}
 \end{figure*}
 
@@ -119,7 +119,7 @@ L_{total} = L_{seg}(G_t, S_g) + L_{edge} + 	\sum_{i=3}^{5}L_{seg}(G_t, S_i)
 
 The summation of the loss functions are calculated from the output of the three convolutional layers. $G_t$ refers to the ground truth labels. $S_g$ is the output from the parallel partial decoder to match with the ground truth label.
 
-As for the multiple segmentation infected region InfNet. We also use the default model and hypermaters from the InfNet code. We will however train the network without using any unlabeled images to be used as a supervised version. The CT lung images and prior for the CT lung images are concatenate together before being fed into the multiple segmentation InfNet. The prior is generated from the single segmentation InfNet. The prior would contain the area of the infected region. However, the prior does not contain the labels for ground-glass opacities and consolidations. It just shows the infected regions. The multiple segmentation InfNet will label the CT lung images with background, ground-glass opacities, and consolidations. The architecture for multiple segmentation InfNet can be seen in \ref{fig:multi-inf-net_arch}. The loss function for the multiple segmentation InfNet is as follow:
+As for the multiple segmentation infected region InfNet. We also use the default model and hypermaters from the InfNet code. We will however train the network without using any unlabeled images to be used as a supervised version. The CT lung images and prior (infected region) for the CT lung images are concatenate together before being fed into the multiple segmentation InfNet. The prior is generated from the single segmentation InfNet. The prior would contain the area of the infected region. However, the prior does not contain the labels for ground-glass opacities and consolidations. It just shows the infected regions. The multiple segmentation InfNet will label the CT lung images with background, ground-glass opacities, and consolidations. The architecture for multiple segmentation InfNet can be seen in \ref{fig:multi-inf-net_arch}. The loss function for the multiple segmentation InfNet is as follow:
 \begin{equation}
 L_{bce} = \frac{1}{N}\sum_{i=1}^{N} y_i \cdot log(\hat{y_i}) + (1-y_i)\cdot log(1-\hat{y_i})
 \end{equation}
