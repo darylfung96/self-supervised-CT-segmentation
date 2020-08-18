@@ -32,7 +32,7 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    lung_model = Inf_Net_UNet(input_channels, num_classes).to(device)
+    lung_model = Inf_Net_UNet_Improved  (input_channels, num_classes).to(device)
     print(lung_model)
     lung_model.load_state_dict(torch.load(snapshot_dir, map_location=torch.device(device)))
     lung_model.eval()
@@ -66,6 +66,6 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 if __name__ == "__main__":
     inference(num_classes=3,
               input_channels=6,
-              snapshot_dir='./Snapshots/save_weights/baseline-multi-inf-net/unet_model_58.pkl',
-              save_path='./Results/Multi-class lung infection segmentation/strongprior_baseline-multi-inf-net/'
+              snapshot_dir='./Snapshots/save_weights/self-multi-inf-net_new/unet_model_38.pkl',
+              save_path='./Results/Multi-class lung infection segmentation/strongprior_multi-inf-net_new'
               )

@@ -65,7 +65,7 @@ The backbone, B, of the coach network has a similar network architecture with th
 
 After the self-supervision training is finished, the single segmentation InfNet would reuse the self-supervised single InfNet network weights to train normally on the segmentation of the CT lung images. Likewise, the multi InfNet network would reuse the weights that were trained during self-supervised multi InfNet training to train normally on the segmentation of the CT lung images.
 
-The proposed self-supervised single-labeled segmentation InfNet network architecture can be seen in \ref{fig:inf-net_arch}. The last layer for each output prediction is replace to a different linear activation layer. The linear activation layer will re-create the original image that is covered by the masks. 
+The proposed self-supervised single-labeled segmentation InfNet network architecture can be seen in \ref{fig:inf-net_arch}. The left side of the figure is the original Single InfNet architecture and the right side of the figure is the self-supervised Single InfNet. The last layer for each output prediction is replace to a different linear activation layer. The linear activation layer will re-create the original image that is covered by the masks. 
 
 The proposed self-supervised multi-labeled segmentation InfNet network architecture is shown in \ref{fig:multi-inf-net_arch}. The changes in the architecture for the multi-labeled segmentation InfNet is similar to the single-labeled segmentation InfNet where the last layer of the layer is replace with a different linear actiivation layer to output the inpainting of the original image. 
 
