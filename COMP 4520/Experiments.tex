@@ -1,179 +1,8 @@
 \section{Experiments}
 
-\begin{figure*}
-	\centering
-	\small
-	\includegraphics[width=\linewidth]{single_rocs.png}
-	\caption{ROC comparison of different networks.}
-	\label{fig:single_rocs}
-\end{figure*}
-
-\begin{table}[!h]
-	\centering
-	\begin{tabular}{|c||c|c|c|c|} \hline
-		Data split & Source & Segmented & Images & Patients \\\hline
-		Training & \vtop{\hbox{\strut Med-Seg}\hbox{\strut ICTCF}}&
-		\vtop{\hbox{\strut Yes}\hbox{\strut No}} & 
-		\vtop{\hbox{\strut 698}\hbox{\strut 6654}}&
-		\vtop{\hbox{\strut 39}\hbox{\strut 1338}}\\\hline
-		Validation & Med-Seg & Yes & 114 & 35 \\\hline
-		Testing & Med-Seg & Yes & 117 & 35 \\\hline
-	\end{tabular}
-	\caption{This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.}
-	\label{tab:dataset}
-\end{table}
-
-\begin{table*}[!h]
-	\centering
-	\begin{tabular}{| c | c || c c c c c ||}
-		\hline
-		Methods & & F1 & IoU & Recall & Precision & AUC \\ \hline
-		Single SInfNet &  Mean & \textbf{0.39} & \textbf{0.29} & \textbf{0.83} & 0.33 & \textbf{0.9909} \\ \cline{2-7}
-		& Error & $\pm$ 0.059 & $\pm$ 0.053 & $\pm$ \textbf{0.069} & $\pm$0.057  & $\pm$0.032 \\ \hline
-		Single SInfNet + data aug(0.4) &  Mean & 0.38 & 0.27 & 0.79 & \textbf{0.34} & 0.9903 \\ \cline{2-7}
-		& Error & $\pm$0.054  & $\pm$0.045  &$\pm$0.071 &$\pm$0.055 &$\pm$0.017 \\ \hline
-		Single SInfNet + data aug (0.5) &  Mean & 0.37 & 0.26 & 0.81 & 0.32 & 0.9893 \\ \cline{2-7}
-		& Error &$\pm$0.054 &$\pm$0.045 &$\pm$0.072 &$\pm$0.050 &  $\pm$0.021  \\ \hline \hline
-		Single Self-SInfNet &  Mean & 0.38 & 0.27 & 0.75 & 0.33 & 0.9883  \\ \cline{2-7}
-		& Error & $\pm$0.056 & $\pm$0.049 &$\pm$0.077  & $\pm$0.053 & $\pm$  0.010 \\ \hline
-		Single Self-SInfNet + data aug &  Mean & 0.30 & 0.20 & 0.72 & 0.28 &  0.9795 \\ \cline{2-7}
-		& Error & $\pm$ \textbf{0.050}  & $\pm$  \textbf{0.039} & $\pm$ 0.085 & $\pm$\textbf{0.045} & $\pm$ \textbf{0.006}  \\ \hline
-	\end{tabular}
-	\caption{Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet in the test set.}
-	\label{tab:single}
-\end{table*}
-
-\begin{table*}[!h]
-	\centering
-	\small
-	\begin{tabular}{| c | c || c c c c || c c c c |}
-		\hline
-		& &\multicolumn{4}{c||}{Ground-Glass Opacity} & \multicolumn{4}{c|}{Consolidation}\\ \cline{3-10}
-		Methods & & F1 & IoU & Recall & Precision & F1 & IoU & Recall & Precision \\\hline
-		U-Net & Mean & \textbf{0.45} & \textbf{0.33} & 0.43 & \textbf{0.59} & 0.13 & 0.08 & 0.12 & 0.18 \\ \cline{2-10}
-		& Error & $\pm$ 0.066 & $\pm$0.055& $\pm$0.07& $\pm$0.076& \textbf{$\pm$0.055}& \textbf{$\pm$0.037}& \textbf{$\pm$0.058}& $\pm$0.076 \\ \hline
-		SInfNet & Mean & 0.38 & 0.27 & 0.58 & 0.41 & 0.29 & 0.22 & 0.61 & 0.31  \\ \cline{2-10}
-		& Error & \textbf{$\pm$0.054} & \textbf{$\pm$0.042} & \textbf{$\pm$0.065} & $\pm$0.058 & $\pm$0.078 & $\pm$0.068 & $\pm$0.099 & $\pm$0.084  \\ \hline \hline
-		
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.4)}} & Mean & 0.35 & 0.25 & 0.58 & 0.38 & 0.3 & 0.23 & \textbf{0.62} & 0.32   \\ \cline{2-10}
-		& Error &$\pm$0.056 & $\pm$0.043 & $\pm$0.072 & $\pm$0.058 & $\pm$0.08 & $\pm$0.069 & $\pm$0.102 & $\pm$0.084 \\ \hline \hline
-		
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.5)}} & Mean & 0.34 & 0.24 & \textbf{0.59} & 0.35 & 0.4 & 0.32 & 0.55 & 0.49 \\ \cline{2-10}
-		& Error & $\pm$0.055 & $\pm$0.042 & $\pm$0.072 & $\pm$0.057 & $\pm$0.098 & $\pm$0.087 & $\pm$0.115 & $\pm$0.106 \\ \hline \hline
-		
-		\vtop{\hbox{\strut SSInfNet}\hbox{\strut }} & Mean & 0.36 & 0.26 & 0.56 & 0.4 & 0.31 & 0.25 & 0.56 & 0.38 \\ \cline{2-10}
-		& Error & $\pm$0.055 & $\pm$0.043 & $\pm$0.067 & $\pm$0.059 & $\pm$0.087 & $\pm$0.076 & $\pm$0.114 & $\pm$0.097 \\ \hline \hline
-		
-		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut data aug}} & Mean & 0.34 & 0.24 & 0.56 & 0.37 & 0.18 & 0.14 & 0.5 & 0.24 \\ \cline{2-10}
-		& Error & $\pm$0.054 & $\pm$0.042 & $\pm$0.068 & \textbf{$\pm$0.056} & $\pm$0.059 & $\pm$0.051 & $\pm$0.117 & \textbf{$\pm$0.071} \\ \hline \hline \hline
-		
-		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut focal loss+}\hbox{\strut lookahead}} & Mean & 0.43 & 0.31 & 0.58 & 0.48 & \textbf{0.46} & \textbf{0.36} & 0.56 & \textbf{0.56} \\ \cline{2-10}
-		& Error & $\pm$0.057 & $\pm$0.046 & $\pm$0.072 & $\pm$0.059 & $\pm$0.096 & $\pm$0.088 & $\pm$0.11 & $\pm$0.101 \\ \hline \hline \hline
-		
-		
-		& &\multicolumn{4}{c||}{Background} & \multicolumn{4}{c|}{Overall}\\ \cline{3-10}
-		Methods & & F1 & IoU & Recall & Precision & F1 & IoU & Recall & Precision \\\hline
-		U-Net & Mean & 0.89 & 0.80 & 0.996 & 0.804 & 0.49 & 0.41 & 0.52 & 0.52  \\ \cline{2-10}
-		& Error &  $\pm$0.012&  $\pm$0.02&  $\pm$0.002&  $\pm$0.02&  $\pm$0.044&  $\pm$0.037&  \textbf{$\pm$0.043}&  $\pm$0.057 \\ \hline
-		SInfNet & Mean & 1.0 & 0.99 & 0.99 & 1.0 & 0.55 & 0.5 & \textbf{0.73} & 0.57   \\ \cline{2-10}
-		& Error & $\pm$0.002 & $\pm$0.003 & $\pm$0.002 & $\pm$0.002 & \textbf{$\pm$0.044} & $\pm$0.038 & $\pm$0.055 & $\pm$0.048 \\ \hline
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.4)}} & Mean & 0.99 & 0.99 & 0.99 & 1.0 & 0.55 & 0.49 & 0.73 & 0.56   \\ \cline{2-10}
-		& Error &$\pm$0.002 & $\pm$0.003 & $\pm$0.002 & $\pm$0.002 & $\pm$0.046 & $\pm$0.038 & $\pm$0.059 & $\pm$0.048  \\ \hline \hline
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.5)}} & Mean &1.0 & 0.99 & 0.99 & 1.0 & 0.58 & 0.52 & 0.71 & 0.61 \\ \cline{2-10}
-		& Error & $\pm$0.002 & $\pm$0.003 & $\pm$0.002 & $\pm$0.002 & $\pm$0.052 & $\pm$0.044 & $\pm$0.063 & $\pm$0.055\\ \hline \hline
-		\vtop{\hbox{\strut SSInfNet}\hbox{\strut }} & Mean & 1.0 & 0.99 & 1.0 & 1.0 & 0.56 & 0.5 & 0.71 & 0.59 \\ \cline{2-10}
-		& Error & $\pm$0.002 & $\pm$0.003 & $\pm$0.002 & $\pm$0.002 & $\pm$0.048 & $\pm$0.041 & $\pm$0.061 & $\pm$0.053\\ \hline \hline
-		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut data aug}} & Mean & 1.0 & 0.99 & 1.0 & 1.0 & 0.51 & 0.46 & 0.68 & 0.53 \\ \cline{2-10}
-		& Error & $\pm$0.002 & $\pm$0.003 & $\pm$0.002 & $\pm$0.002 & $\pm$0.038 & \textbf{$\pm$0.032} & $\pm$0.062 & \textbf{$\pm$0.043} \\ \hline \hline \hline
-		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut focal loss+}\hbox{\strut lookahead}} & Mean &1.0 & 0.99 & 0.99 & 1.0 & \textbf{0.63} & \textbf{0.55} & 0.71 & \textbf{0.68} \\ \cline{2-10}
-		& Error & $\pm$0.002 & $\pm$0.003 & $\pm$0.002 & $\pm$0.002 & $\pm$0.052 & $\pm$0.046 & $\pm$0.061 & $\pm$0.054\\ \hline \hline \hline
-		
-	\end{tabular}
-	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet}
-	\label{tab:multi-weakprior}
-\end{table*}
-
-% before for show
-\begin{table*}[!h]
-	\centering
-	
-	\begin{tabular}{| c | c ||  c c c c |}
-		\hline
-		& &\multicolumn{4}{c|}{Ground-Glass Opacity }\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\\hline
-		SInfNet &  & 0.38 & 0.27 & \textbf{0.58} & 0.41 \\ \hline
-		U-Net & & \textbf{0.45} &\textbf{0.33} & 0.43 & \textbf{0.59} \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  & 0.36 &0.26 & 0.56 & 0.4 \\ \hline \hline \hline
-		
-		
-		& & \multicolumn{4}{c|}{Consolidation}\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\ \hline 
-		SInfNet &  & 0.29 & 0.22 & \textbf{0.61} & 0.31  \\ \hline
-		U-Net & & 0.13 & 0.08 & 0.12 & 0.18 \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  & \textbf{0.31} & \textbf{0.25} & 0.56 & \textbf{0.38} \\ \hline \hline \hline
-		
-		
-		& & \multicolumn{4}{c|}{background}\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\ \hline 
-		SInfNet &  & \textbf{1.0} & \textbf{0.99}  & 0.99 & \textbf{1.0} \\ \hline
-		U-Net & & 0.89 & 0.80 & 0.996 & 0.80 \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  &  \textbf{1.0} & \textbf{0.99} & \textbf{1.0} & \textbf{1.0} \\ \hline \hline \hline
-		
-		
-		& &\multicolumn{4}{c|}{Overall}\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\\hline
-		SInfNet &  & 0.55 & \textbf{0.5} & \textbf{0.73} & 0.57   \\ \hline
-		U-Net & & 0.49 & 0.41 & 0.52 & 0.52 \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  & \textbf{0.56} & \textbf{0.5} & 0.71 & \textbf{0.59}  \\ \hline
-		
-		
-	\end{tabular}
-	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet}
-	\label{tab:multi-weakprior}
-\end{table*}
-% end for show
-
-% after for show
-\begin{table*}[!h]
-	\centering
-	
-	\begin{tabular}{| c | c ||  c c c c |}
-		\hline
-		& &\multicolumn{4}{c|}{Ground-Glass Opacity }\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\\hline
-		SInfNet &  & 0.38 & 0.27 & \textbf{0.58} & 0.41 \\ \hline
-		U-Net & & \textbf{0.45} & \textbf{0.33} & 0.43 & \textbf{0.59} \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  & 0.43 & 0.31 & \textbf{0.58} & 0.48  \\ \hline \hline \hline
-		
-		
-		& & \multicolumn{4}{c|}{Consolidation}\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\ \hline 
-		SInfNet &  & 0.29 & 0.22 & \textbf{0.61} & 0.31  \\ \hline
-		U-Net & & 0.13 & 0.08 & 0.12 & 0.18 \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  & \textbf{0.46} & \textbf{0.36} & 0.56 & \textbf{0.56} \\ \hline \hline \hline
-		
-		
-		& & \multicolumn{4}{c|}{background}\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\ \hline 
-		SInfNet &  & \textbf{1.0} & \textbf{0.99}  & \textbf{0.99} & \textbf{1.0} \\ \hline
-		U-Net & & 0.89 & 0.80 & 0.996 & 0.80 \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  &  \textbf{1.0} & \textbf{0.99} & \textbf{0.99} & \textbf{1.0} \\ \hline \hline \hline
-		
-		
-		& &\multicolumn{4}{c|}{Overall}\\ \cline{3-6}
-		Methods & & F1 & IoU & Recall & Precision \\\hline
-		SInfNet &  & 0.55 & 0.5 & \textbf{0.73} & 0.57   \\ \hline
-		U-Net & & 0.49 & 0.41 & 0.52 & 0.52 \\ \hline \hline
-		\textcolor{blue}{\vtop{\hbox{\strut SSInfNet}\hbox{\strut }}} &  & \textbf{0.63} & \textbf{0.55} & 0.71 & \textbf{0.68}  \\ \hline
-		
-		
-	\end{tabular}
-	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet}
-	\label{tab:multi-weakprior}
-\end{table*}
-% end for show
 
 
+\iffalse
 \begin{table*}[!h]
 	\centering
 	\small
@@ -214,36 +43,38 @@
 	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the test set.}
 	\label{tab:multi-strongprior}
 \end{table*}
+\fi
 
 
 \subsection{Datasets}
 The dataset that we will be using is an integrative resource of chest computed tomography images and clinical features of patients with COVID-19 pneumonia (ICTCF) \cite{ref23} which contains the severity score for each CT lung image and CT lung images from medical segmentation website \cite{ref26}. 
 
-ICTCF contains 127 types of clinical features and laboratory confirmed cases of COVID-19 from 1170 patients including the severity for the CT lung images. However, ICTCF dataset does not contain the segmentation labels for the ground-glass opacities and the consolidation in the CT lung images. In total, there are 6654 of CT lung images in ICTCF dataset. Originally, there were 1521 patients. However, some of the patients are missing CT lung images. We remove these patients that are missing CT lung images. After preprocessing the patients, the dataset was left with 1338 patients that contains CT lung images. The dataset can be found here: http://ictcf.biocuckoo.cn/. 
+ICTCF contains 127 types of clinical features and laboratory-confirmed cases of COVID-19 from 1170 patients including the severity of the CT lung images. However, the ICTCF dataset does not contain the segmentation labels for the ground-glass opacities and the consolidation in the CT lung images. In total, there are 6654 of CT lung images in ICTCF dataset. Originally, there were 1521 patients. However, some of the patients are missing CT lung images. We remove these patients that are missing CT lung images. After preprocessing the patients, the dataset was left with 1338 patients that contain CT lung images. The dataset can be found here: http://ictcf.biocuckoo.cn/.  We will use these ICTCF CT lung images without the ground truth segmentation labels in combination with the MedSeg dataset to undergo self-supervised learning to predict image in-painting. 
 
-As for the medical segmentation dataset, they contain ground truth label for the segmentation for ground-glass opacities and consolidation of the CT lung images but does not contain the severity score for the CT Lung images. The total amount of CT lung images contain in medical segmentation dataset is 932 CT lung images. We randomly assign the CT lung images into training set, validation set, and testing set of which the training set contains 698 CT lung images, the validation set contains 114 CT lung images, and the testing set contains 117 CT lung images. 
+As for the MedSeg dataset, they contain ground truth labels for the segmentation for ground-glass opacities and consolidation of the CT lung images. The total amount of CT lung images contain in MedSeg dataset is 932 CT lung images. We randomly assign the CT lung images into a training set, validation set, and testing set of which the training set contains 698 CT lung images, the validation set contains 114 CT lung images, and the testing set contains 117 CT lung images. 
 
 The assignment of the dataset can be seen in \ref{tab:dataset}.
 
-
-\begin{figure}
+\begin{table}[!h]
 	\centering
-	\small
-	\includegraphics[width=\linewidth]{data_aug.png}
-	\caption{Example of data augmentation on the CT lung images.}
-	\label{fig:data_aug}
-\end{figure}
+	\begin{tabular}{|c||c|c|c|c|} \hline
+		Data split & Source & Segmented & Images & Patients \\\hline
+		Training & \vtop{\hbox{\strut Med-Seg}\hbox{\strut ICTCF}}&
+		\vtop{\hbox{\strut Yes}\hbox{\strut No}} & 
+		\vtop{\hbox{\strut 698}\hbox{\strut 6654}}&
+		\vtop{\hbox{\strut 39}\hbox{\strut 1338}}\\\hline
+		Validation & Med-Seg & Yes & 114 & 35 \\\hline
+		Testing & Med-Seg & Yes & 117 & 35 \\\hline
+	\end{tabular}
+	\caption{This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.}
+	\label{tab:dataset}
+\end{table}
+
 
 \subsection{Experimental Settings}
-During the self-supervised image inpainting stage, we train the network for 2000 epochs. The network is trained for the first 200 epochs before we train the coach network for 200 epochs which increases the complexity of the masks generated. After that, we alternate in between training the self-supervised image inpainting and the coach network with 100 epochs in between. For every alternating between the training of the self-supervised image inpainting and the coach network, we set the learning rate to 0.1 at the start of the epoch, we set the learning rate to 0.01 at 40th epoch, we set the learing rate to 0.001 at 80th eochs, and 0.0001 at the 90th epoch.  We use SGD as the optimizer for the self-supervised image inpainting.  We set the momentum to 0.9 and the weight decay to 0.0005. As for the optimizer for the coach network, we use Adam optimizer with learning rate of 0.00001.
+During the self-supervised image inpainting stage, we train the network for 2000 epochs. The network is trained for the first 200 epochs before we train the coach network for 200 epochs which increases the complexity of the masks generated. After that, we alternate in between training the self-supervised image inpainting and the coach network with 100 epochs in between. For every alternating between the training of the self-supervised image inpainting and the coach network, we set the learning rate to 0.1 at the start of the epoch, we set the learning rate to 0.01 at 40th epoch, we set the learning rate to 0.001 at 80th epochs, and 0.0001 at the 90th epoch.  We use SGD as the optimizer for the self-supervised image inpainting.  We set the momentum to 0.9 and the weight decay to 0.0005. As for the optimizer for the coach network, we use Adam optimizer with a learning rate of 0.00001.
 
-For the Single InfNet, we train the network for 500 epochs. We use Adam as the optimizer with learning rate of 0.0001. 
+For the Single InfNet, we train the network for 500 epochs. We use Adam as the optimizer with a learning rate of 0.0001. 
 
 For the Multi InfNet, we train the network for 500 epochs. We use SGD as the optimizer. The momentum is set as 0.7 and the learning rate is set as 0.01.
-
-For the severity score calculation, there are several different labels obtained from ICTCF dataset for severity, The different severity are: \textit{Regular, Mild, Control, Severe, Critically ill.}  The assign the different labels with score ranging from 0 to 2. \textit{Regular, Mild, and Control} are assign having a severity score of 0. \textit{Severe} is assign having a severity score of 1. \textit{Critically ill} is assign having a severity score of 2. We use the metrics provided by sklearn to caclulate the F1 Score, Precision Score, and Recall Score for the severity score prediction. We use 'micro' as the averaging for the scores as provided by sklearn.
-
-\subsection{Data Augmentation}
-We used data augmentation to increase our data samples size. The data agumentation that we used includes \textit{vertical flipping, horizontal flipping, random crop, and random cutout}. For the random cutout percentage, we experimented that 0.5 cDuring tutout of the CT lung images yield higher performance than the rest of the value. This is because entropy at 0.5 is the highest which could increase more variability of the images. Examples of the data augmentation can be seen in figure \ref{fig:data_aug}.
-The left column is the original CT lung images while the right column is the augmented CT lung images. The first row involves random cropping and random cutout. The second row involves random cropping and random cutout. The third row involves random cropping and vertical flipping. The random cutout involves patching the image with colors of the same value of rgb. For instance, if the value of r is 10, then the value of g and b are also 10. If the value of r is 50, then the value of g and b are also 50.
 
