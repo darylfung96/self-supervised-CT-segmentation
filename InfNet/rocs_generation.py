@@ -15,10 +15,16 @@ for index, roc_file in enumerate(all_network_rocs):
     with open(roc_filename, 'rb') as f:
         roc_dict = pickle.load(f)
 
+    if 'baseline' in roc_file.lower():
+        name_model = 'Single SInfNet'
+    elif 'improved' in roc_file.lower():
+        name_model = 'Single SSInfNet + data aug'
+    else:
+        name_model = 'Single SSInfNet'
     roc_auc = auc(roc_dict['fpr'], roc_dict['tpr'])
     lw = 2
     plt.plot(roc_dict['fpr'], roc_dict['tpr'], color=colors[index],
-             lw=lw, label='ROC curve (area = %0.2f) %s' % (roc_auc, roc_file))
+             lw=lw, label='ROC curve (area = %0.2f) %s' % (roc_auc, name_model))
     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
     plt.plot(roc_dict['optimal_fpr'], roc_dict['optimal_tpr'], 'go')
     plt.annotate(f'{round(roc_dict["optimal_threshold"], 5)}', (roc_dict['optimal_fpr'], roc_dict['optimal_tpr']))

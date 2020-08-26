@@ -1,28 +1,57 @@
 \section{Methodology}
 
 
-In this section, we will show the details of the self-supervised InfNet for imaging segmentation model including the network architecture, the data preprocessing steps, and the loss function. We will show how self-supervised InfNet helps to improve generalization and performance of the model while having a limited number of data samples. We will also show the extension of our data preprocessing steps which further improves the performance of our model.
+In this section, we show the details of the self-supervised InfNet for imaging segmentation model including the network architecture, the data preprocessing steps, and the loss function. We show how self-supervised InfNet helps to improve generalization and performance of the model while having a limited number of data samples. We also show the extension of our data preprocessing steps.
 
-Supervised InfNet (Lung Infection Segmentation Network) will be used as our baseline to compare without using any semi-supervised learning algorithm. This is to show that the self-supervised learning method improves the performance of the baseline supervised learning InfNet for imaging segmentation. We will extend our work on supervised InfNet by adding self-supervision method to it.
+Supervised InfNet (Lung Infection Segmentation Network) is used as our baseline to compare without using any semi-supervised learning algorithm. This is to show that the self-supervised learning method improves the performance of the baseline supervised learning InfNet for imaging segmentation. We extend our work on supervised InfNet by adding self-supervision method to it.
 
-We will not change the structure of the InfNet model and use the default parameters as included in their GitHub code. There will be two different types of the InfNet model - single InfNet and multi InfNet. 
+We do not change the structure of the InfNet model and use the default parameters as included in their GitHub code. There are two different types of the InfNet model - single InfNet and multi InfNet. 
 
-The single InfNet will create a single-labeled segmentation of the image for the infected region. The single InfNet predicts if the region is either ground-glass opacities or consolidations. It represents ground-glass opacities or consolidations as the same label. This means that the single InfNet will only predict the infected region without classifying them more specifically.  The CT lung image is first passed into the initial convolutional layers of the single InfNet to extract the features of the CT lung image. Then, the features generated from the convolutional layer are fed into the partial decoder module, reverse attention module, and the edge detection module. The edge detection module is to help the network with the detection of the boundaries of the segmentation. The reverse attention and the partial decoder generates the segmentation of the infection regions of the CT lung images.
+The output of the single segmentation InfNet includes the edge of the segmentation and four single-labeled segmentation of the infected region of the CT lung images with different sizes as shown in Figure	 \ref{fig:supervised-inf-net_arch}.
+The single InfNet creates a single-labeled segmentation of the image for the infected region Figure \ref{fig:inf-net_arch}A. The single InfNet predicts if the region is either ground-glass opacities or consolidations. It represents ground-glass opacities or consolidations as the same label. This means that the single InfNet will only predict the infected region without classifying them more specifically.  The CT lung image is first passed into the initial convolutional layers of the single InfNet to extract the features of the CT lung image. Then, the features generated from the convolutional layer are fed into the partial decoder module, reverse attention module, and the edge detection module. The edge detection module is to help the network with the detection of the boundaries of the segmentation. The reverse attention and the partial decoder generates the segmentation of the infection regions of the CT lung images. 
 
-The prediction from the single InfNet represents the infected region and will act as a prior to be fed into the multi InfNet. The prior will be concatenated with the original CT image to be fed into the multi InfNet network. The multi InfNet network will be used to predict multiple-labeled segmentation. The multiple-labeled segmentation includes predicting the background, ground-glass opacities, and consolidations for the infected region. The multiple-labeled segmentation model will give each of the labels a different value instead of grouping them as one as what the single-segmentation model does.
+\begin{figure}
+	\small
+	\includegraphics[width=88mm]{supervised-inf-net.png}
+	\caption{Architecture of the supervised InfNet.  }
+	\label{fig:supervised-inf-net_arch}
+\end{figure}
+
+\begin{figure*}
+	\centering
+	\small
+	\includegraphics[width=\linewidth]{self-super-inf-net.png}
+	\caption{A is the original architecture of the InfNet model. B is the architecture of our self-supervised InfNet model. Highlighted purple block is the difference between the original Single InfNet and the self-supervised Single InfNet. }
+	\label{fig:inf-net_arch}
+\end{figure*}
+
+The prediction from the single InfNet represents the infected region and act as a prior to be fed into the multi InfNet Figure \ref{fig:multi-inf-net_arch}A. The prior is concatenated with the original CT image to be fed into the multi InfNet network. The multi InfNet network is used to predict multiple-labeled segmentation. The multiple-labeled segmentation includes predicting the background, ground-glass opacities, and consolidations for the infected region. The multiple-labeled segmentation model gives each of the labels a different value instead of grouping them as one as what the single-segmentation model does.
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=\linewidth]{self-super-multi-inf-net.png}
+	\caption{A is the architecture of the original multi segmentation InfNet model. B is the architecture of our self-supervised multi segmentation InfNet model. Highlighted green block is the difference between the original multi InfNet and our self-supervised multi InfNet.}
+	\label{fig:multi-inf-net_arch}
+\end{figure*}
 
 \subsection{Self-supervised InfNet for imaging segmentation}
 
-We will propose using a self-supervised method to improve the performance of deep neural networks to create pixel-level segmentation for CT scans for lung images of COVID-19 patients. We will integrate self-supervised inpainting to pre-train our network. Since image inpainting is similarly related to image segmentation, we will integrate the pre-training steps as image inpainting for our image segmentation network. 
+We propose using a self-supervised method to improve the performance of deep neural networks to create pixel-level segmentation for CT scans for lung images of COVID-19 patients. We integrate self-supervised inpainting to pre-train our network. Since image inpainting is similarly related to image segmentation, we integrate the pre-training steps as image inpainting for our image segmentation network. 
 
-The original InfNet model would generate 5 different predictions: the edge segmentation prediction and the other 4 are segmentation of the infected regions but of different sizes. To utilize the ability of self-supervised method for InfNet segmentation, we generate masks to be fed into the InfNet model. The last convolution layer that outputs the prediction is not used for the self-supervised case. However, the last convolutional layer is replaced with a different convolutional layer to reconstruct the image and the edge appropriately. Everything else is kept the same as the InfNet architecture. This way the network will learn meaningful representations of the CT images and we can use these meaningful representations to learn the segmentation of the infected regions of the CT lung images. After learning the self-supervised features for InfNet, the training continues as normal similar to the InfNet algorithm. The training will start with the weights trained using the self-supervised inpainting method. The last layer will be changed to its original layer instead of the replaced convolutional layer. 
+The original InfNet model would generate 5 different predictions: the edge segmentation prediction and the other 4 are segmentation of the infected regions but of different sizes. To utilize the ability of self-supervised method for InfNet segmentation, we generate masks to be fed into the InfNet model. The last convolution layer that outputs the prediction is not used for the self-supervised case. However, the last convolutional layer is replaced with a different convolutional layer to reconstruct the image and the edge appropriately. Everything else is kept the same as the InfNet architecture --- Figure \ref{fig:inf-net_arch}B. This way the network learns meaningful representations of the CT images and we can use these meaningful representations to learn the segmentation of the infected regions of the CT lung images. After learning the self-supervised features for InfNet, the training continues as normal similar to the InfNet algorithm. The training starts with the weights trained using the self-supervised inpainting method. The last layer is changed to its original layer instead of the replaced convolutional layer. 
 
-By learning features from image inpainting, the model can learn more features that are related to image segmentation. As creating masks can be a complex task for the network to learn to inpaint, the mask can either be too complex for the network to start learning or too simple to be able to learn good representations. We will be using a coach network that increases the complexity of the masking of the CT images throughout the training of the network. The mask created will initially be relatively simple, once the network can predict the inpainting of the CT images with good performance, the coach will increase the complexity of the masking to reduce the performance of the network, similar to how Generative Adversarial Network (GAN) works. The loss for the coach network is constructed from the loss of the image inpainting from the InfNet. The coach network and the InfNet both work together as a MinMax algorithm. The InfNet will try and minimize the loss to generate better image inpainting while the coach network will try to increase the loss of the image inpainting through generating more complex masks. In the beginning, the masks generated by the coach network will be less complex. Through the training of the coach network, as the InfNet gets better at predicting image inpainting, the coach network will generate more complex masks. The loss fuction for the coach network is:
+By learning features from image inpainting, the model can learn more features that are related to image segmentation. As creating masks can be a complex task for the network to learn to inpaint, the mask can either be too complex for the network to start learning or too simple to be able to learn good representations. We use a coach network that increases the complexity of the masking of the CT images throughout the training of the network. The mask created is initially simple, once the network can predict the inpainting of the CT images with good performance, the coach increases the complexity of the masking to reduce the performance of the network, similar to how Generative Adversarial Network (GAN) works. The loss for the coach network is constructed from the loss of the image inpainting from the InfNet. The coach network and the InfNet both work together as a MinMax algorithm. The InfNet tries to minimize the loss to generate better image inpainting while the coach network tries to increase the loss of the image inpainting through generating more complex masks. In the beginning, the masks generated by the coach network is less complex. Through the training of the coach network, as the InfNet gets better at predicting image inpainting, the coach network starts to generate more complex masks. The loss fuction for the coach network is:
 \begin{equation}
 L_{coach}(x) = 1 - L_{rec}(x\odot M)
 \end{equation}
 
-where $M = C(x)$ which is created by the coach network. A constraint is applied to this loss function because the coach network would just create a mask that masks all regions. After all, noa context information would be present for the network to learn and a maximum loss will be achieved. The constraint is:
+where 
+\begin{itemize}
+	\item $M$ is the mask created by the coach network
+	\item $x$ is the CT lung image
+	\item $L_{coach}$ is the loss for the coach network
+	\item $L_{rec}$ is the loss for the reconstruction loss
+\end{itemize} A constraint is applied to this loss function because the coach network would just create a mask that masks all regions. After all, no context information would be present for the network to learn and a maximum loss is achieved. The constraint is:
 \begin{equation}
 \hat{B}(x) = B(x) - SORT(B(x))^{k|B(x)} 
 \end{equation}
@@ -30,8 +59,8 @@ where $M = C(x)$ which is created by the coach network. A constraint is applied 
 M = C(x) = \sigma (\alpha \hat{B}(x))
 \end{equation}
 
-The backbone, B, of the coach network has a similar network architecture with the model that inpaints the CT images. SORT(B(x)) sorts the features in descending order over the activation map. k represents the $k^{th}$ elements in the sorted list and k helps to control the fraction of the image to be erased. The region that has scores lesser than the $k^{th}$ element will be erased from the images. If k is 0.75 then 0.75 fraction of the images will not be erased. The score is scaled into a range of [0, 1] using a sigmoid activation function. We keep $\alpha = 1$ while training the coach network.
-The illustration of the coach network can be seen in \ref{fig:coach-arch}.
+The backbone, B, of the coach network has a similar network architecture with the model that inpaints the CT images. SORT(B(x)) sorts the features in descending order over the activation map. k represents the $k^{th}$ elements in the sorted list and k helps to control the fraction of the image to be erased. The regions that has scores lesser than the $k^{th}$ element are erased from the images. If k is 0.75 then 0.75 fraction of the images is not erased. The score is scaled into a range of [0, 1] using a sigmoid, $\sigma$, activation function. $C(x)$ is the coach network that is fed with the CT lung images. We keep $\alpha = 1$ while training the coach network.
+The illustration of the coach network can be seen in Figure \ref{fig:coach-arch}.
 
 \begin{figure*}
 	\centering
@@ -43,25 +72,62 @@ The illustration of the coach network can be seen in \ref{fig:coach-arch}.
 
 After the self-supervision training is finished, the single segmentation InfNet would reuse the self-supervised single InfNet network weights to train normally on the segmentation of the CT lung images. Likewise, the multi InfNet network would reuse the weights that were trained during self-supervised multi InfNet training to train normally on the segmentation of the CT lung images.
 
-The proposed self-supervised single-labeled segmentation InfNet network architecture can be seen in \ref{fig:inf-net_arch}. The left side of the figure is the original Single InfNet architecture and the right side of the figure is the self-supervised Single InfNet. The last layer for each output prediction is replaced with a different linear activation layer. The linear activation layer will re-create the original image that is covered by the masks. 
-
-\begin{figure*}
-	\centering
-	\small
-	\includegraphics[width=\linewidth]{self-super-inf-net.png}
-	\caption{The architecture of our self-supervised InfNet model. }
-	\label{fig:inf-net_arch}
-\end{figure*}
+The proposed self-supervised single-labeled segmentation InfNet network architecture can be seen in Figure \ref{fig:inf-net_arch}B. The left side of the figure is the original Single InfNet architecture and the right side of the figure is the self-supervised Single InfNet. The last layer for each output prediction is replaced with a different linear activation layer. The linear activation layer re-creates the original image that is covered by the masks. 
 
 
-The proposed self-supervised multi-labeled segmentation InfNet network architecture is shown in \ref{fig:multi-inf-net_arch}. The changes in the architecture for the multi-labeled segmentation InfNet are similar to the single-labeled segmentation InfNet where the last layer of the layer is replaced with a different linear activation layer to output the inpainting of the original image. 
+The proposed self-supervised multi-labeled segmentation InfNet network architecture is shown in Figure \ref{fig:multi-inf-net_arch}B. The changes in the architecture for the multi-labeled segmentation InfNet are similar to the single-labeled segmentation InfNet where the last layer of the layer is replaced with a different linear activation layer to output the inpainting of the original image. 
 
-\begin{figure*}
-	\centering
-	\includegraphics[width=\linewidth]{self-super-multi-inf-net.png}
-	\caption{The architecture of our self-supervised multi segmentation InfNet model. Highlighted green block is the difference between the original multi InfNet and our self-supervised multi InfNet.}
-	\label{fig:multi-inf-net_arch}
-\end{figure*}
+
+
+ A loss is calculated for each of the outputs from the single InfNet model. The first loss function is the loss edge, $L_{edge}$ which guides the model in representing better segmentation boundaries. The other loss function is the segmentation loss, ${L_{seg}}$. The segmentation loss combines both the loss of Intersection over Union (IoU) and the binary cross entropy loss. The segmentation loss equation for the single InfNet is as follow:
+\begin{equation}
+L_{seg} = L_{IoU} + \lambda L_{BCE}
+\end{equation}
+
+$\lambda$ is a hyperparameter that controls how much weight we want to emphasize on the binary cross entropy loss. The $\lambda$ is set to 1 for this experiment. The segmentation loss is adapted to all of the ${S_i}$ predicted output where ${S_i}$ are created from $f_i$ such that $i={3,4,5}$. 
+
+The total loss function for the single InfNet model is then:
+\begin{equation}
+L_{total} = L_{seg}(G_t, S_g) + L_{edge} + 	\sum_{i=3}^{5}L_{seg}(G_t, S_i)
+\end{equation}
+
+The summation of the segmentation loss functions are calculated from the output of the parallel partial decoder and the output of the three convolutional layers --- 3rd layer to the 5th layer. $G_t$ refers to the ground truth labels. $S_g$ is the output from the parallel partial decoder to match with the ground truth label. $S_i$ is the different sizes of the segmentation of infected region output by the InfNet. The different sizes of the segmentation of infected region outputted by the InfNet are resized to fit the same shape as the ground truth segmentation image. $L_{edge}$ is the loss for the edge. We also add data augmentation to train our self-supervised Single InfNet. The data augmentation that we included are \textit{Random cropping, Random cutout, random horizontal flipping, random vertical flipping}. For each data augmentation, they have a 0.5 probability of getting augmented, otherwise the data augmentation is skipped. For random cropping, we crop 80\% of the CT lung images and resize the cropped image back to its original size. As for the random cutout, we cutout 50\% of the image with a 50\% chance with random color shades of grey. This means that the R,G,B pixel value of the cutout is the same.
+
+As for the multiple segmentation infected region InfNet. We also use the default model and hyperparameters from the InfNet code. However, we train the network without using any unlabeled images to be used as a supervised version. The CT lung images and prior (infected region) for the CT lung images are concatenated together before being fed into the multiple segmentation InfNet. The prior is generated from the single segmentation InfNet. The prior would contain the area of the infected region. However, the prior does not contain the labels for ground-glass opacities and consolidations. It just shows the infected regions. The multiple segmentation InfNet labels the CT lung images with background, ground-glass opacities, and consolidations. The architecture for multiple segmentation InfNet can be seen in Figure \ref{fig:multi-inf-net_arch}. The loss function for the multiple segmentation InfNet is as follow:
+\begin{equation}
+L_{bce} = \frac{1}{N}\sum_{i=1}^{N} y_i \cdot log(\hat{y_i}) + (1-y_i)\cdot log(1-\hat{y_i})
+\end{equation}
+
+where 
+
+\begin{itemize}
+	\item $y_i$ is the ground truth value for the segmentation - background, ground-glass opacities, and consolidation
+	\item $\hat{y}_i$ is the predicted value for the segmentation by the network
+	\item $N$ is the total number of the current training batch of data samples
+\end{itemize}
+
+The loss function for multiple segmentation InfNet uses the binary cross-entropy between the predicted segmentation and the ground truth segmentation. 
+365
+%
+In order to improve the performance of the model and to aid in the generalization, we determine to use self-supervised learning to learn good representations of the CT scan of lung images. Self-supervised learning generates auxiliary tasks from the labeled data samples. For instance, when undergoing data augmentation with rotation, we could train the network to predict if the images have been rotated $0^\circ$, 90 $0^\circ$, 180 $0^\circ$ to learn representations of the images. 
+
+Additionally, we use focal loss instead of the binary cross entropy loss function for the self-supervised InfNet model to emphasize on the smaller data samples on consolidation than ground-glass opacities. The focal loss function is:
+\begin{equation}
+FL(p_t) = -\alpha _t(1-p_t)^\gamma log(p_t)
+\end{equation}
+
+where
+\begin{itemize}
+	\item  $FL$ is the focal loss
+	\item $p_t$ is the predicted output by the Multi InfNet
+	\item $\alpha_t$ is a hyperparameter that controls the weight of positive and negative samples
+	\item $\gamma$ is the term that controls the rate of the downweighted examples
+\end{itemize}
+
+We also wrap Lookahead optimizer around the SGD optimiser with k = 5 and alpha = 0.5.
+
+The pseudo code for our self-supervised Single/Multi InfNet can be seen in Algorithm \ref{alg:infnet}.
+
 
 \begin{algorithm}
 	\caption{Pseudo code for self-supervised with InfNet}
@@ -94,48 +160,16 @@ The proposed self-supervised multi-labeled segmentation InfNet network architect
 		\STATE save model weights, \textit{w}.
 		\ENDFOR
 	\end{algorithmic}
+	\label{alg:infnet}
 \end{algorithm}
-
-The output of the single segmentation InfNet will include the edge of the segmentation and four single-labeled segmentation of the infected region of the CT lung images with different sizes as shown in \ref{fig:supervised-inf-net_arch}. A loss will be calculated for each of the outputs from the single InfNet model. The first loss function is the loss edge, $L_{edge}$ which guides the model in representing better segmentation boundaries. The other loss function is the segmentation loss, ${L_{seg}}$. The segmentation loss combines both the loss of Intersection over Union (IoU) and the binary cross entropy loss. The segmentation loss equation for the single InfNet is as follow:
-\begin{equation}
-L_{seg} = L_{IoU} + \lambda L_{BCE}
-\end{equation}
-
-\begin{figure}
-	\small
-	\includegraphics[width=88mm]{supervised-inf-net.png}
-	\caption{Architecture of the supervised InfNet.  }
-	\label{fig:supervised-inf-net_arch}
-\end{figure}
-
-The $\lambda$ is set to 1 for this experiment. The segmentation loss is adapted to all of the ${S_i}$ predicted output where ${S_i}$ are created from $f_i$ such that $i={3,4,5}$. 
-
-The total loss function for the single InfNet model is then:
-\begin{equation}
-L_{total} = L_{seg}(G_t, S_g) + L_{edge} + 	\sum_{i=3}^{5}L_{seg}(G_t, S_i)
-\end{equation}
-
-The summation of the loss functions are calculated from the output of the three convolutional layers. $G_t$ refers to the ground truth labels. $S_g$ is the output from the parallel partial decoder to match with the ground truth label.
-
-As for the multiple segmentation infected region InfNet. We also use the default model and hyperparameters from the InfNet code. We will however train the network without using any unlabeled images to be used as a supervised version. The CT lung images and prior (infected region) for the CT lung images are concatenated together before being fed into the multiple segmentation InfNet. The prior is generated from the single segmentation InfNet. The prior would contain the area of the infected region. However, the prior does not contain the labels for ground-glass opacities and consolidations. It just shows the infected regions. The multiple segmentation InfNet will label the CT lung images with background, ground-glass opacities, and consolidations. The architecture for multiple segmentation InfNet can be seen in \ref{fig:multi-inf-net_arch}. The loss function for the multiple segmentation InfNet is as follow:
-\begin{equation}
-L_{bce} = \frac{1}{N}\sum_{i=1}^{N} y_i \cdot log(\hat{y_i}) + (1-y_i)\cdot log(1-\hat{y_i})
-\end{equation}
-
-The loss function for multiple segmentation InfNet uses the binary cross-entropy between the predicted segmentation and the ground truth segmentation.
-
-In order to improve the performance of the model and to aid in the generalization, we determine to use self-supervised learning to learn good representations of the CT scan of lung images. Self-supervised learning generates auxiliary tasks from the labeled data samples. For instance, when undergoing data augmentation with rotation, we could train the network to predict if the images have been rotated 0 degrees, 90 degrees, 180 degrees to learn representations of the images. 
 
 
 %determine the severity score of the lung regions through several methods. The severity score of the lungs can be determined by using CT severity score (CT-SS) \cite{ref11}. The score uses lung opacification for extension of the infections in the lungs. CT-SS is an adaptation from the method previously used in patients after severe-acute respiratory syndrome (SARS) \cite{ref10} to describe ground-glass opacity, interstitial opacity, and air trapping. The lungs will be divided into 20 regions, the posterior apical segment of upper left lobe was divided into apical and posterior segmental regions, the anteromedial basal segment of lower left lobe will be divided into anterior and basal segmental regions. For each region, there contain a system attributing scores of 0, 1, 2, either parenchymal opacification involves 0%, less than 50%, or equal to or more than 50%. The CT-SS will calculate the sum of individual scored regions. The final value of CT-SS can range from 0 to 40.
 
 
-We will compare our method against the supervised %and semi-supervised \cite{ref13,ref14} 
-\cite {ref13}models trained on COVID-19 dataset. For comparing supervised learning, we will compare against the paper \cite{ref13}. We will train and follow using the same network structure but change from supervised learning to self-supervised learning and compare the performance between supervised and self-supervised.
+
 
 %When comparing with the semi-supervised model, we determine that our model is successful if our model is able to reach close to or better than the performance of the semi-supervised model as semi-supervised model is able to obtain a higher amount of data samples by looking at both unannotated and annotated data samples while self-supervised model only have access to the annotated labels. A self-supervised learning method will create its own training annotated labels without any manual human labelling and trained without any unlabeled data samples. We will compare our method’s performance against InfNet \cite{ref14} which uses semi-supervised learning by generating pseudo labels from randomly selected unlabeled CT images.
-
-We will use this approach to determine if self-supervised learning can be a useful task to help InfNet improve its performance in segmenting the ground-glass opacities or consolidation around the infected region of the CT lung images.
 
 %Our method will be novel compare to the other methods mentioned as our method will be integrating both the segmentation of the CT lung images as well as the calculation of the severity score through caluclation of the segmented infected lung areas.
 

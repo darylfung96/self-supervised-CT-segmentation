@@ -1,59 +1,14 @@
 \section{Experiments}
 
 
-
-\iffalse
-\begin{table*}[!h]
-	\centering
-	\small
-	\begin{tabular}{| c | c || c c c c || c c c c |}
-		\hline
-		& &\multicolumn{4}{c||}{Ground-Glass Opacity} & \multicolumn{4}{c|}{Consolidation}\\ \cline{3-10}
-		Methods & & F1 & IoU & Recall & Precision & F1 & IoU & Recall & Precision \\\hline
-		SInfNet & Mean & 0.87 & 0.81 & 0.87 & 0.9 & 0.47 & 0.39 & 0.68 & 0.55\\ \cline{2-10}
-		& Error & $\pm$0.041 & $\pm$0.049 & $\pm$0.043 & $\pm$0.042 & $\pm$0.102 & $\pm$0.093 & $\pm$0.103 & $\pm$0.111 \\ \hline \hline
-		
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.4)}} & Mean &0.86 & 0.81 & 0.87 & 0.91 & 0.58 & 0.47 & 0.64 & 0.74 \\ \cline{2-10}
-		& Error & $\pm$0.048 & $\pm$0.058 & $\pm$0.052 & $\pm$0.04 & $\pm$0.096 & $\pm$0.092 & $\pm$0.108 & $\pm$0.095  \\ \hline \hline
-		
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.5)}} & Mean &0.86 & 0.81 & 0.88 & 0.9& 0.53 & 0.44 & 0.62 & 0.69   \\ \cline{2-10}
-		& Error &$\pm$0.045 & $\pm$0.055 & $\pm$0.05 & $\pm$0.042 & $\pm$0.108 & $\pm$0.099 & $\pm$0.118 & $\pm$0.108  \\ \hline \hline
-
-		SSInfNet & Mean & 0.86 & 0.8 & 0.87 & 0.89 & 0.55 & 0.46 & 0.67 & 0.68  \\ \cline{2-10}
-		& Error & $\pm$0.041 & $\pm$0.051 & $\pm$0.044 & $\pm$0.039 & $\pm$0.106 & $\pm$0.101 & $\pm$0.116 & $\pm$0.108 \\ \hline \hline
-		
-		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut data aug}}& Mean & 0.82 & 0.74 & 0.82 & 0.86 & 0.27 & 0.22 & 0.61 & 0.31   \\ \cline{2-10}
-		& Error & $\pm$0.046 & $\pm$0.053 & $\pm$0.048 & $\pm$0.04 & $\pm$0.077 & $\pm$0.067 & $\pm$0.117 & $\pm$0.088\\ \hline \hline \hline
-		
-		
-		& &\multicolumn{4}{c||}{Background} & \multicolumn{4}{c|}{Overall}\\ \cline{3-10}
-		Methods & & F1 & IoU & Recall & Precision & F1 & IoU & Recall & Precision \\\hline
-		SInfNet & Mean & 1.0 & 1.0 & 1.0 & 1.0 & 0.78 & 0.73 & 0.85 & 0.82 \\ \cline{2-10}
-		& Error &$\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.047 & $\pm$0.048 & $\pm$0.049 & $\pm$0.051 \\ \hline \hline
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.4)}}  & Mean &1.0 & 1.0 & 1.0 & 1.0 & 0.81 & 0.76 & 0.84 & 0.88  \\ \cline{2-10}
-		& Error & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.048 & $\pm$0.05 & $\pm$0.053 & $\pm$0.045 \\ \hline \hline
-		\vtop{\hbox{\strut SInfNet+}\hbox{\strut data aug(0.5)}}  & Mean & 1.0 & 1.0 & 1.0 & 1.0 & 0.8 & 0.75 & 0.83 & 0.86 \\ \cline{2-10}
-		& Error & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.051 & $\pm$0.051 & $\pm$0.056 & $\pm$0.05 \\ \hline \hline
-		SSInfNet & Mean &1.0 & 1.0 & 1.0 & 1.0&0.8 & 0.75 & 0.85 & 0.86 \\ \cline{2-10}
-		& Error &$\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.049 & $\pm$0.05 & $\pm$0.054 & $\pm$0.049 \\ \hline \hline
-		\vtop{\hbox{\strut SSInfNet+}\hbox{\strut data aug}} & Mean & 1.0 & 1.0 & 1.0 & 1.0 & 0.69 & 0.65 & 0.81 & 0.72 \\ \cline{2-10}
-		& Error &$\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.0 & $\pm$0.041 & $\pm$0.04 & $\pm$0.055 & $\pm$0.043 \\ \hline \hline
-		
-	\end{tabular}
-	\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the test set.}
-	\label{tab:multi-strongprior}
-\end{table*}
-\fi
-
-
 \subsection{Datasets}
-The dataset that we will be using is an integrative resource of chest computed tomography images and clinical features of patients with COVID-19 pneumonia (ICTCF) \cite{ref23} which contains the severity score for each CT lung image and CT lung images from medical segmentation website \cite{ref26}. 
+The dataset that we use is an integrative resource of chest computed tomography images and clinical features of patients with COVID-19 pneumonia (ICTCF) \cite{ref12} which contains the severity score for each CT lung image and CT lung images from medical segmentation website \cite{ref13}. 
 
-ICTCF contains 127 types of clinical features and laboratory-confirmed cases of COVID-19 from 1170 patients including the severity of the CT lung images. However, the ICTCF dataset does not contain the segmentation labels for the ground-glass opacities and the consolidation in the CT lung images. In total, there are 6654 of CT lung images in ICTCF dataset. Originally, there were 1521 patients. However, some of the patients are missing CT lung images. We remove these patients that are missing CT lung images. After preprocessing the patients, the dataset was left with 1338 patients that contain CT lung images. The dataset can be found here: http://ictcf.biocuckoo.cn/.  We will use these ICTCF CT lung images without the ground truth segmentation labels in combination with the MedSeg dataset to undergo self-supervised learning to predict image in-painting. 
+ICTCF contains 127 types of clinical features and laboratory-confirmed cases of COVID-19 from 1170 patients including the severity of the CT lung images. However, the ICTCF dataset does not contain the segmentation labels for the ground-glass opacities and the consolidation in the CT lung images. In total, there are 6654 of CT lung images in ICTCF dataset. Originally, there were 1521 patients. However, some of the patients are missing CT lung images. We remove these patients that are missing CT lung images. After preprocessing the patients, the dataset was left with 1338 patients that contain CT lung images. The dataset can be found here: http://ictcf.biocuckoo.cn/.  We use these ICTCF CT lung images without the ground truth segmentation labels in combination with the MedSeg dataset to undergo self-supervised learning to predict image in-painting. 
 
 As for the MedSeg dataset, they contain ground truth labels for the segmentation for ground-glass opacities and consolidation of the CT lung images. The total amount of CT lung images contain in MedSeg dataset is 932 CT lung images. We randomly assign the CT lung images into a training set, validation set, and testing set of which the training set contains 698 CT lung images, the validation set contains 114 CT lung images, and the testing set contains 117 CT lung images. 
 
-The assignment of the dataset can be seen in \ref{tab:dataset}.
+The assignment of the dataset can be seen in Table \ref{tab:dataset}.
 
 \begin{table}[!h]
 	\centering
@@ -78,3 +33,63 @@ For the Single InfNet, we train the network for 500 epochs. We use Adam as the o
 
 For the Multi InfNet, we train the network for 500 epochs. We use SGD as the optimizer. The momentum is set as 0.7 and the learning rate is set as 0.01.
 
+As for the Multi InfNet with added focal loss and lookahead optimizer, we trained the network for 500 epochs, we use lookahead optimizer with k=5 and alpha=0.5 and warp the lookahead optimizer around SGD optimizer where the momentum is set as 0.7 and the learning rate is set as 0.01.
+
+For the self-supervised version for both Single InfNet and Multi InfNet, the self-supervised image in-painting is first trained. Then the weights from the trained networks except for the last layer are transferred to be used to train on the segmentation of the CT lung images.
+
+We compare our method against the supervised %and semi-supervised \cite{ref13,ref14} 
+\cite {ref14} models trained on COVID-19 dataset. We train and follow using the same network structure but change from supervised learning to self-supervised learning and compare the performance between supervised and self-supervised.
+
+We use this approach to determine if self-supervised learning can be a useful task to help InfNet improve its performance in segmenting the ground-glass opacities or consolidation around the infected region of the CT lung images.
+
+\subsection{Performance Evaluation Metrics}
+we will show the results of our experiments obtained. We show the comparison of the results between the supervised and the self-supervised version of the InfNet.
+
+%The result for our comparison between the baseline InfNet model and our self-supervised model can be seen in Table \ref{tab:single}, and Table \ref{tab:multi-weakprior}. 
+The table is plotted with several metrics: F1, IoU, Recall, and Precision. 
+
+The F1-Score is also called the Dice Coefficient, it is used to measure the overlap between the ground-truth infected region and the predicted infected region. The F1-Score equation is defined as:
+
+\begin{equation}
+F1 = \frac{2 * | T \cap P |}{|T| + |P|}
+\end{equation}
+
+where T is the ground truth infected region and P is the predicted infected region.
+
+The IoU is a different method to measure the overlap between the ground truth infected region and the predicted infected region. The IoU equation is defined as:
+
+\begin{equation}
+IoU = \frac{T \cup P}{T \cap P}
+\end{equation}
+
+where T is the ground truth infected region and P is the predicted infected region.
+
+The Recall is used to measure the how much of the ground truth infected region is present in the predicted infected region. The equation is as follow:
+
+\begin{equation}
+Recall = \frac{T \cap P}{T}
+\end{equation}
+
+where T is the ground truth infected region and P is the predicted infected region.
+
+The Precision is used to measure how much of the predicted infected region is present in the ground truth infected region. The equation is as follow:
+
+\begin{equation}
+Precision = \frac{T \cap P}{P}
+\end{equation}
+
+where T is the ground truth infected region and P is the predicted infected region.
+
+There are cases when the calculated F1, IoU, Recall, or Precision will contain NaN value due to the fact that the denominator is 0. We will ignore NaN values into our calculation and continue the calculation for other metrics.
+
+For the table that contains mean and error, the mean are calculated as:
+\begin{equation}
+mean =  \frac{\sum_{i=1}^{N}Metric(\hat{y_i}, y_i)}{N}
+\end{equation}
+Where Metric refers to either \textit{F1, IoU, Recall, Precision.} N refers to the number of test data samples.
+The error is:
+\begin{equation}
+error =  SE \times 1.96
+\end{equation}
+where SE is the standard error of the test data samples for the metric multiplied by 1.96.
+Note that Mean $\pm$Error is the 95\% confidence interval.
