@@ -48,26 +48,22 @@
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Pseudo code for self-supervised with InfNet\relax }}{}\protected@file@percent }
 \newlabel{alg:self-inf-net}{{1}{}}
 \newlabel{alg:infnet}{{1}{}}
-\@LN@col{2}
 \@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces This table shows the data distribution between the datasets that we use to evaluate our model on. Med-Seg refers to the COVID-19 CT Segmentation data set and ICTCF refers to the ICTCF data set.\relax }}{}\protected@file@percent }
 \newlabel{tab:dataset}{{I}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Experimental Settings}{}\protected@file@percent }
+\@LN@col{2}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Performance Evaluation Metrics}{}\protected@file@percent }
 \@LN@col{1}
 \@writefile{toc}{\contentsline {section}{\numberline {VI}Result}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Result comparison for Single InfNet}{}\protected@file@percent }
 \@LN@col{2}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Results comparison for Multi InfNet}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Comparison of single segmentation between different networks. Overall, the Single SInfNet achieves a better performance than the rest of the network as seen in row 1 to row 3. However, our method by adding self-supervised to InfNet (Single SSInfNet) prevents overestimating the infected region of the CT lung images as can be seen in row 4.\relax }}{}\protected@file@percent }
 \newlabel{fig:single-comparison}{{5}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet in the test set. Single SSInfNet is our self-supervised single InfNet.\relax }}{}\protected@file@percent }
-\newlabel{tab:single}{{II}{}}
-\@LN@col{1}
-\@LN@col{2}
-\@writefile{toc}{\contentsline {section}{\numberline {VII}Conclusion}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces ROC comparison of different networks.\relax }}{}\protected@file@percent }
 \newlabel{fig:single_rocs}{{6}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comparison of multi segmentation between different networks with prior generated from single InfNet. Red colored is the ground-glass opacities and green colored is the consolidation. The baseline multi InfNet overestimated the consolidation region in the first and third row of the CT lung image when there are not suppose to be any consolidation region.\relax }}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comparison of multi segmentation between different networks with prior generated from single InfNet. Red colored is the ground-glass opacities and green colored is the consolidation. The baseline multi InfNet (SInfNet) overestimated the consolidation region in the first and third row of the CT lung image when there are not suppose to be any consolidation region.\relax }}{}\protected@file@percent }
 \newlabel{fig:multi-weakprior-comparison}{{7}{}}
 \bibcite{ref1}{1}
 \bibcite{ref2}{2}
@@ -85,12 +81,14 @@
 \bibcite{ref14}{14}
 \bibcite{ref15}{15}
 \bibcite{ref16}{16}
-\bibcite{ref17}{17}
-\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet. SSInfNet is our self-supervised multi InfNet. \relax }}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Quantitative result for comparison between Single segmentation InfNet and self-supervised single segmentation InfNet in the test set. Single SSInfNet is our self-supervised single InfNet.\relax }}{}\protected@file@percent }
+\newlabel{tab:single}{{II}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet. SSInfNet is our self-supervised multi InfNet. GGO: Ground-Glass Opacity. Cons: Consolidation. \relax }}{}\protected@file@percent }
 \newlabel{tab:multi-weakprior}{{III}{}}
 \@LN@col{1}
 \@writefile{toc}{\contentsline {section}{References}{}\protected@file@percent }
 \@LN@col{2}
+\bibcite{ref17}{17}
 \bibcite{ref18}{18}
 \bibcite{ref19}{19}
 \bibcite{ref20}{20}

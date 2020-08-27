@@ -368,18 +368,23 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     background_np_total_test_dice = np.array(background_total_test_dice)
     background_mean_test_dice = np.mean(background_np_total_test_dice)
     background_error_test_dice = np.std(background_np_total_test_dice) / np.sqrt(background_np_total_test_dice.size) * 1.96
+    background_variance_dice = np.var(background_np_total_test_dice, ddof=1)
 
     background_np_total_test_jaccard = np.array(background_total_test_jaccard)
     background_mean_test_jaccard = np.mean(background_np_total_test_jaccard)
     background_error_test_jaccard = np.std(background_np_total_test_jaccard) / np.sqrt(background_np_total_test_jaccard.size) * 1.96
+    background_variance_jaccard = np.var(background_np_total_test_jaccard, ddof=1)
 
     background_np_total_test_sensitivity = np.array(background_total_test_sensitivity)
     background_mean_test_sensitivity = np.mean(background_np_total_test_sensitivity)
     background_error_test_sensitivity = np.std(background_np_total_test_sensitivity) / np.sqrt(background_np_total_test_sensitivity.size) * 1.96
+    background_variance_sensitivity = np.var(background_np_total_test_sensitivity, ddof=1)
 
     background_np_total_test_precision = np.array(background_total_test_precision)
     background_mean_test_precision = np.mean(background_np_total_test_precision)
     background_error_test_precision = np.std(background_np_total_test_precision) / np.sqrt(background_np_total_test_precision.size) * 1.96
+    background_variance_precision = np.var(background_np_total_test_precision, ddof=1)
+
 
     # ground-glass opacities
     gg_np_total_test_loss = np.array(gg_total_test_loss)
@@ -389,18 +394,22 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     gg_np_total_test_dice = np.array(gg_total_test_dice)
     gg_mean_test_dice = np.mean(gg_np_total_test_dice)
     gg_error_test_dice = np.std(gg_np_total_test_dice) / np.sqrt(gg_np_total_test_dice.size) * 1.96
+    gg_variance_dice = np.var(gg_np_total_test_dice, ddof=1)
 
     gg_np_total_test_jaccard = np.array(gg_total_test_jaccard)
     gg_mean_test_jaccard = np.mean(gg_np_total_test_jaccard)
     gg_error_test_jaccard = np.std(gg_np_total_test_jaccard) / np.sqrt(gg_np_total_test_jaccard.size) * 1.96
+    gg_variance_jaccard = np.var(gg_np_total_test_jaccard, ddof=1)
 
     gg_np_total_test_sensitivity = np.array(gg_total_test_sensitivity)
     gg_mean_test_sensitivity = np.mean(gg_np_total_test_sensitivity)
     gg_error_test_sensitivity = np.std(gg_np_total_test_sensitivity) / np.sqrt(gg_np_total_test_sensitivity.size) * 1.96
+    gg_variance_sensitivity = np.var(gg_np_total_test_sensitivity, ddof=1)
 
     gg_np_total_test_precision = np.array(gg_total_test_precision)
     gg_mean_test_precision = np.mean(gg_np_total_test_precision)
     gg_error_test_precision = np.std(gg_np_total_test_precision) / np.sqrt(gg_np_total_test_precision.size) * 1.96
+    gg_variance_precision = np.var(gg_np_total_test_precision, ddof=1)
 
     # consolidation
     cons_np_total_test_loss = np.array(cons_total_test_loss)
@@ -410,24 +419,34 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     cons_np_total_test_dice = np.array(cons_total_test_dice)
     cons_mean_test_dice = np.mean(cons_np_total_test_dice)
     cons_error_test_dice = np.std(cons_np_total_test_dice) / np.sqrt(cons_np_total_test_dice.size) * 1.96
+    cons_variance_dice = np.var(cons_np_total_test_dice, ddof=1)
 
     cons_np_total_test_jaccard = np.array(cons_total_test_jaccard)
     cons_mean_test_jaccard = np.mean(cons_np_total_test_jaccard)
     cons_error_test_jaccard = np.std(cons_np_total_test_jaccard) / np.sqrt(cons_np_total_test_jaccard.size) * 1.96
+    cons_variance_jaccard = np.var(cons_np_total_test_jaccard, ddof=1)
 
     cons_np_total_test_sensitivity = np.array(cons_total_test_sensitivity)
     cons_mean_test_sensitivity = np.mean(cons_np_total_test_sensitivity)
     cons_error_test_sensitivity = np.std(cons_np_total_test_sensitivity) / np.sqrt(cons_np_total_test_sensitivity.size) * 1.96
+    cons_variance_sensitivity = np.var(cons_np_total_test_sensitivity, ddof=1)
 
     cons_np_total_test_precision = np.array(cons_total_test_precision)
     cons_mean_test_precision = np.mean(cons_np_total_test_precision)
     cons_error_test_precision = np.std(cons_np_total_test_precision) / np.sqrt(cons_np_total_test_precision.size) * 1.96
+    cons_variance_precision = np.var(cons_np_total_test_precision, ddof=1)
+
 
     print('background')
     print('==============================')
     print(f'{round(background_mean_test_dice, 2)} & {round(background_mean_test_jaccard, 2)} &'
           f' {round(background_mean_test_sensitivity, 2)} & '
           f'{round(background_mean_test_precision, 2)}')
+    print('')
+    print(f'background dice variance[{background_np_total_test_dice.size}]: {background_variance_dice}')
+    print(f'background jaccard [{background_np_total_test_jaccard.size}]: {background_variance_jaccard}')
+    print(f'background recall variance[{background_np_total_test_sensitivity.size}]: {background_variance_sensitivity}')
+    print(f'background precision variance[{background_np_total_test_precision.size}]: {background_variance_precision}')
     print('============error=============')
     print(f'$\pm${round(background_error_test_dice, 3)} & $\pm${round(background_error_test_jaccard, 3)} &'
           f' $\pm${round(background_error_test_sensitivity, 3)} & '
@@ -439,6 +458,11 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     print(f'{round(gg_mean_test_dice, 2)} & {round(gg_mean_test_jaccard, 2)} &'
           f' {round(gg_mean_test_sensitivity, 2)} & '
           f'{round(gg_mean_test_precision, 2)}')
+    print('')
+    print(f'gg dice variance[{gg_np_total_test_dice.size}]: {gg_variance_dice}')
+    print(f'gg jaccard [{gg_np_total_test_jaccard.size}]: {gg_variance_jaccard}')
+    print(f'gg recall variance[{gg_np_total_test_sensitivity.size}]: {gg_variance_sensitivity}')
+    print(f'gg precision variance[{gg_np_total_test_precision.size}]: {gg_variance_precision}')
     print('============error=============')
     print(f'$\pm${round(gg_error_test_dice, 3)} & $\pm${round(gg_error_test_jaccard, 3)} &'
           f' $\pm${round(gg_error_test_sensitivity, 3)} & '
@@ -450,6 +474,11 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     print(f'{round(cons_mean_test_dice, 2)} & {round(cons_mean_test_jaccard, 2)} &'
           f' {round(cons_mean_test_sensitivity, 2)} & '
           f'{round(cons_mean_test_precision, 2)}')
+    print('')
+    print(f'cons dice variance[{cons_np_total_test_dice.size}]: {cons_variance_dice}')
+    print(f'cons jaccard [{cons_np_total_test_jaccard.size}]: {cons_variance_jaccard}')
+    print(f'cons recall variance[{cons_np_total_test_sensitivity.size}]: {cons_variance_sensitivity}')
+    print(f'cons precision variance[{cons_np_total_test_precision.size}]: {cons_variance_precision}')
     print('============error=============')
     print(f'$\pm${round(cons_error_test_dice, 3)} & $\pm${round(cons_error_test_jaccard, 3)} &'
           f' $\pm${round(cons_error_test_sensitivity, 3)} & '
@@ -467,11 +496,23 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     overall_error_jaccard = (background_error_test_jaccard + gg_error_test_jaccard + cons_error_test_jaccard) / 3
     overall_error_sensitivity = (background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
     overall_error_precision = (background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
+
+    overall_variance_dice = np.var(overall_dice, ddof=1)
+    overall_variance_jaccard = np.var(overall_jaccard, ddof=1)
+    overall_variance_sensitivity = np.var(overall_sensitivity, ddof=1)
+    overall_variance_precision = np.var(overall_precision, ddof=1)
+
+
     print('overall')
     print('==============================')
     print(f'{round(overall_dice, 2)} & {round(overall_jaccard, 2)} &'
           f' {round(overall_sensitivity, 2)} & '
           f'{round(overall_precision, 2)}')
+    print('')
+    print(f'overall dice variance[{overall_dice.size}]: {overall_variance_dice}')
+    print(f'overall jaccard [{overall_jaccard.size}]: {overall_variance_jaccard}')
+    print(f'overall recall variance[{overall_sensitivity.size}]: {overall_variance_sensitivity}')
+    print(f'overall precision variance[{overall_precision.size}]: {overall_variance_precision}')
     print('============error=============')
     print(f'$\pm${round(overall_error_dice, 3)} & $\pm${round(overall_error_jaccard, 3)} &'
           f' $\pm${round(overall_error_sensitivity, 3)} & '
