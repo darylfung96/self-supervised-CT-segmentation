@@ -497,10 +497,10 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     overall_error_sensitivity = (background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
     overall_error_precision = (background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
 
-    overall_variance_dice = np.var(overall_dice, ddof=1)
-    overall_variance_jaccard = np.var(overall_jaccard, ddof=1)
-    overall_variance_sensitivity = np.var(overall_sensitivity, ddof=1)
-    overall_variance_precision = np.var(overall_precision, ddof=1)
+    overall_variance_dice = (background_variance_dice + cons_variance_dice + gg_variance_dice) / 3
+    overall_variance_jaccard = (background_variance_jaccard + cons_variance_jaccard + gg_variance_jaccard) / 3
+    overall_variance_sensitivity = (background_variance_sensitivity + cons_variance_sensitivity + gg_variance_sensitivity) / 3
+    overall_variance_precision = (background_variance_precision + cons_variance_precision + gg_variance_precision) / 3
 
 
     print('overall')
