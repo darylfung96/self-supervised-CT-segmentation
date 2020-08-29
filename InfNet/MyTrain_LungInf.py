@@ -143,10 +143,10 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 total_loss_3 += loss3.item()
                 total_loss_2 += loss2.item()
 
-                total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt)
-                total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt)
-                total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt)
-                total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt)
+                total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt, 0.5)
+                total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt, 0.5)
+                total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt, 0.5)
+                total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt, 0.5)
 
             total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
             test_writer.add_scalar('test/loss2', total_loss_2/total_test_step, global_current_iteration)
