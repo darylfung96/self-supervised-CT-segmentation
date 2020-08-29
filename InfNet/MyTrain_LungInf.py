@@ -23,6 +23,9 @@ from sklearn.metrics import roc_curve, auc
 import statistics
 import matplotlib.pyplot as plt
 import pickle
+from focal_loss import FocalLoss
+from lookahead import Lookahead
+
 
 from InfNet.Code.utils.dataloader_LungInf import test_dataset
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
@@ -30,11 +33,13 @@ from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, 
 
 global_current_iteration = 0
 best_loss = 1e9
+focal_loss_criterion = FocalLoss(logits=True)
 
 
 def joint_loss(pred, mask):
     weit = 1 + 5*torch.abs(F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
-    wbce = F.binary_cross_entropy_with_logits(pred, mask, reduce='none')
+    wbce = focal_loss_criterion(pred, mask)#, reduce='none')
+    # wbce = F.binary_cross_entropy_with_logits(pred, mask, reduce='none')
     wbce = (weit*wbce).sum(dim=(2, 3)) / weit.sum(dim=(2, 3))
 
     pred = torch.sigmoid(pred)
@@ -47,6 +52,11 @@ def joint_loss(pred, mask):
 def train(train_loader, test_loader, model, optimizer, epoch, train_save, device):
     global global_current_iteration
     global best_loss
+    global focal_loss_criterion
+
+    optimizer = Lookahead(optimizer, k=5, alpha=0.5)
+    optimizer.zero_grad()
+    focal_loss_criterion = focal_loss_criterion.to(device)
 
     model.train()
     # ---- multi-scale training ----

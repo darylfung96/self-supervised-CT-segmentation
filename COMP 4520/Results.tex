@@ -55,10 +55,10 @@ Table \ref{tab:multi-weakprior} shows the result for the comparison between mult
 		\hline \hline
 		
 		\multirow{4}{*}{\rotatebox[origin=c]{90}{Cons}} 
-		& F1 & 0.35 &$\pm$0.097 &0.29 &$\pm$0.078 &\textbf{0.46} &$\pm$0.096 \\ \cline{2-8}
-		& IoU & 0.26& $\pm$0.08&0.22 &$\pm$0.068 &\textbf{0.36} &$\pm$0.088 \\ \cline{2-8}
+		& F1 & 0.35 &$\pm$0.097 &0.29 &$\pm$0.078 &\textbf{0.46}* &$\pm$0.096 \\ \cline{2-8}
+		& IoU & 0.26& $\pm$0.08&0.22 &$\pm$0.068 &\textbf{0.36}* &$\pm$0.088 \\ \cline{2-8}
 		& Recall &0.32 &$\pm$0.089 &\textbf{0.61} &$\pm$0.099 &0.56 &$\pm$0.11 \\ \cline{2-8}
-		& Precision & 0.46 &$\pm$0.116 &0.31 &$\pm$0.084 &\textbf{0.56} &$\pm$0.101 \\ \cline{2-8}
+		& Precision & 0.46 &$\pm$0.116 &0.31 &$\pm$0.084 &\textbf{0.56}* &$\pm$0.101 \\ \cline{2-8}
 		\hline \hline
 		
 		\multirow{4}{*}{\rotatebox[origin=c]{90}{Background}} 
@@ -69,14 +69,14 @@ Table \ref{tab:multi-weakprior} shows the result for the comparison between mult
 		\hline \hline
 		
 		\multirow{4}{*}{\rotatebox[origin=c]{90}{Overall}} 
-		& F1 &0.49 &$\pm$0.055 &0.55 &$\pm$0.044 &\textbf{0.63} &$\pm$0.052 \\ \cline{2-8}
+		& F1 &0.49 &$\pm$0.055 &0.55 &$\pm$0.044 &\textbf{0.63}* &$\pm$0.052 \\ \cline{2-8}
 		& IoU & 0.40 &$\pm$0.046 &0.5 &$\pm$0.038 &\textbf{0.55} &$\pm$0.046 \\ \cline{2-8}
 		& Recall &0.51 &$\pm$0.048 &\textbf{0.73} &$\pm$0.055 &0.71 &$\pm$0.061 \\ \cline{2-8}
-		& Precision &0.54 &$\pm$0.073 &0.57 &$\pm$0.048 &\textbf{0.68} &$\pm$0.054 \\ \cline{2-8}
+		& Precision &0.54 &$\pm$0.073 &0.57 &$\pm$0.048 &\textbf{0.68}* &$\pm$0.054 \\ \cline{2-8}
 		\hline \hline
 		
 	\end{tabular}
-\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet. SSInfNet is our self-supervised multi InfNet. GGO: Ground-Glass Opacity. Cons: Consolidation. }
+\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet. SSInfNet is our self-supervised multi InfNet. GGO: Ground-Glass Opacity. Cons: Consolidation. A p-value is calculated using t-test to compare the performance between the SSInfNet and the SInfNet. For values where the p-value is less than 0.05 and is significant, they are marked will *. }
 \label{tab:multi-weakprior}
 \end{table*}
 
