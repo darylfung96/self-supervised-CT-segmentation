@@ -128,7 +128,7 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
             model.eval()
             for pack in test_loader:
                 total_test_step += 1
-                image, gt, name = pack
+                image, gt, _, name = pack
                 image = Variable(image).to(device)
                 gt = Variable(gt).to(device)
                 # ---- forward ----
