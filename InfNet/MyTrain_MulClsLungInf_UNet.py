@@ -21,6 +21,8 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
 import matplotlib.pyplot as plt
+from scipy.stats import mannwhitneyu
+
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
     precision_similarity_coefficient
 from focal_loss import FocalLoss
@@ -240,26 +242,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
         del img_mask
 
 
-def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold):
-    # test dataset
-    test_dataset = LungDataset(
-        imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
-        pseudo_path=pseudo_test_path,  # NOTES: generated from Semi-Inf-Net
-        label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
-        is_test=False
-    )
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-
-    lung_model = Inf_Net_UNet(input_channels, num_classes).to(device)  # input_channels=3， n_class=3
-    # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
-
-    net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
-    net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
-    lung_model.load_state_dict(net_state_dict)
-
+def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold=0, cons_threshold=0):
     criterion = nn.BCELoss().to(device)
 
     background_total_test_loss = []
@@ -280,7 +263,6 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     cons_total_test_sensitivity = []
     cons_total_test_precision = []
 
-    lung_model.eval()
     for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
         img = img.to(device)
         pseudo = pseudo.to(device)
@@ -361,81 +343,80 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
         f.write('===========================')
 
     # background
-    background_np_total_test_loss = np.array(background_total_test_loss)
-    background_mean_test_loss = np.mean(background_np_total_test_loss)
-    background_error_test_loss = np.std(background_np_total_test_loss) / np.sqrt(background_np_total_test_loss.size) * 1.96
-
     background_np_total_test_dice = np.array(background_total_test_dice)
-    background_mean_test_dice = np.mean(background_np_total_test_dice)
-    background_error_test_dice = np.std(background_np_total_test_dice) / np.sqrt(background_np_total_test_dice.size) * 1.96
-    background_variance_dice = np.var(background_np_total_test_dice, ddof=1)
-
     background_np_total_test_jaccard = np.array(background_total_test_jaccard)
-    background_mean_test_jaccard = np.mean(background_np_total_test_jaccard)
-    background_error_test_jaccard = np.std(background_np_total_test_jaccard) / np.sqrt(background_np_total_test_jaccard.size) * 1.96
-    background_variance_jaccard = np.var(background_np_total_test_jaccard, ddof=1)
-
     background_np_total_test_sensitivity = np.array(background_total_test_sensitivity)
-    background_mean_test_sensitivity = np.mean(background_np_total_test_sensitivity)
-    background_error_test_sensitivity = np.std(background_np_total_test_sensitivity) / np.sqrt(background_np_total_test_sensitivity.size) * 1.96
-    background_variance_sensitivity = np.var(background_np_total_test_sensitivity, ddof=1)
-
     background_np_total_test_precision = np.array(background_total_test_precision)
-    background_mean_test_precision = np.mean(background_np_total_test_precision)
-    background_error_test_precision = np.std(background_np_total_test_precision) / np.sqrt(background_np_total_test_precision.size) * 1.96
-    background_variance_precision = np.var(background_np_total_test_precision, ddof=1)
-
 
     # ground-glass opacities
-    gg_np_total_test_loss = np.array(gg_total_test_loss)
-    gg_mean_test_loss = np.mean(gg_np_total_test_loss)
-    gg_error_test_loss = np.std(gg_np_total_test_loss) / np.sqrt(gg_np_total_test_loss.size) * 1.96
-
     gg_np_total_test_dice = np.array(gg_total_test_dice)
+    gg_np_total_test_jaccard = np.array(gg_total_test_jaccard)
+    gg_np_total_test_sensitivity = np.array(gg_total_test_sensitivity)
+    gg_np_total_test_precision = np.array(gg_total_test_precision)
+
+    # consolidation
+    cons_np_total_test_dice = np.array(cons_total_test_dice)
+    cons_np_total_test_jaccard = np.array(cons_total_test_jaccard)
+    cons_np_total_test_sensitivity = np.array(cons_total_test_sensitivity)
+    cons_np_total_test_precision = np.array(cons_total_test_precision)
+
+    # background
+    background_mean_test_dice = np.mean(background_np_total_test_dice)
+    background_error_test_dice = np.std(background_np_total_test_dice) / np.sqrt(
+        background_np_total_test_dice.size) * 1.96
+    background_variance_dice = np.var(background_np_total_test_dice, ddof=1)
+
+    background_mean_test_jaccard = np.mean(background_np_total_test_jaccard)
+    background_error_test_jaccard = np.std(background_np_total_test_jaccard) / np.sqrt(
+        background_np_total_test_jaccard.size) * 1.96
+    background_variance_jaccard = np.var(background_np_total_test_jaccard, ddof=1)
+
+    background_mean_test_sensitivity = np.mean(background_np_total_test_sensitivity)
+    background_error_test_sensitivity = np.std(background_np_total_test_sensitivity) / np.sqrt(
+        background_np_total_test_sensitivity.size) * 1.96
+    background_variance_sensitivity = np.var(background_np_total_test_sensitivity, ddof=1)
+
+    background_mean_test_precision = np.mean(background_np_total_test_precision)
+    background_error_test_precision = np.std(background_np_total_test_precision) / np.sqrt(
+        background_np_total_test_precision.size) * 1.96
+    background_variance_precision = np.var(background_np_total_test_precision, ddof=1)
+
+    # ground-glass opacities
     gg_mean_test_dice = np.mean(gg_np_total_test_dice)
     gg_error_test_dice = np.std(gg_np_total_test_dice) / np.sqrt(gg_np_total_test_dice.size) * 1.96
     gg_variance_dice = np.var(gg_np_total_test_dice, ddof=1)
 
-    gg_np_total_test_jaccard = np.array(gg_total_test_jaccard)
     gg_mean_test_jaccard = np.mean(gg_np_total_test_jaccard)
     gg_error_test_jaccard = np.std(gg_np_total_test_jaccard) / np.sqrt(gg_np_total_test_jaccard.size) * 1.96
     gg_variance_jaccard = np.var(gg_np_total_test_jaccard, ddof=1)
 
-    gg_np_total_test_sensitivity = np.array(gg_total_test_sensitivity)
     gg_mean_test_sensitivity = np.mean(gg_np_total_test_sensitivity)
-    gg_error_test_sensitivity = np.std(gg_np_total_test_sensitivity) / np.sqrt(gg_np_total_test_sensitivity.size) * 1.96
+    gg_error_test_sensitivity = np.std(gg_np_total_test_sensitivity) / np.sqrt(
+        gg_np_total_test_sensitivity.size) * 1.96
     gg_variance_sensitivity = np.var(gg_np_total_test_sensitivity, ddof=1)
 
-    gg_np_total_test_precision = np.array(gg_total_test_precision)
     gg_mean_test_precision = np.mean(gg_np_total_test_precision)
     gg_error_test_precision = np.std(gg_np_total_test_precision) / np.sqrt(gg_np_total_test_precision.size) * 1.96
     gg_variance_precision = np.var(gg_np_total_test_precision, ddof=1)
 
     # consolidation
-    cons_np_total_test_loss = np.array(cons_total_test_loss)
-    cons_mean_test_loss = np.mean(cons_np_total_test_loss)
-    cons_error_test_loss = np.std(cons_np_total_test_loss) / np.sqrt(cons_np_total_test_loss.size) * 1.96
-
-    cons_np_total_test_dice = np.array(cons_total_test_dice)
     cons_mean_test_dice = np.mean(cons_np_total_test_dice)
     cons_error_test_dice = np.std(cons_np_total_test_dice) / np.sqrt(cons_np_total_test_dice.size) * 1.96
     cons_variance_dice = np.var(cons_np_total_test_dice, ddof=1)
 
-    cons_np_total_test_jaccard = np.array(cons_total_test_jaccard)
     cons_mean_test_jaccard = np.mean(cons_np_total_test_jaccard)
     cons_error_test_jaccard = np.std(cons_np_total_test_jaccard) / np.sqrt(cons_np_total_test_jaccard.size) * 1.96
     cons_variance_jaccard = np.var(cons_np_total_test_jaccard, ddof=1)
 
-    cons_np_total_test_sensitivity = np.array(cons_total_test_sensitivity)
     cons_mean_test_sensitivity = np.mean(cons_np_total_test_sensitivity)
-    cons_error_test_sensitivity = np.std(cons_np_total_test_sensitivity) / np.sqrt(cons_np_total_test_sensitivity.size) * 1.96
+    cons_error_test_sensitivity = np.std(cons_np_total_test_sensitivity) / np.sqrt(
+        cons_np_total_test_sensitivity.size) * 1.96
     cons_variance_sensitivity = np.var(cons_np_total_test_sensitivity, ddof=1)
 
-    cons_np_total_test_precision = np.array(cons_total_test_precision)
     cons_mean_test_precision = np.mean(cons_np_total_test_precision)
-    cons_error_test_precision = np.std(cons_np_total_test_precision) / np.sqrt(cons_np_total_test_precision.size) * 1.96
+    cons_error_test_precision = np.std(cons_np_total_test_precision) / np.sqrt(
+        cons_np_total_test_precision.size) * 1.96
     cons_variance_precision = np.var(cons_np_total_test_precision, ddof=1)
-
 
     print('background')
     print('==============================')
@@ -486,7 +467,6 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     print('==============================')
     print('==============================')
 
-
     overall_dice = (background_mean_test_dice + gg_mean_test_dice + cons_mean_test_dice) / 3
     overall_jaccard = (background_mean_test_jaccard + gg_mean_test_jaccard + cons_mean_test_jaccard) / 3
     overall_sensitivity = (background_mean_test_sensitivity + gg_mean_test_sensitivity + cons_mean_test_sensitivity) / 3
@@ -494,14 +474,16 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
 
     overall_error_dice = (background_error_test_dice + gg_error_test_dice + cons_error_test_dice) / 3
     overall_error_jaccard = (background_error_test_jaccard + gg_error_test_jaccard + cons_error_test_jaccard) / 3
-    overall_error_sensitivity = (background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
-    overall_error_precision = (background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
+    overall_error_sensitivity = (
+                                            background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
+    overall_error_precision = (
+                                          background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
 
     overall_variance_dice = (background_variance_dice + cons_variance_dice + gg_variance_dice) / 3
     overall_variance_jaccard = (background_variance_jaccard + cons_variance_jaccard + gg_variance_jaccard) / 3
-    overall_variance_sensitivity = (background_variance_sensitivity + cons_variance_sensitivity + gg_variance_sensitivity) / 3
+    overall_variance_sensitivity = (
+                                               background_variance_sensitivity + cons_variance_sensitivity + gg_variance_sensitivity) / 3
     overall_variance_precision = (background_variance_precision + cons_variance_precision + gg_variance_precision) / 3
-
 
     print('overall')
     print('==============================')
@@ -520,6 +502,99 @@ def eval(device, pseudo_test_path, load_net_path, batch_size, input_channels, nu
     print('==============================')
     print('==============================')
 
+    return background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision,\
+gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision,\
+cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision
+
+
+# load_net_path is the first model that we evaluate
+# load_net_path_2 is a second model that we evaluate (can be None/empty)
+# if load_net_path_2 is provided, then the wilcox test will be calculated to compare between load_net_path and
+# load_net_path_2 to determine if they are statistically significant
+def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
+         load_net_path_2):
+    # test dataset
+    test_dataset = LungDataset(
+        imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
+        pseudo_path=pseudo_test_path,  # NOTES: generated from Semi-Inf-Net
+        label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+        is_test=False
+    )
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    lung_model = Inf_Net_UNet(input_channels, num_classes).to(device)  # input_channels=3， n_class=3
+    # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
+
+    net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
+    net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
+    lung_model.load_state_dict(net_state_dict)
+    lung_model.eval()
+
+    background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision, \
+    gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision, \
+    cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision\
+        = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold, cons_threshold)
+
+    net_state_dict = torch.load(load_net_path_2, map_location=torch.device(device))
+    net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
+    lung_model.load_state_dict(net_state_dict)
+    lung_model.eval()
+
+    background_np_total_test_dice_2, background_np_total_test_jaccard_2, background_np_total_test_sensitivity_2, background_np_total_test_precision_2, \
+    gg_np_total_test_dice_2, gg_np_total_test_jaccard_2, gg_np_total_test_sensitivity_2, gg_np_total_test_precision_2, \
+    cons_np_total_test_dice_2, cons_np_total_test_jaccard_2, cons_np_total_test_sensitivity_2, cons_np_total_test_precision_2 \
+        = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold,
+                            cons_threshold)
+
+    background_dice_stats, background_dice_pvalue = mannwhitneyu(background_np_total_test_dice,
+                                                                 background_np_total_test_dice_2)
+    background_jaccard_stats, background_jaccard_pvalue = mannwhitneyu(background_np_total_test_jaccard,
+                                                                       background_np_total_test_jaccard_2)
+    background_sensitivity_stats, background_sensitivity_pvalue = mannwhitneyu(background_np_total_test_sensitivity,
+                                                                               background_np_total_test_sensitivity_2)
+    background_precision_stats, background_precision_pvalue = mannwhitneyu(background_np_total_test_precision,
+                                                                           background_np_total_test_precision_2)
+
+    gg_dice_stats, gg_dice_pvalue = mannwhitneyu(gg_np_total_test_dice,
+                                                 gg_np_total_test_dice_2)
+    gg_jaccard_stats, gg_jaccard_pvalue = mannwhitneyu(gg_np_total_test_jaccard,
+                                                       gg_np_total_test_jaccard_2)
+    gg_sensitivity_stats, gg_sensitivity_pvalue = mannwhitneyu(gg_np_total_test_sensitivity,
+                                                               gg_np_total_test_sensitivity_2)
+    gg_precision_stats, gg_precision_pvalue = mannwhitneyu(gg_np_total_test_precision,
+                                                           background_np_total_test_precision_2)
+
+    cons_dice_stats, cons_dice_pvalue = mannwhitneyu(cons_np_total_test_dice,
+                                                 cons_np_total_test_dice_2)
+    cons_jaccard_stats, cons_jaccard_pvalue = mannwhitneyu(cons_np_total_test_jaccard,
+                                                       cons_np_total_test_jaccard_2)
+    cons_sensitivity_stats, cons_sensitivity_pvalue = mannwhitneyu(cons_np_total_test_sensitivity,
+                                                               cons_np_total_test_sensitivity_2)
+    cons_precision_stats, cons_precision_pvalue = mannwhitneyu(cons_np_total_test_precision,
+                                                           background_np_total_test_precision_2)
+
+    print('======================================================================')
+    print('======================================================================')
+    print('======================== calculate comparison ========================')
+    print('===background===')
+    print(f'background dice pvalue: {background_dice_pvalue}')
+    print(f'background jaccard pvalue: {background_jaccard_pvalue}')
+    print(f'background sensitivity pvalue: {background_sensitivity_pvalue}')
+    print(f'background precision pvalue: {background_precision_pvalue}')
+    print('===ground-glass opacities===')
+    print(f'gg dice pvalue: {gg_dice_pvalue}')
+    print(f'gg jaccard pvalue: {gg_jaccard_pvalue}')
+    print(f'gg sensitivity pvalue: {gg_sensitivity_pvalue}')
+    print(f'gg precision pvalue: {gg_precision_pvalue}')
+    print('===consolidation===')
+    print(f'cons dice pvalue: {cons_dice_pvalue}')
+    print(f'cons jaccard pvalue: {cons_jaccard_pvalue}')
+    print(f'cons sensitivity pvalue: {cons_sensitivity_pvalue}')
+    print(f'cons precision pvalue: {cons_precision_pvalue}')
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -534,14 +609,16 @@ if __name__ == "__main__":
     parser.add_argument('--is_eval', type=bool, default=False)
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--load_net_path', type=str)
+    parser.add_argument('--load_net_path_2', type=str, default=None)
     parser.add_argument('--gg_threshold', type=float)
     parser.add_argument('--cons_threshold', type=float)
 
     arg = parser.parse_args()
 
     if arg.is_eval:
-        eval(arg.device, arg.pseudo_test_path, arg.load_net_path, batch_size=1, input_channels=6, num_classes=3,
-             gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold)
+        eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
+             gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
+             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2)
     else:
         train(epo_num=arg.epoch,
               num_classes=3,
