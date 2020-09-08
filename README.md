@@ -6,7 +6,7 @@
 
 ---
 
-####Process data for self-supervision
+#### Process data for self-supervision
 Prepare dataset for Self-Supervised learning from ICTCF. You can obtain the processed ICTCF dataset [here](https://mega.nz/file/b5AkQSoa#wk40ZPGB8IUCLQBU0S8dZl1SJBYeU9TtB3EDeBBbKP0).
     
 Once you have downloaded the ```ictcf-dataset.zip```, move the ictcf-dataset to the directory of Self-supervised-CT-segmentatiobn. Then run 
@@ -133,7 +133,7 @@ In order to generate results for the self Multi InfNet run:
 
     python MyTest_MulClsLungInf_UNet.py --model_name improved --save_path './Results/Lung infection segmentation/single_self-inf-net/' --pth_path './Snapshots/save_weights/self-multi-inf-net/{model_checkpoint_name}' --pseudo_path './Results/Lung infection segmentation/single_self-inf-net/' 
 
-####References:
+#### References:
 
 Most of the code for the self-supervision is obtained from [self-supervision-for-segmenting-overhead-imagery](https://github.com/suriyasingh/Self-supervision-for-segmenting-overhead-imagery).
 As for the InfNet, most of the code is obtained from [InfNet](https://github.com/DengPingFan/Inf-Net).
