@@ -19,6 +19,8 @@ for index, roc_file in enumerate(all_network_rocs):
         name_model = 'Single SInfNet'
     elif 'improved' in roc_file.lower():
         name_model = 'Single SSInfNet + data aug'
+    elif 'unet' in roc_file.lower():
+        name_model = 'Single U-Net'
     else:
         name_model = 'Single SSInfNet'
     roc_auc = auc(roc_dict['fpr'], roc_dict['tpr'])

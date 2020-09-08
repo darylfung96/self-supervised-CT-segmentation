@@ -30,9 +30,10 @@ from lookahead import Lookahead
 
 best_loss = 1e9
 
+
 def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout,
           graph_path, save_path,
-          device, load_net_path):
+          device, load_net_path, model_name):
     global best_loss
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
@@ -58,7 +59,9 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
     )
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
-    lung_model = Inf_Net_UNet_Improved(input_channels, num_classes)  # input_channels=3， n_class=3
+    # load model
+    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+    lung_model = model_dict[model_name](input_channels, num_classes)  # input_channels=3， n_class=3
     # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
 
     print(lung_model)
@@ -512,7 +515,7 @@ cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitiv
 # if load_net_path_2 is provided, then the wilcox test will be calculated to compare between load_net_path and
 # load_net_path_2 to determine if they are statistically significant
 def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
-         load_net_path_2):
+         load_net_path_2, model_name):
     # test dataset
     test_dataset = LungDataset(
         imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
@@ -525,7 +528,8 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
     )
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
-    lung_model = Inf_Net_UNet(input_channels, num_classes).to(device)  # input_channels=3， n_class=3
+    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+    lung_model = model_dict[model_name](input_channels, num_classes).to(device)  # input_channels=3， n_class=3
     # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
 
     net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
@@ -600,6 +604,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
+    parser.add_argument('--model_name', type=str, default='baseline')  # baseline or improved
     parser.add_argument('--pseudo_test_path', type=str)
     parser.add_argument('--epoch', type=int, default=200)
     parser.add_argument('--is_data_augment', type=bool, default=False)
@@ -618,7 +623,7 @@ if __name__ == "__main__":
     if arg.is_eval:
         eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
-             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2)
+             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2, model_name=args.model_name)
     else:
         train(epo_num=arg.epoch,
               num_classes=3,
@@ -631,4 +636,5 @@ if __name__ == "__main__":
               graph_path=arg.graph_path,
               save_path=arg.save_path,
               device=arg.device,
-              load_net_path=arg.load_net_path)
+              load_net_path=arg.load_net_path,
+              model_name=args.model_name)

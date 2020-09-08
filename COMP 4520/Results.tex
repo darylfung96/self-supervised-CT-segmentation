@@ -24,6 +24,8 @@ Table \ref{tab:single} shows the result for the single segmentation InfNet. The 
  	\begin{tabular}{| c | c || c c c c c ||}
  		\hline
  		Methods & & F1 & IoU & Recall & Precision & AUC \\ \hline
+ 		Single U-Net & Mean & 0.02 & 0.001 & 0.15 & 0.01 & 0.4243 \\ \cline{2-7}
+ 		& Error & $\pm$0.006 & $\pm$0.003 & $\pm$0.035 & $\pm$0.005 & $\pm$0.035 \\ \hline
  		Single SInfNet &  Mean & \textbf{0.39} & \textbf{0.29} & \textbf{0.83} & 0.33 & \textbf{0.9909} \\ \cline{2-7}
  		& Error & $\pm$ 0.059 & $\pm$ 0.053 & $\pm$0.069 & $\pm$0.057  & $\pm$0.032 \\ \hline
  		Single SSInfNet &  Mean & 0.38 & 0.27 & 0.75 & 0.33 & 0.9883  \\ \cline{2-7}
@@ -51,14 +53,14 @@ Table \ref{tab:multi-weakprior} shows the result for the comparison between mult
 		\textbf{0.31} &$\pm$0.046 \\ \cline{2-8}
 		& Recall & 0.216 &$\pm$0.053 &\textbf{0.58} &$\pm$0.065 &\textbf{0.58} &$\pm$0.072 \\ \cline{2-8}
 		& Precision & 0.405 &$\pm$0.085 &0.41 &$\pm$0.058 &
-		\textbf{0.48} &$\pm$0.059 \\ \cline{2-8}
+		\textbf{0.48}\^ &$\pm$0.059 \\ \cline{2-8}
 		\hline \hline
 		
 		\multirow{4}{*}{\rotatebox[origin=c]{90}{Cons}} 
-		& F1 & 0.35 &$\pm$0.097 &0.29 &$\pm$0.078 &\textbf{0.46}* &$\pm$0.096 \\ \cline{2-8}
-		& IoU & 0.26& $\pm$0.08&0.22 &$\pm$0.068 &\textbf{0.36}* &$\pm$0.088 \\ \cline{2-8}
+		& F1 & 0.35 &$\pm$0.097 &0.29 &$\pm$0.078 &\textbf{0.46}*\^ &$\pm$0.096 \\ \cline{2-8}
+		& IoU & 0.26& $\pm$0.08&0.22 &$\pm$0.068 &\textbf{0.36}*\^ &$\pm$0.088 \\ \cline{2-8}
 		& Recall &0.32 &$\pm$0.089 &\textbf{0.61} &$\pm$0.099 &0.56 &$\pm$0.11 \\ \cline{2-8}
-		& Precision & 0.46 &$\pm$0.116 &0.31 &$\pm$0.084 &\textbf{0.56}* &$\pm$0.101 \\ \cline{2-8}
+		& Precision & 0.46 &$\pm$0.116 &0.31 &$\pm$0.084 &\textbf{0.56}*\^ &$\pm$0.101 \\ \cline{2-8}
 		\hline \hline
 		
 		\multirow{4}{*}{\rotatebox[origin=c]{90}{Background}} 
@@ -72,11 +74,12 @@ Table \ref{tab:multi-weakprior} shows the result for the comparison between mult
 		& F1 &0.49 &$\pm$0.055 &0.55 &$\pm$0.044 &\textbf{0.63}* &$\pm$0.052 \\ \cline{2-8}
 		& IoU & 0.40 &$\pm$0.046 &0.5 &$\pm$0.038 &\textbf{0.55} &$\pm$0.046 \\ \cline{2-8}
 		& Recall &0.51 &$\pm$0.048 &\textbf{0.73} &$\pm$0.055 &0.71 &$\pm$0.061 \\ \cline{2-8}
-		& Precision &0.54 &$\pm$0.073 &0.57 &$\pm$0.048 &\textbf{0.68}* &$\pm$0.054 \\ \cline{2-8}
+		& Precision &0.54 &$\pm$0.073 &0.57 &$\pm$0.048 &\text
+		bf{0.68}* &$\pm$0.054 \\ \cline{2-8}
 		\hline \hline
 		
 	\end{tabular}
-\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet. SSInfNet is our self-supervised multi InfNet. GGO: Ground-Glass Opacity. Cons: Consolidation. A p-value is calculated using t-test to compare the performance between the SSInfNet and the SInfNet. For values where the p-value is less than 0.05 and is significant, they are marked will *. }
+\caption{Quantitative result of Ground-glass Opacities \& Consolidation on the test data set. Prior is obtained from the single segmentation InfNet. SSInfNet is our self-supervised multi InfNet. GGO: Ground-Glass Opacity. Cons: Consolidation. A p-value is calculated using t-test to compare the performance between the SSInfNet and the SInfNet. For values where the p-value is less than 0.05 and is significant as calculated with the t-test, they are marked with *. For values calculated with Wilcox test and have p-value of less than 0.05, they are marked with \^. }
 \label{tab:multi-weakprior}
 \end{table*}
 
