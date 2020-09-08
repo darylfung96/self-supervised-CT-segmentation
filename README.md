@@ -107,7 +107,7 @@ This will compare the models and calculate the p-value significant value between
 
 ### Generating Results
 
-The pre-trained models can be found here. Extract the zip file into this directory: ```./Snapshots/save_weights```
+The pre-trained models can be found [here](https://mega.nz/file/b9p0GIAJ#qzbY8yhcQ_e3XDDwIvWHayT4TssZCynvqGhIosvotm4). Extract the zip file into this directory: ```./Snapshots/save_weights```
 
 #### baseline InfNet
 In order to generate results for the baseline Single InfNet, run:
