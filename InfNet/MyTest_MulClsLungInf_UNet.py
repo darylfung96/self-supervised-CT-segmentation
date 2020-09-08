@@ -16,12 +16,13 @@ from Code.model_lung_infection.InfNet_UNet import *  # 当前用的UNet模型
 import imageio
 from Code.utils.split_class import split_class
 import shutil
+import argparse
 
 
-def inference(num_classes, input_channels, snapshot_dir, save_path):
+def inference(num_classes, input_channels, snapshot_dir, save_path, pseudo_path, model_name):
     test_dataset = LungDataset(
         imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
-        pseudo_path='./Dataset/TestingSet/MultiClassInfection-Test/Prior/',  # NOTES: generated from Semi-Inf-Net
+        pseudo_path=pseudo_path,  # NOTES: generated from Semi-Inf-Net
         label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
         transform=transforms.Compose([
             transforms.ToTensor(),
@@ -32,7 +33,8 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    lung_model = Inf_Net_UNet_Improved  (input_channels, num_classes).to(device)
+    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+    lung_model = model_dict[model_name](input_channels, num_classes).to(device)
     print(lung_model)
     lung_model.load_state_dict(torch.load(snapshot_dir, map_location=torch.device(device)))
     lung_model.eval()
@@ -64,8 +66,17 @@ def inference(num_classes, input_channels, snapshot_dir, save_path):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/self-multi-inf-net_new/unet_model_38.pkl')
+    parser.add_argument('--pseudo_path', type=str, default='./Results/Lung infection segmentation/single_self-inf-net/')
+    parser.add_argument('--save_path', type=str, default='./Results/Multi-class lung infection segmentation/strongprior_multi-inf-net_new')
+    parser.add_argument('--model_name', type=str, default='improved')  # can be baseline or improved
+    arg = parser.parse_args()
+
     inference(num_classes=3,
               input_channels=6,
-              snapshot_dir='./Snapshots/save_weights/self-multi-inf-net_new/unet_model_38.pkl',
-              save_path='./Results/Multi-class lung infection segmentation/strongprior_multi-inf-net_new'
+              snapshot_dir=arg.pth_path,
+              save_path=arg.save_path,
+              pseudo_path=arg.pseudo_path,
+              model_name=arg.model_name
               )

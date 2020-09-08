@@ -515,7 +515,7 @@ cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitiv
 # if load_net_path_2 is provided, then the wilcox test will be calculated to compare between load_net_path and
 # load_net_path_2 to determine if they are statistically significant
 def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
-         load_net_path_2, model_name):
+         load_net_path_2, model_name, model_name_2):
     # test dataset
     test_dataset = LungDataset(
         imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
@@ -542,6 +542,11 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
     cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision\
         = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold, cons_threshold)
 
+    # if there is not second network then it is done
+    if load_net_path_2 is None:
+        return
+    del lung_model
+    lung_model = model_dict[model_name_2](input_channels, num_classes).to(device)
     net_state_dict = torch.load(load_net_path_2, map_location=torch.device(device))
     net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
     lung_model.load_state_dict(net_state_dict)
@@ -615,6 +620,7 @@ if __name__ == "__main__":
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--load_net_path', type=str)
     parser.add_argument('--load_net_path_2', type=str, default=None)
+    parser.add_argument('--model_name_2', type=str, default='baseline')
     parser.add_argument('--gg_threshold', type=float)
     parser.add_argument('--cons_threshold', type=float)
 
@@ -623,7 +629,7 @@ if __name__ == "__main__":
     if arg.is_eval:
         eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
-             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2, model_name=args.model_name)
+             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2, model_name=arg.model_name)
     else:
         train(epo_num=arg.epoch,
               num_classes=3,
@@ -637,4 +643,5 @@ if __name__ == "__main__":
               save_path=arg.save_path,
               device=arg.device,
               load_net_path=arg.load_net_path,
-              model_name=args.model_name)
+              model_name=arg.model_name,
+              model_name_2=arg.model_name_2)
