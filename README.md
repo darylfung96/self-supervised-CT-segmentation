@@ -39,7 +39,7 @@ You can visualise the training graph by running tensorboard on:
 
 #### Preparing InfNet for training
 
-W need to get the dataset for the InfNet first. The data can be found [here](https://mega.nz/file/js4VQDTa#pB4xhfJVKUyUUhWAZQbC_rWeCOuuO5vRWnUaG-gvQFY).
+W need to get the dataset for the InfNet first. The data can be found [here](https://mega.nz/file/e8hHSKgZ#VKAYJ0lVWT8a27sv4ObvPGuLf1YFE0sZfdTYmLCpiBY).
 
     
 
