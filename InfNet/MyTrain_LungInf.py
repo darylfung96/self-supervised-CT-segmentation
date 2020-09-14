@@ -226,14 +226,14 @@ def eval(test_loader, model, device, load_net_path, threshold):
         # total_dice_5.append(dice_similarity_coefficient(lateral_map_5.sigmoid(), gt_cont))
         # total_dice_4.append(dice_similarity_coefficient(lateral_map_4.sigmoid(), gt_cont))
         # total_dice_3.append(dice_similarity_coefficient(lateral_map_3.sigmoid(), gt_cont))
-        current_dice = dice_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        current_dice = dice_similarity_coefficient(lateral_map_2, gt_roc, threshold)
         if not math.isnan(current_dice):
             total_dice_2.append(current_dice)
 
         # total_jaccard_5.append(jaccard_similarity_coefficient(lateral_map_5.sigmoid(), gt_cont))
         # total_jaccard_4.append(jaccard_similarity_coefficient(lateral_map_4.sigmoid(), gt_cont))
         # total_jaccard_3.append(jaccard_similarity_coefficient(lateral_map_3.sigmoid(), gt_cont))
-        current_jaccard = jaccard_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        current_jaccard = jaccard_similarity_coefficient(lateral_map_2, gt_roc, threshold)
         if not math.isnan(current_jaccard):
             total_jaccard_2.append(current_jaccard)
 
@@ -243,14 +243,14 @@ def eval(test_loader, model, device, load_net_path, threshold):
         # total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
         # total_sens_4.append(sensitivity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
         # total_sens_3.append(sensitivity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
-        current_sens = sensitivity_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        current_sens = sensitivity_similarity_coefficient(lateral_map_2, gt_roc, threshold)
         if not math.isnan(current_sens):
             total_sens_2.append(current_sens)
 
         # total_spec_5.append(specificity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
         # total_spec_4.append(specificity_similarity_coefficient(lateral_map_4.sigmoid(), gt_roc, threshold))
         # total_spec_3.append(specificity_similarity_coefficient(lateral_map_3.sigmoid(), gt_roc, threshold))
-        current_precision = precision_similarity_coefficient(lateral_map_2.sigmoid(), gt_roc, threshold)
+        current_precision = precision_similarity_coefficient(lateral_map_2, gt_roc, threshold)
         if not math.isnan(current_precision):
             total_precision_2.append(current_precision)
 
