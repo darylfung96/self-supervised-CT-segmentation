@@ -237,7 +237,7 @@ def eval(test_loader, model, device, load_net_path, threshold):
         if not math.isnan(current_jaccard):
             total_jaccard_2.append(current_jaccard)
 
-        roc_2 += lateral_map_2.sigmoid().detach().view(-1).cpu().numpy().tolist()
+        roc_2 += lateral_map_2.detach().view(-1).cpu().numpy().tolist()
         ground_truth_list += gt_roc.detach().view(-1).cpu().numpy().tolist()
 
         # total_sens_5.append(sensitivity_similarity_coefficient(lateral_map_5.sigmoid(), gt_roc, threshold))
@@ -255,7 +255,7 @@ def eval(test_loader, model, device, load_net_path, threshold):
             total_precision_2.append(current_precision)
 
         fpr, tpr, thresholds = roc_curve(gt_roc.view(-1).detach().cpu().numpy(),
-                                         lateral_map_2.sigmoid().view(-1).detach().cpu().numpy())
+                                         lateral_map_2.view(-1).detach().cpu().numpy())
         roc_auc_2 = auc(fpr, tpr)
         if not math.isnan(roc_auc_2):
             total_auc_2.append(roc_auc_2)
@@ -474,9 +474,9 @@ if __name__ == '__main__':
     gt_root = '{}/GT/'.format(opt.train_path)
     edge_root = '{}/Edge/'.format(opt.train_path)
 
-    train_loader = get_loader(image_root, gt_root, edge_root,
-                              batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers,
-                              is_data_augment=opt.is_data_augment, random_cutout=opt.random_cutout)
+    # train_loader = get_loader(image_root, gt_root, edge_root,
+    #                           batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers,
+    #                           is_data_augment=opt.is_data_augment, random_cutout=opt.random_cutout)
 
     test_image_root = '{}/Imgs/'.format(opt.test_path)
     test_gt_root = '{}/GT/'.format(opt.test_path)
@@ -488,7 +488,7 @@ if __name__ == '__main__':
     val_data = test_dataset(val_image_root, val_gt_root, opt.valsize)
     val_loader = DataLoader(val_data, batch_size=opt.batchsize, num_workers=opt.num_workers)
 
-    total_step = len(train_loader)
+    # total_step = len(train_loader)
 
     # ---- start !! -----
     print("#"*20, "\nStart Training (Inf-Net-{})\n{}\nThis code is written for 'Inf-Net: Automatic COVID-19 Lung "
