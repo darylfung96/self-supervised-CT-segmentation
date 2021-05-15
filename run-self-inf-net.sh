@@ -15,3 +15,7 @@ python MyTrain_LungInf.py --train_save self-inf-net --random_cutout 0 --graph_pa
 python MyTrain_LungInf.py --train_save baseline-inf-net-focal --random_cutout 0 --focal_loss --seed 100 --graph_path graph_baseline-inf-net-focal --device cuda --epoch 500 --batchsize 8
 # lookahead only
 python MyTrain_LungInf.py --train_save baseline-inf-net-lookahead --random_cutout 0 --lookahead --seed 100 --graph_path graph_baseline-inf-net-lookahead --device cuda --epoch 500 --batchsize 8
+
+
+# evaluation (use python rocs_generation.py to find the best eval_threshold)
+python MyTrain_LungInf.py --is_eval True --eval_threshold 0.5 --load_net_path './Snapshots/save_weights/self-inf-net/{checkpoint_model_name}'

@@ -58,6 +58,12 @@ python combine_dataset.py
 
 ---
 
+#### Note that:
+
+There is also a run-self-inf-net.sh and run-self-multi-inf-net.sh to see all the available scripts to run the code for training and evaluating
+
+---
+
 #### Training baseline InfNet
 
 Navigate to the InfNet directory, then run
