@@ -10,6 +10,8 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 import torch
 import math
 import time
+import random
+import torch
 from torch.utils.data.dataloader import DataLoader
 from torch.autograd import Variable
 import os
@@ -37,10 +39,13 @@ best_loss = 1e9
 focal_loss_criterion = FocalLoss(logits=True)
 
 
-def joint_loss(pred, mask):
+def joint_loss(pred, mask, opt):
     weit = 1 + 5*torch.abs(F.avg_pool2d(mask, kernel_size=31, stride=1, padding=15) - mask)
-    wbce = focal_loss_criterion(pred, mask)#, reduce='none')
-    # wbce = F.binary_cross_entropy_with_logits(pred, mask, reduce='none')
+
+    if opt.focal_loss:
+        wbce = focal_loss_criterion(pred, mask)#, reduce='none')
+    else:
+        wbce = F.binary_cross_entropy_with_logits(pred, mask, reduce='none')
     wbce = (weit*wbce).sum(dim=(2, 3)) / weit.sum(dim=(2, 3))
 
     pred = torch.sigmoid(pred)
@@ -56,12 +61,13 @@ def timer(start, end):
     print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 
 
-def train(train_loader, test_loader, model, optimizer, epoch, train_save, device):
+def train(train_loader, test_loader, model, optimizer, epoch, train_save, device, opt):
     global global_current_iteration
     global best_loss
     global focal_loss_criterion
 
-    optimizer = Lookahead(optimizer, k=5, alpha=0.5)
+    if opt.lookahead:
+        optimizer = Lookahead(optimizer, k=5, alpha=0.5)
     optimizer.zero_grad()
     focal_loss_criterion = focal_loss_criterion.to(device)
 
@@ -88,10 +94,10 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
             # ---- forward ----
             lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(images)
             # ---- loss function ----
-            loss5 = joint_loss(lateral_map_5, gts)
-            loss4 = joint_loss(lateral_map_4, gts)
-            loss3 = joint_loss(lateral_map_3, gts)
-            loss2 = joint_loss(lateral_map_2, gts)
+            loss5 = joint_loss(lateral_map_5, gts, opt)
+            loss4 = joint_loss(lateral_map_4, gts, opt)
+            loss3 = joint_loss(lateral_map_3, gts, opt)
+            loss2 = joint_loss(lateral_map_2, gts, opt)
             loss1 = BCE(lateral_edge, edges)
             loss = loss1 + loss2 + loss3 + loss4 + loss5
 
@@ -365,6 +371,7 @@ if __name__ == '__main__':
     # hyper-parameters
     parser.add_argument('--epoch', type=int, default=100,
                         help='epoch number')
+    parser.add_argument('--seed', type=int, default=100)
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='learning rate')
     parser.add_argument('--batchsize', type=int, default=24,
@@ -413,9 +420,12 @@ if __name__ == '__main__':
     # load model path
     parser.add_argument('--load_net_path', type=str)
 
+    # new techniques
+    parser.add_argument('--focal_loss', action='store_true')
+    parser.add_argument('--lookahead', action='store_true')
+
     # save log tensorboard
     parser.add_argument('--graph_path', type=str, default="./graph_log")
-
     parser.add_argument('--is_eval', type=bool, default=False)
     parser.add_argument('--eval_threshold', type=float, help='Use for threshold the sigmoid to get 1 or 0')
 
@@ -504,11 +514,14 @@ if __name__ == '__main__':
                   "And any questions feel free to contact me "
                   "via E-mail (gepengai.ji@163.com)\n----\n".format(opt.backbone, opt), "#"*20)
 
+    random.seed(opt.seed)
+    np.random.seed(opt.seed)
+    torch.random.manual_seed(opt.seed)
+    torch.use_deterministic_algorithms(True)
     if opt.is_eval:
         eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold)
     else:
-
         for epoch in range(1, opt.epoch):
             adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
-            train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device)
+            train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device, opt)
 
