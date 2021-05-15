@@ -28,8 +28,10 @@ import pickle
 from focal_loss import FocalLoss
 from lookahead import Lookahead
 
+import sys
+sys.path.append('..')
 
-from Code.utils.dataloader_LungInf import test_dataset
+from InfNet.Code.utils.dataloader_LungInf import test_dataset
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
     specificity_similarity_coefficient, precision_similarity_coefficient
 
@@ -490,9 +492,9 @@ if __name__ == '__main__':
     gt_root = '{}/GT/'.format(opt.train_path)
     edge_root = '{}/Edge/'.format(opt.train_path)
 
-    # train_loader = get_loader(image_root, gt_root, edge_root,
-    #                           batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers,
-    #                           is_data_augment=opt.is_data_augment, random_cutout=opt.random_cutout)
+    train_loader = get_loader(image_root, gt_root, edge_root,
+                              batchsize=opt.batchsize, trainsize=opt.trainsize, num_workers=opt.num_workers,
+                              is_data_augment=opt.is_data_augment, random_cutout=opt.random_cutout)
 
     test_image_root = '{}/Imgs/'.format(opt.test_path)
     test_gt_root = '{}/GT/'.format(opt.test_path)
