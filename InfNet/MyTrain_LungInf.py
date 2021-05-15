@@ -506,7 +506,7 @@ if __name__ == '__main__':
     val_data = test_dataset(val_image_root, val_gt_root, opt.valsize)
     val_loader = DataLoader(val_data, batch_size=opt.batchsize, num_workers=opt.num_workers)
 
-    # total_step = len(train_loader)
+    total_step = len(train_loader)
 
     # ---- start !! -----
     print("#"*20, "\nStart Training (Inf-Net-{})\n{}\nThis code is written for 'Inf-Net: Automatic COVID-19 Lung "
