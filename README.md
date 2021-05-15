@@ -45,6 +45,18 @@ W need to get the dataset for the InfNet first. The data can be found [here](htt
 
 Once the data is obtained, go to InfNet directory and extract the zip file there. There should be a file called Dataset being created. Place that Dataset folder in InfNet directory.
 
+##### <b style="color: red">Note: All the following code at the bottom will be ran inside InfNet folder</b> 
+
+---
+
+#### Combine Training, Validation, Testing Set 
+Combine the different sets of dataset into one folder in order to carry out cross validation
+
+```
+python combine_dataset.py
+```
+
+---
 
 #### Training baseline InfNet
 

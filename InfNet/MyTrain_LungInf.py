@@ -9,6 +9,7 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 
 import torch
 import math
+import time
 from torch.utils.data.dataloader import DataLoader
 from torch.autograd import Variable
 import os
@@ -47,6 +48,12 @@ def joint_loss(pred, mask):
     union = ((pred + mask)*weit).sum(dim=(2, 3))
     wiou = 1 - (inter + 1)/(union - inter+1)
     return (wbce + wiou).mean()
+
+
+def timer(start, end):
+    hours, rem = divmod(end-start, 3600)
+    minutes, seconds = divmod(rem, 60)
+    print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 
 
 def train(train_loader, test_loader, model, optimizer, epoch, train_save, device):
@@ -504,3 +511,4 @@ if __name__ == '__main__':
         for epoch in range(1, opt.epoch):
             adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
             train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device)
+
