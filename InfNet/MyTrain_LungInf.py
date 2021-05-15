@@ -29,7 +29,7 @@ from focal_loss import FocalLoss
 from lookahead import Lookahead
 
 
-from InfNet.Code.utils.dataloader_LungInf import test_dataset
+from Code.utils.dataloader_LungInf import test_dataset
 from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, sensitivity_similarity_coefficient, \
     specificity_similarity_coefficient, precision_similarity_coefficient
 
