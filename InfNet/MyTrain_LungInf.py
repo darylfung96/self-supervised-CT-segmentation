@@ -148,10 +148,10 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 # ---- forward ----
                 lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
                 # ---- loss function ----
-                loss5 = joint_loss(lateral_map_5, gt)
-                loss4 = joint_loss(lateral_map_4, gt)
-                loss3 = joint_loss(lateral_map_3, gt)
-                loss2 = joint_loss(lateral_map_2, gt)
+                loss5 = joint_loss(lateral_map_5, gt, opt)
+                loss4 = joint_loss(lateral_map_4, gt, opt)
+                loss3 = joint_loss(lateral_map_3, gt, opt)
+                loss2 = joint_loss(lateral_map_2, gt, opt)
                 total_loss_5 += loss5.item()
                 total_loss_4 += loss4.item()
                 total_loss_3 += loss3.item()
