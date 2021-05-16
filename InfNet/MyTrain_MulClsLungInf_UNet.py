@@ -659,7 +659,7 @@ if __name__ == "__main__":
         random.seed(arg.seed)
         torch.manual_seed(arg.seed)
         torch.cuda.manual_seed(arg.seed)
-        torch.random.seed(arg.seed)
+        torch.random.manual_seed(arg.seed)
         best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(epo_num=arg.epoch,
                                                                           num_classes=3,
                                                                           input_channels=6,
