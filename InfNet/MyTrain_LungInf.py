@@ -517,6 +517,8 @@ if __name__ == '__main__':
 
     random.seed(opt.seed)
     np.random.seed(opt.seed)
+    torch.manual_seed(opt.seed)
+    torch.cuda.manual_seed(opt.seed)
     torch.random.manual_seed(opt.seed)
     if opt.is_eval:
         eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold)
