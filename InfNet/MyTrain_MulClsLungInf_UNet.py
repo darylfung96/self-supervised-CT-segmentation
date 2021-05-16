@@ -16,6 +16,10 @@ import torch.optim as optim
 from tensorboardX import SummaryWriter
 from argparse import ArgumentParser
 from sklearn.metrics import auc, roc_curve
+
+import sys
+sys.path.append('..')
+
 from Code.utils.dataloader_MulClsLungInf_UNet import LungDataset
 from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
