@@ -10,6 +10,7 @@ First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 import os
 import torch
 import math
+import random
 import numpy as np
 import torch.optim as optim
 from tensorboardX import SummaryWriter
@@ -28,13 +29,16 @@ from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, 
 from focal_loss import FocalLoss
 from lookahead import Lookahead
 
-best_loss = 1e9
 
 
 def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout,
           graph_path, save_path,
-          device, load_net_path, model_name):
-    global best_loss
+          device, load_net_path, model_name, arg):
+    best_loss = 1e9
+    best_dice = 0
+    best_jaccard = 0
+    best_sensitivity = 0
+    best_precision = 0
     os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
     train_dataset = LungDataset(
@@ -67,9 +71,14 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
     print(lung_model)
     lung_model = lung_model.to(device)
 
-    criterion = FocalLoss().to(device)  # nn.BCELoss().to(device)
+    if arg.focal_loss:
+        criterion = FocalLoss().to(device)  # nn.BCELoss().to(device)
+    else:
+        criterion = nn.BCELoss().to(device)
     optimizer = optim.SGD(lung_model.parameters(), lr=lr, momentum=0.7)
-    optimizer = Lookahead(optimizer, k=5, alpha=0.5)
+
+    if arg.lookahead:
+        optimizer = Lookahead(optimizer, k=5, alpha=0.5)
     optimizer.zero_grad()
 
     # load model if available
@@ -237,12 +246,17 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
 
         if average_test_loss < best_loss:
             best_loss = average_test_loss
+            best_dice = average_test_dice
+            best_jaccard = average_test_jaccard
+            best_sensitivity = average_test_sensitivity
+            best_precision = average_test_precision
             torch.save(lung_model.state_dict(),
                        './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
             print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
 
         del img
         del img_mask
+    return best_loss, best_dice, best_jaccard, best_sensitivity, best_precision
 
 
 def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold=0, cons_threshold=0):
@@ -623,25 +637,34 @@ if __name__ == "__main__":
     parser.add_argument('--model_name_2', type=str, default='baseline')
     parser.add_argument('--gg_threshold', type=float)
     parser.add_argument('--cons_threshold', type=float)
+    parser.add_argument('--seed', default=100, type=int)
+
+    parser.add_argument('--focal_loss', action='store_true')
+    parser.add_argument('--lookahead', action='store_true')
 
     arg = parser.parse_args()
 
     if arg.is_eval:
         eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
-             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2, model_name=arg.model_name)
+             load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2,
+             model_name=arg.model_name, model_name_2=arg.model_name_2)
     else:
-        train(epo_num=arg.epoch,
-              num_classes=3,
-              input_channels=6,
-              batch_size=arg.batchsize,
-              lr=1e-2,
-              is_data_augment=arg.is_data_augment,
-              is_label_smooth=arg.is_label_smooth,
-              random_cutout=arg.random_cutout,
-              graph_path=arg.graph_path,
-              save_path=arg.save_path,
-              device=arg.device,
-              load_net_path=arg.load_net_path,
-              model_name=arg.model_name,
-              model_name_2=arg.model_name_2)
+
+        np.random.seed(arg.seed)
+        random.seed(seed)
+        torch.manual_seed(seed)
+        best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(epo_num=arg.epoch,
+                                                                          num_classes=3,
+                                                                          input_channels=6,
+                                                                          batch_size=arg.batchsize,
+                                                                          lr=1e-2,
+                                                                          is_data_augment=arg.is_data_augment,
+                                                                          is_label_smooth=arg.is_label_smooth,
+                                                                          random_cutout=arg.random_cutout,
+                                                                          graph_path=arg.graph_path,
+                                                                          save_path=arg.save_path,
+                                                                          device=arg.device,
+                                                                          load_net_path=arg.load_net_path,
+                                                                          model_name=arg.model_name,
+                                                                          arg=arg)
