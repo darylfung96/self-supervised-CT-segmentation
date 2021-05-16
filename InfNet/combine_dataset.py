@@ -9,10 +9,10 @@ set_name = ['Train', 'Test', 'Val']
 # LungInfection
 current_index = 0
 for current_type in lunginfection:
-    new_dir = f'AllSet/LungInfection-All/{current_type}'
+    new_dir = f'Dataset/AllSet/LungInfection-All/{current_type}'
     os.makedirs(new_dir, exist_ok=True)
     for set_index in range(len(sets)):
-        current_dir = f'{sets[set_index]}/LungInfection-{set_name[set_index]}/{current_type}'
+        current_dir = f'Dataset/{sets[set_index]}/LungInfection-{set_name[set_index]}/{current_type}'
         all_items = natsorted(os.listdir(current_dir))
         for item in all_items:
             item_format = item.split('.')
@@ -24,10 +24,10 @@ for current_type in lunginfection:
 # MultiClassInfection
 current_index = 0
 for current_type in multiinfection:
-    new_dir = f'AllSet/MultiClassInfection-All/{current_type}'
+    new_dir = f'Dataset/AllSet/MultiClassInfection-All/{current_type}'
     os.makedirs(new_dir, exist_ok=True)
     for set_index in range(len(sets)):
-        current_dir = f'{sets[set_index]}/MultiClassInfection-{set_name[set_index]}/{current_type}'
+        current_dir = f'Dataset/{sets[set_index]}/MultiClassInfection-{set_name[set_index]}/{current_type}'
         all_items = natsorted(os.listdir(current_dir))
         for item in all_items:
             item_format = item.split('.')
