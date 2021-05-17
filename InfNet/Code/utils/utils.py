@@ -24,6 +24,14 @@ def adjust_lr(optimizer, init_lr, epoch, decay_rate=0.1, decay_epoch=30):
         param_group['lr'] *= decay
 
 
+def timer(start, end):
+    hours, rem = divmod(end-start, 3600)
+    minutes, seconds = divmod(rem, 60)
+    print("Runtime: {:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+    print("Runtime: {:0>2} hours {:0>2} minutes {:05.2f} seconds".format(int(hours), int(minutes), seconds))
+    return hours, minutes, seconds
+
+
 class AvgMeter(object):
     def __init__(self, num=40):
         self.num = num

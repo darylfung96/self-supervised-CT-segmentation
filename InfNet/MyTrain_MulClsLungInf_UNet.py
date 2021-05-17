@@ -11,6 +11,7 @@ import os
 import torch
 import math
 import random
+import time
 import numpy as np
 import torch.optim as optim
 from tensorboardX import SummaryWriter
@@ -25,6 +26,7 @@ from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
 from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
+from Code.utils.utils import timer
 import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 
@@ -649,10 +651,13 @@ if __name__ == "__main__":
     arg = parser.parse_args()
 
     if arg.is_eval:
+        start = time.time()
         eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
              load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2,
              model_name=arg.model_name, model_name_2=arg.model_name_2)
+        end = time.time()
+        timer(start, end)
     else:
 
         np.random.seed(arg.seed)
@@ -660,6 +665,7 @@ if __name__ == "__main__":
         torch.manual_seed(arg.seed)
         torch.cuda.manual_seed(arg.seed)
         torch.random.manual_seed(arg.seed)
+        start = time.time()
         best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(epo_num=arg.epoch,
                                                                           num_classes=3,
                                                                           input_channels=6,
@@ -674,3 +680,5 @@ if __name__ == "__main__":
                                                                           load_net_path=arg.load_net_path,
                                                                           model_name=arg.model_name,
                                                                           arg=arg)
+        end = time.time()
+        timer(start, time)
