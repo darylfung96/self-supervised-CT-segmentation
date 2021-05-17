@@ -364,6 +364,7 @@ def eval(test_loader, model, device, load_net_path, threshold):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # hyper-parameters
+    parser.add_argument('--folds', type=int, default=0)
     parser.add_argument('--epoch', type=int, default=100,
                         help='epoch number')
     parser.add_argument('--seed', type=int, default=100)

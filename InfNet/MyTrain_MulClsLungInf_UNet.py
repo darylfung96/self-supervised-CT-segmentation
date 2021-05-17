@@ -262,6 +262,7 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
 
         del img
         del img_mask
+    del lung_model
     return best_loss, best_dice, best_jaccard, best_sensitivity, best_precision
 
 
@@ -441,54 +442,43 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
         cons_np_total_test_precision.size) * 1.96
     cons_variance_precision = np.var(cons_np_total_test_precision, ddof=1)
 
-    print('background')
-    print('==============================')
-    print(f'{round(background_mean_test_dice, 2)} & {round(background_mean_test_jaccard, 2)} &'
-          f' {round(background_mean_test_sensitivity, 2)} & '
-          f'{round(background_mean_test_precision, 2)}')
-    print('')
-    print(f'background dice variance[{background_np_total_test_dice.size}]: {background_variance_dice}')
-    print(f'background jaccard [{background_np_total_test_jaccard.size}]: {background_variance_jaccard}')
-    print(f'background recall variance[{background_np_total_test_sensitivity.size}]: {background_variance_sensitivity}')
-    print(f'background precision variance[{background_np_total_test_precision.size}]: {background_variance_precision}')
-    print('============error=============')
-    print(f'$\pm${round(background_error_test_dice, 3)} & $\pm${round(background_error_test_jaccard, 3)} &'
-          f' $\pm${round(background_error_test_sensitivity, 3)} & '
-          f'$\pm${round(background_error_test_precision, 3)}')
-    print('==============================')
-    print('==============================')
-    print('ground glass opacities')
-    print('==============================')
-    print(f'{round(gg_mean_test_dice, 2)} & {round(gg_mean_test_jaccard, 2)} &'
-          f' {round(gg_mean_test_sensitivity, 2)} & '
-          f'{round(gg_mean_test_precision, 2)}')
-    print('')
-    print(f'gg dice variance[{gg_np_total_test_dice.size}]: {gg_variance_dice}')
-    print(f'gg jaccard [{gg_np_total_test_jaccard.size}]: {gg_variance_jaccard}')
-    print(f'gg recall variance[{gg_np_total_test_sensitivity.size}]: {gg_variance_sensitivity}')
-    print(f'gg precision variance[{gg_np_total_test_precision.size}]: {gg_variance_precision}')
-    print('============error=============')
-    print(f'$\pm${round(gg_error_test_dice, 3)} & $\pm${round(gg_error_test_jaccard, 3)} &'
-          f' $\pm${round(gg_error_test_sensitivity, 3)} & '
-          f'$\pm${round(gg_error_test_precision, 3)}')
-    print('==============================')
-    print('==============================')
-    print('consolidation')
-    print('==============================')
-    print(f'{round(cons_mean_test_dice, 2)} & {round(cons_mean_test_jaccard, 2)} &'
-          f' {round(cons_mean_test_sensitivity, 2)} & '
-          f'{round(cons_mean_test_precision, 2)}')
-    print('')
-    print(f'cons dice variance[{cons_np_total_test_dice.size}]: {cons_variance_dice}')
-    print(f'cons jaccard [{cons_np_total_test_jaccard.size}]: {cons_variance_jaccard}')
-    print(f'cons recall variance[{cons_np_total_test_sensitivity.size}]: {cons_variance_sensitivity}')
-    print(f'cons precision variance[{cons_np_total_test_precision.size}]: {cons_variance_precision}')
-    print('============error=============')
-    print(f'$\pm${round(cons_error_test_dice, 3)} & $\pm${round(cons_error_test_jaccard, 3)} &'
-          f' $\pm${round(cons_error_test_sensitivity, 3)} & '
-          f'$\pm${round(cons_error_test_precision, 3)}')
-    print('==============================')
-    print('==============================')
+    metrics_string = ""
+    metrics_string += 'background\n'
+    metrics_string += '==============================\n'
+    metrics_string += f'{round(background_mean_test_dice, 2)} & {round(background_mean_test_jaccard, 2)} & {round(background_mean_test_sensitivity, 2)} & {round(background_mean_test_precision, 2)}\n'
+    metrics_string += '\n'
+    metrics_string += f'background dice variance[{background_np_total_test_dice.size}]: {background_variance_dice}\n'
+    metrics_string += f'background jaccard [{background_np_total_test_jaccard.size}]: {background_variance_jaccard}\n'
+    metrics_string += f'background recall variance[{background_np_total_test_sensitivity.size}]: {background_variance_sensitivity}\n'
+    metrics_string += f'background precision variance[{background_np_total_test_precision.size}]: {background_variance_precision}\n'
+    metrics_string += '============error=============\n'
+    metrics_string += f'$\pm${round(background_error_test_dice, 3)} & $\pm${round(background_error_test_jaccard, 3)} $\pm${round(background_error_test_sensitivity, 3)} & $\pm${round(background_error_test_precision, 3)}'
+    metrics_string += '==============================\n'
+    metrics_string += '==============================\n'
+    metrics_string += 'ground glass opacities\n'
+    metrics_string += '==============================\n'
+    metrics_string += f'{round(gg_mean_test_dice, 2)} & {round(gg_mean_test_jaccard, 2)} & {round(gg_mean_test_sensitivity, 2)} & {round(gg_mean_test_precision, 2)}\n'
+    metrics_string += '\n'
+    metrics_string += f'gg dice variance[{gg_np_total_test_dice.size}]: {gg_variance_dice}\n'
+    metrics_string += f'gg jaccard [{gg_np_total_test_jaccard.size}]: {gg_variance_jaccard}\n'
+    metrics_string += f'gg recall variance[{gg_np_total_test_sensitivity.size}]: {gg_variance_sensitivity}\n'
+    metrics_string += f'gg precision variance[{gg_np_total_test_precision.size}]: {gg_variance_precision}\n'
+    metrics_string += '============error=============\n'
+    metrics_string += f'$\pm${round(gg_error_test_dice, 3)} & $\pm${round(gg_error_test_jaccard, 3)} & $\pm${round(gg_error_test_sensitivity, 3)} & $\pm${round(gg_error_test_precision, 3)}\n'
+    metrics_string += '==============================\n'
+    metrics_string += '==============================\n'
+    metrics_string += 'consolidation\n'
+    metrics_string += '==============================\n'
+    metrics_string += f'{round(cons_mean_test_dice, 2)} & {round(cons_mean_test_jaccard, 2)} & {round(cons_mean_test_sensitivity, 2)} & {round(cons_mean_test_precision, 2)}\n'
+    metrics_string += '\n'
+    metrics_string += f'cons dice variance[{cons_np_total_test_dice.size}]: {cons_variance_dice}\n'
+    metrics_string += f'cons jaccard [{cons_np_total_test_jaccard.size}]: {cons_variance_jaccard}\n'
+    metrics_string += f'cons recall variance[{cons_np_total_test_sensitivity.size}]: {cons_variance_sensitivity}\n'
+    metrics_string += f'cons precision variance[{cons_np_total_test_precision.size}]: {cons_variance_precision}\n'
+    metrics_string += '============error=============\n'
+    metrics_string += f'$\pm${round(cons_error_test_dice, 3)} & $\pm${round(cons_error_test_jaccard, 3)} & $\pm${round(cons_error_test_sensitivity, 3)} & $\pm${round(cons_error_test_precision, 3)}\n'
+    metrics_string += '==============================\n'
+    metrics_string += '==============================\n'
 
     overall_dice = (background_mean_test_dice + gg_mean_test_dice + cons_mean_test_dice) / 3
     overall_jaccard = (background_mean_test_jaccard + gg_mean_test_jaccard + cons_mean_test_jaccard) / 3
@@ -508,24 +498,60 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
                                                background_variance_sensitivity + cons_variance_sensitivity + gg_variance_sensitivity) / 3
     overall_variance_precision = (background_variance_precision + cons_variance_precision + gg_variance_precision) / 3
 
-    print('overall')
-    print('==============================')
-    print(f'{round(overall_dice, 2)} & {round(overall_jaccard, 2)} &'
-          f' {round(overall_sensitivity, 2)} & '
-          f'{round(overall_precision, 2)}')
-    print('')
-    print(f'overall dice variance[{overall_dice.size}]: {overall_variance_dice}')
-    print(f'overall jaccard [{overall_jaccard.size}]: {overall_variance_jaccard}')
-    print(f'overall recall variance[{overall_sensitivity.size}]: {overall_variance_sensitivity}')
-    print(f'overall precision variance[{overall_precision.size}]: {overall_variance_precision}')
-    print('============error=============')
-    print(f'$\pm${round(overall_error_dice, 3)} & $\pm${round(overall_error_jaccard, 3)} &'
-          f' $\pm${round(overall_error_sensitivity, 3)} & '
-          f'$\pm${round(overall_error_precision, 3)}')
-    print('==============================')
-    print('==============================')
+    metrics_string += 'overall'
+    metrics_string += '=============================='
+    metrics_string += f'{round(overall_dice, 2)} & {round(overall_jaccard, 2)} & {round(overall_sensitivity, 2)} & {round(overall_precision, 2)}\n'
+    metrics_string += '\n'
+    metrics_string += f'overall dice variance[{overall_dice.size}]: {overall_variance_dice}'
+    metrics_string += f'overall jaccard [{overall_jaccard.size}]: {overall_variance_jaccard}'
+    metrics_string += f'overall recall variance[{overall_sensitivity.size}]: {overall_variance_sensitivity}'
+    metrics_string += f'overall precision variance[{overall_precision.size}]: {overall_variance_precision}'
+    metrics_string += '============error============='
+    metrics_string += f'$\pm${round(overall_error_dice, 3)} & $\pm${round(overall_error_jaccard, 3)} & $\pm${round(overall_error_sensitivity, 3)} & $\pm${round(overall_error_precision, 3)}\n'
+    metrics_string += '=============================='
+    metrics_string += '=============================='
 
-    return background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision,\
+    print(metrics_string)
+
+    all_metrics_information = {'mean_background_dice': background_mean_test_dice,
+                               'error_background_dice': background_error_test_dice,
+                               'mean_gg_dice': gg_mean_test_dice,
+                               'error_gg_dice': gg_error_test_dice,
+                               'mean_cons_dice': cons_mean_test_dice,
+                               'error_cons_dice': cons_error_test_dice,
+
+                               'mean_background_jaccard': background_mean_test_jaccard,
+                               'error_background_jaccard': background_error_test_jaccard,
+                               'mean_gg_jaccard': gg_mean_test_jaccard,
+                               'error_gg_jaccard': gg_error_test_jaccard,
+                               'mean_cons_jaccard': cons_mean_test_jaccard,
+                               'error_cons_jaccard': cons_error_test_jaccard,
+
+                               'mean_background_sensitivity': background_mean_test_sensitivity,
+                               'error_background_sensitivity': background_error_test_sensitivity,
+                               'mean_gg_sensitivity': gg_mean_test_sensitivity,
+                               'error_gg_sensitivity': gg_error_test_sensitivity,
+                               'mean_cons_sensitivity': cons_mean_test_sensitivity,
+                               'error_cons_sensitivity': cons_error_test_sensitivity,
+
+                               'mean_background_precision': background_mean_test_precision,
+                               'error_background_precision': background_error_test_precision,
+                               'mean_gg_precision': gg_mean_test_precision,
+                               'error_gg_precision': gg_error_test_precision,
+                               'mean_cons_precision': cons_mean_test_precision,
+                               'error_cons_precision': cons_error_test_precision,
+
+                               'overall_dice': overall_dice,
+                               'error_overall_dice': overall_error_dice,
+                               'overall_jaccard': overall_jaccard,
+                               'error_overall_jaccard': overall_error_jaccard,
+                               'overall_sensitivity': overall_sensitivity,
+                               'error_overall_sensitivity': overall_error_sensitivity,
+                               'overall_precision': overall_precision,
+                               'error_overall_precision': overall_error_precision,
+                               }
+
+    return all_metrics_information, background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision,\
 gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision,\
 cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision
 
@@ -557,14 +583,14 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
     lung_model.load_state_dict(net_state_dict)
     lung_model.eval()
 
-    background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision, \
+    all_metrics_information, background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision, \
     gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision, \
     cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision\
         = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold, cons_threshold)
 
     # if there is not second network then it is done
     if load_net_path_2 is None:
-        return
+        return all_metrics_information, None
     del lung_model
     lung_model = model_dict[model_name_2](input_channels, num_classes).to(device)
     net_state_dict = torch.load(load_net_path_2, map_location=torch.device(device))
@@ -572,7 +598,7 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
     lung_model.load_state_dict(net_state_dict)
     lung_model.eval()
 
-    background_np_total_test_dice_2, background_np_total_test_jaccard_2, background_np_total_test_sensitivity_2, background_np_total_test_precision_2, \
+    all_metrics_information_2, background_np_total_test_dice_2, background_np_total_test_jaccard_2, background_np_total_test_sensitivity_2, background_np_total_test_precision_2, \
     gg_np_total_test_dice_2, gg_np_total_test_jaccard_2, gg_np_total_test_sensitivity_2, gg_np_total_test_precision_2, \
     cons_np_total_test_dice_2, cons_np_total_test_jaccard_2, cons_np_total_test_sensitivity_2, cons_np_total_test_precision_2 \
         = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold,
@@ -623,6 +649,11 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
     print(f'cons jaccard pvalue: {cons_jaccard_pvalue}')
     print(f'cons sensitivity pvalue: {cons_sensitivity_pvalue}')
     print(f'cons precision pvalue: {cons_precision_pvalue}')
+    return all_metrics_information, all_metrics_information_2
+
+
+def cross_validation(arg):
+    ...
 
 
 if __name__ == "__main__":
@@ -644,6 +675,7 @@ if __name__ == "__main__":
     parser.add_argument('--gg_threshold', type=float)
     parser.add_argument('--cons_threshold', type=float)
     parser.add_argument('--seed', default=100, type=int)
+    parser.add_argument('--fold', default=0, type=int)
 
     parser.add_argument('--focal_loss', action='store_true')
     parser.add_argument('--lookahead', action='store_true')
@@ -651,6 +683,7 @@ if __name__ == "__main__":
     arg = parser.parse_args()
 
     if arg.is_eval:
+        # evaluation
         start = time.time()
         eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
@@ -659,26 +692,33 @@ if __name__ == "__main__":
         end = time.time()
         timer(start, end)
     else:
+        # training
 
-        np.random.seed(arg.seed)
-        random.seed(arg.seed)
-        torch.manual_seed(arg.seed)
-        torch.cuda.manual_seed(arg.seed)
-        torch.random.manual_seed(arg.seed)
-        start = time.time()
-        best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(epo_num=arg.epoch,
-                                                                          num_classes=3,
-                                                                          input_channels=6,
-                                                                          batch_size=arg.batchsize,
-                                                                          lr=1e-2,
-                                                                          is_data_augment=arg.is_data_augment,
-                                                                          is_label_smooth=arg.is_label_smooth,
-                                                                          random_cutout=arg.random_cutout,
-                                                                          graph_path=arg.graph_path,
-                                                                          save_path=arg.save_path,
-                                                                          device=arg.device,
-                                                                          load_net_path=arg.load_net_path,
-                                                                          model_name=arg.model_name,
-                                                                          arg=arg)
-        end = time.time()
-        timer(start, time)
+        # do cross validation
+        if arg.fold > 0:
+            cross_validation(arg)
+        else:
+
+            # just do single training if 0 folds
+            np.random.seed(arg.seed)
+            random.seed(arg.seed)
+            torch.manual_seed(arg.seed)
+            torch.cuda.manual_seed(arg.seed)
+            torch.random.manual_seed(arg.seed)
+            start = time.time()
+            best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(epo_num=arg.epoch,
+                                                                              num_classes=3,
+                                                                              input_channels=6,
+                                                                              batch_size=arg.batchsize,
+                                                                              lr=1e-2,
+                                                                              is_data_augment=arg.is_data_augment,
+                                                                              is_label_smooth=arg.is_label_smooth,
+                                                                              random_cutout=arg.random_cutout,
+                                                                              graph_path=arg.graph_path,
+                                                                              save_path=arg.save_path,
+                                                                              device=arg.device,
+                                                                              load_net_path=arg.load_net_path,
+                                                                              model_name=arg.model_name,
+                                                                              arg=arg)
+            end = time.time()
+            timer(start, time)
