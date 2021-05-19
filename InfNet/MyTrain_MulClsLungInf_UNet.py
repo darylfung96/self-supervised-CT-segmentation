@@ -17,11 +17,13 @@ import torch.optim as optim
 from tensorboardX import SummaryWriter
 from argparse import ArgumentParser
 from sklearn.metrics import auc, roc_curve
+from sklearn.model_selection import KFold
 
 import sys
+
 sys.path.append('..')
 
-from Code.utils.dataloader_MulClsLungInf_UNet import LungDataset
+from Code.utils.dataloader_MulClsLungInf_UNet import LungDataset, IndicesLungDataset
 from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
 from torch.utils.data import DataLoader
@@ -36,8 +38,8 @@ from focal_loss import FocalLoss
 from lookahead import Lookahead
 
 
-
-def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment, is_label_smooth, random_cutout,
+def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
+          is_label_smooth, random_cutout,
           graph_path, save_path,
           device, load_net_path, model_name, arg):
     best_loss = 1e9
@@ -45,37 +47,9 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
     best_jaccard = 0
     best_sensitivity = 0
     best_precision = 0
-    os.makedirs(f'./Snapshots/save_weights/{save_path}/', exist_ok=True)
 
-    train_dataset = LungDataset(
-        imgs_path='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/',
-        # NOTES: prior is borrowed from the object-level label of train split
-        pseudo_path='./Dataset/TrainingSet/MultiClassInfection-Train/Prior/',
-        label_path='./Dataset/TrainingSet/MultiClassInfection-Train/GT/',
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]), is_data_augment=is_data_augment, is_label_smooth=is_label_smooth, random_cutout=random_cutout)
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-
-    # test dataset
-    test_dataset = LungDataset(
-        imgs_path='./Dataset/ValSet/MultiClassInfection-Val/Imgs/',
-        pseudo_path='./Dataset/ValSet/MultiClassInfection-Val/Prior/',  # NOTES: generated from Semi-Inf-Net
-        label_path='./Dataset/ValSet/MultiClassInfection-Val/GT/',
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
-        is_test=False
-    )
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
-
-    # load model
-    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
-    lung_model = model_dict[model_name](input_channels, num_classes)  # input_channels=3， n_class=3
-    # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
-
-    print(lung_model)
-    lung_model = lung_model.to(device)
 
     if arg.focal_loss:
         criterion = FocalLoss().to(device)  # nn.BCELoss().to(device)
@@ -132,8 +106,8 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
             optimizer.step()
 
             if np.mod(index, 20) == 0:
-                print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader), iter_loss))
-
+                print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader),
+                                                                           iter_loss))
 
         # old saving method
         # os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
@@ -240,8 +214,10 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
                             (len(background_test_dice) + len(gg_test_dice) + len(cons_test_dice))
         average_test_jaccard = (sum(background_test_jaccard) + sum(gg_test_jaccard) + sum(cons_test_jaccard)) / \
                                (len(background_test_jaccard) + len(gg_test_jaccard) + len(cons_test_jaccard))
-        average_test_sensitivity = (sum(background_test_sensitivity) + sum(gg_test_sensitivity) + sum(cons_test_sensitivity)) \
-                                   / (len(background_test_sensitivity) + len(gg_test_sensitivity) + len(cons_test_sensitivity))
+        average_test_sensitivity = (sum(background_test_sensitivity) + sum(gg_test_sensitivity) + sum(
+            cons_test_sensitivity)) \
+                                   / (len(background_test_sensitivity) + len(gg_test_sensitivity) + len(
+            cons_test_sensitivity))
         average_test_precision = (sum(background_test_precision) + sum(gg_test_precision) + sum(cons_test_precision)) / \
                                  (len(background_test_precision) + len(gg_test_precision) + len(cons_test_precision))
         test_writer.add_scalar('test/loss', average_test_loss, epo)
@@ -262,11 +238,11 @@ def train(epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
 
         del img
         del img_mask
-    del lung_model
     return best_loss, best_dice, best_jaccard, best_sensitivity, best_precision
 
 
-def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold=0, cons_threshold=0):
+def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold=0,
+                      cons_threshold=0):
     criterion = nn.BCELoss().to(device)
 
     background_total_test_loss = []
@@ -295,7 +271,8 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
 
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
         b, _, w, h = output.size()
-        pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w, h).numpy().squeeze()
+        pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w,
+                                                                                                  h).numpy().squeeze()
         pred_onehot = (np.arange(3) == pred[..., None]).astype(np.float64)
 
         background_output = torch.from_numpy(pred_onehot[:, :, 0]).to(device)
@@ -488,14 +465,14 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
     overall_error_dice = (background_error_test_dice + gg_error_test_dice + cons_error_test_dice) / 3
     overall_error_jaccard = (background_error_test_jaccard + gg_error_test_jaccard + cons_error_test_jaccard) / 3
     overall_error_sensitivity = (
-                                            background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
+                                        background_error_test_sensitivity + gg_error_test_sensitivity + cons_error_test_sensitivity) / 3
     overall_error_precision = (
-                                          background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
+                                      background_error_test_precision + gg_error_test_precision + cons_error_test_precision) / 3
 
     overall_variance_dice = (background_variance_dice + cons_variance_dice + gg_variance_dice) / 3
     overall_variance_jaccard = (background_variance_jaccard + cons_variance_jaccard + gg_variance_jaccard) / 3
     overall_variance_sensitivity = (
-                                               background_variance_sensitivity + cons_variance_sensitivity + gg_variance_sensitivity) / 3
+                                           background_variance_sensitivity + cons_variance_sensitivity + gg_variance_sensitivity) / 3
     overall_variance_precision = (background_variance_precision + cons_variance_precision + gg_variance_precision) / 3
 
     metrics_string += 'overall'
@@ -549,29 +526,21 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
                                'error_overall_sensitivity': overall_error_sensitivity,
                                'overall_precision': overall_precision,
                                'error_overall_precision': overall_error_precision,
+
+                               'metrics_string': metrics_string
                                }
 
-    return all_metrics_information, background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision,\
-gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision,\
-cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision
+    return all_metrics_information, background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision, \
+           gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision, \
+           cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision
 
 
 # load_net_path is the first model that we evaluate
 # load_net_path_2 is a second model that we evaluate (can be None/empty)
 # if load_net_path_2 is provided, then the wilcox test will be calculated to compare between load_net_path and
 # load_net_path_2 to determine if they are statistically significant
-def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
+def eval(test_dataset, device, pseudo_test_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
          load_net_path_2, model_name, model_name_2):
-    # test dataset
-    test_dataset = LungDataset(
-        imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
-        pseudo_path=pseudo_test_path,  # NOTES: generated from Semi-Inf-Net
-        label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
-        is_test=False
-    )
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
@@ -585,8 +554,9 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
 
     all_metrics_information, background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision, \
     gg_np_total_test_dice, gg_np_total_test_jaccard, gg_np_total_test_sensitivity, gg_np_total_test_precision, \
-    cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision\
-        = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold, cons_threshold)
+    cons_np_total_test_dice, cons_np_total_test_jaccard, cons_np_total_test_sensitivity, cons_np_total_test_precision \
+        = calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, device, gg_threshold,
+                            cons_threshold)
 
     # if there is not second network then it is done
     if load_net_path_2 is None:
@@ -623,13 +593,13 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
                                                            background_np_total_test_precision_2)
 
     cons_dice_stats, cons_dice_pvalue = mannwhitneyu(cons_np_total_test_dice,
-                                                 cons_np_total_test_dice_2)
+                                                     cons_np_total_test_dice_2)
     cons_jaccard_stats, cons_jaccard_pvalue = mannwhitneyu(cons_np_total_test_jaccard,
-                                                       cons_np_total_test_jaccard_2)
+                                                           cons_np_total_test_jaccard_2)
     cons_sensitivity_stats, cons_sensitivity_pvalue = mannwhitneyu(cons_np_total_test_sensitivity,
-                                                               cons_np_total_test_sensitivity_2)
+                                                                   cons_np_total_test_sensitivity_2)
     cons_precision_stats, cons_precision_pvalue = mannwhitneyu(cons_np_total_test_precision,
-                                                           background_np_total_test_precision_2)
+                                                               background_np_total_test_precision_2)
 
     print('======================================================================')
     print('======================================================================')
@@ -653,12 +623,80 @@ def eval(device, pseudo_test_path, batch_size, input_channels, num_classes, gg_t
 
 
 def cross_validation(arg):
-    ...
+    imgs_path = './Dataset/AllSet/MultiClassInfection-All/Imgs/'
+    img_names = [imgs_path + f for f in os.listdir(imgs_path)]
+    # NOTES: prior is borrowed from the object-level label of train split
+    pseudo_path = './Dataset/AllSet/MultiClassInfection-All/Prior/'
+    label_path = './Dataset/AllSet/MultiClassInfection-All/GT/'
+
+    imgs_path = np.array(imgs_path)
+
+    k_folds = KFold(5)
+    for fold_index, (train_index, test_index) in enumerate(k_folds.split(imgs_path)):
+        np.random.seed(arg.seed)
+        random.seed(arg.seed)
+        torch.manual_seed(arg.seed)
+        torch.cuda.manual_seed(arg.seed)
+        torch.random.manual_seed(arg.seed)
+
+        train_img_names = img_names[train_index]
+        test_img_names = img_names[test_index]
+
+        training_dataset = IndicesLungDataset(
+            img_names=train_img_names,
+            pseudo_path=pseudo_path,
+            label_path=label_path,
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+            is_data_augment=arg.is_data_augment, is_label_smooth=arg.is_label_smooth, random_cutout=arg.random_cutout
+        )
+        testing_dataset = IndicesLungDataset(
+            img_names=test_img_names,
+            pseudo_path=pseudo_path,
+            label_path=label_path,
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+            is_test=False)
+
+        model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+        lung_model = model_dict[arg.model_name](arg.input_channels, arg.num_classes)  # input_channels=3， n_class=3
+        # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
+        print(lung_model)
+        lung_model = lung_model.to(arg.device)
+
+        train(lung_model, training_dataset, testing_dataset, epo_num=arg.epoch,
+              num_classes=3,
+              input_channels=6,
+              batch_size=arg.batchsize,
+              lr=1e-2,
+              is_data_augment=arg.is_data_augment,
+              is_label_smooth=arg.is_label_smooth,
+              random_cutout=arg.random_cutout,
+              graph_path=arg.graph_path,
+              save_path=arg.save_path,
+              device=arg.device,
+              load_net_path=arg.load_net_path,
+              model_name=arg.model_name,
+              arg=arg)
+
+        all_metrics_information, _ = eval(testing_dataset, arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
+             gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
+             load_net_path=arg.load_net_path,
+             model_name=arg.model_name, load_net_path_2=None, model_name_2=None)
+
+        # write the metrics
+        os.makedirs(os.path.join(arg.metric_path, arg.save_path), exist_ok=True)
+        filename = os.path.join(arg.metric_path, arg.save_path, f"metrics_{fold_index}.txt")
+        with open(f'{filename}', 'a') as f:
+            f.write(all_metrics_information['metrics_string'])
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--graph_path', type=str, default='multi_graph_baseline')
+    parser.add_argument('--metric_path', type=str, default='./metrics_log')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
     parser.add_argument('--model_name', type=str, default='baseline')  # baseline or improved
     parser.add_argument('--pseudo_test_path', type=str)
@@ -685,7 +723,17 @@ if __name__ == "__main__":
     if arg.is_eval:
         # evaluation
         start = time.time()
-        eval(arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
+        # test dataset
+        test_dataset = LungDataset(
+            imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
+            pseudo_path=arg.pseudo_test_path,  # NOTES: generated from Semi-Inf-Net
+            label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
+            transform=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+            is_test=False
+        )
+        eval(test_dataset, arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
              load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2,
              model_name=arg.model_name, model_name_2=arg.model_name_2)
@@ -706,19 +754,54 @@ if __name__ == "__main__":
             torch.cuda.manual_seed(arg.seed)
             torch.random.manual_seed(arg.seed)
             start = time.time()
-            best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(epo_num=arg.epoch,
-                                                                              num_classes=3,
-                                                                              input_channels=6,
-                                                                              batch_size=arg.batchsize,
-                                                                              lr=1e-2,
-                                                                              is_data_augment=arg.is_data_augment,
-                                                                              is_label_smooth=arg.is_label_smooth,
-                                                                              random_cutout=arg.random_cutout,
-                                                                              graph_path=arg.graph_path,
-                                                                              save_path=arg.save_path,
-                                                                              device=arg.device,
-                                                                              load_net_path=arg.load_net_path,
-                                                                              model_name=arg.model_name,
-                                                                              arg=arg)
+
+            os.makedirs(f'./Snapshots/save_weights/{arg.save_path}/', exist_ok=True)
+
+            train_dataset = LungDataset(
+                imgs_path='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/',
+                # NOTES: prior is borrowed from the object-level label of train split
+                pseudo_path='./Dataset/TrainingSet/MultiClassInfection-Train/Prior/',
+                label_path='./Dataset/TrainingSet/MultiClassInfection-Train/GT/',
+                transform=transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+                is_data_augment=arg.is_data_augment, is_label_smooth=arg.is_label_smooth,
+                random_cutout=arg.random_cutout)
+
+            # test dataset
+            test_dataset = LungDataset(
+                imgs_path='./Dataset/ValSet/MultiClassInfection-Val/Imgs/',
+                pseudo_path='./Dataset/ValSet/MultiClassInfection-Val/Prior/',  # NOTES: generated from Semi-Inf-Net
+                label_path='./Dataset/ValSet/MultiClassInfection-Val/GT/',
+                transform=transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+                is_test=False
+            )
+
+            # load model
+            model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+            lung_model = model_dict[arg.model_name](arg.input_channels, arg.num_classes)  # input_channels=3， n_class=3
+            # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
+            print(lung_model)
+            lung_model = lung_model.to(arg.device)
+            best_loss, best_dice, best_jaccard, best_sensitivity, best_precision = train(
+                lung_model,
+                train_dataset,
+                test_dataset,
+                epo_num=arg.epoch,
+                num_classes=3,
+                input_channels=6,
+                batch_size=arg.batchsize,
+                lr=1e-2,
+                is_data_augment=arg.is_data_augment,
+                is_label_smooth=arg.is_label_smooth,
+                random_cutout=arg.random_cutout,
+                graph_path=arg.graph_path,
+                save_path=arg.save_path,
+                device=arg.device,
+                load_net_path=arg.load_net_path,
+                model_name=arg.model_name,
+                arg=arg)
             end = time.time()
             timer(start, time)
