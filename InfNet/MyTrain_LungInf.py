@@ -73,6 +73,7 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
     # ---- multi-scale training ----
     size_rates = [0.75, 1, 1.25]    # replace your desired scale, try larger scale for better accuracy in small object
     loss_record1, loss_record2, loss_record3, loss_record4, loss_record5 = AvgMeter(), AvgMeter(), AvgMeter(), AvgMeter(), AvgMeter()
+    train_loader.dataset.is_test_dataset = True
     for i, pack in enumerate(train_loader, start=1):
         global_current_iteration += 1
         for rate in size_rates:
@@ -126,6 +127,8 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
         # check testing error
         if global_current_iteration % 20 == 0:
+            test_loader.dataset.is_test_dataset = True
+
             total_test_step = 0
             total_loss_5 = 0
             total_loss_4 = 0
@@ -390,7 +393,6 @@ def cross_validation(train_save, opt):
                                                    num_workers=opt.num_workers,
                                                    pin_memory=True,
                                                    drop_last=False)
-        testing_dataset.dataset.set_is_test_dataset(True)
         test_loader = torch.utils.data.DataLoader(dataset=testing_dataset,
                                                    batch_size=opt.batchsize,
                                                    shuffle=True,
