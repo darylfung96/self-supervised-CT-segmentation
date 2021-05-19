@@ -382,8 +382,8 @@ def cross_validation(train_save, opt):
         torch.random.manual_seed(opt.seed)
         model, optimizer = create_model(opt)
 
-        training_dataset = dataset[train_index]
-        testing_dataset = dataset[test_index]
+        training_dataset = torch.utils.data.dataset.Subset(dataset, train_index)
+        testing_dataset = torch.utils.data.dataset.Subset(dataset, test_index)
         train_loader = torch.utils.data.DataLoader(dataset=training_dataset,
                                                    batch_size=opt.batchsize,
                                                    shuffle=opt.shuffle,
