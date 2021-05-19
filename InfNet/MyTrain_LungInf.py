@@ -344,7 +344,7 @@ def eval(test_loader, model, device, load_net_path, threshold, opt):
     error_auc = np.std(accumulated_auc) / np.sqrt(accumulated_auc.size) * 1.96
 
     with open('single_metric.txt', 'a') as f:
-        f.write(load_net_path + '\n')
+        f.write(title + '\n')
         for loss in accumulated_dice:
             f.write(str(loss) + '\n')
 
