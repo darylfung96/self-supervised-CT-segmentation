@@ -6,7 +6,8 @@ python MyTrain_MulClsLungInf_UNet.py --save_path multi-inf-net --random_cutout 0
 # data augment
 python MyTrain_MulClsLungInf_UNet.py --save_path multi-inf-net04_random_cutout --is_data_augment True --random_cutout 0.4  --graph_path graph_multi-inf-net04_random_cutout --device cuda --epoch 500 --batchsize 4
 python MyTrain_MulClsLungInf_UNet.py --save_path multi-inf-net05_random_cutout --is_data_augment True --random_cutout 0.5  --graph_path graph_multi-inf-net05_random_cutout --device cuda --epoch 500 --batchsize 4
-
+# cross-val
+python MyTrain_MulClsLungInf_UNet.py --folds 5 --save_path multi-inf-net-cross-val --random_cutout 0  --graph_path graph_multi-inf-net-cross-val --device cuda --epoch 500 --batchsize 4
 
 # self-supervised
 python MyTrain_MulClsLungInf_UNet.py --load_net_path ../model/self_multi_improved/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --save_path self-multi-inf-net --random_cutout 0  --graph_path graph_self-multi-inf-net --device cuda --epoch 500 --batchsize 4
