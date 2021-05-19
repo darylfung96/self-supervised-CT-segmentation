@@ -629,10 +629,10 @@ def cross_validation(arg):
     pseudo_path = './Dataset/AllSet/MultiClassInfection-All/Prior/'
     label_path = './Dataset/AllSet/MultiClassInfection-All/GT/'
 
-    imgs_path = np.array(imgs_path)
+    img_names = np.array(img_names)
 
     k_folds = KFold(5)
-    for fold_index, (train_index, test_index) in enumerate(k_folds.split(imgs_path)):
+    for fold_index, (train_index, test_index) in enumerate(k_folds.split(img_names)):
         np.random.seed(arg.seed)
         random.seed(arg.seed)
         torch.manual_seed(arg.seed)
