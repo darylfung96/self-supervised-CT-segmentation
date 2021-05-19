@@ -54,6 +54,9 @@ class COVIDDataset(data.Dataset):
             transforms.Resize((self.trainsize, self.trainsize), Image.NEAREST),
             transforms.ToTensor()])
 
+    def set_is_test_dataset(self, new_is_test_dataset):
+        self.is_test_dataset = new_is_test_dataset
+
     def get_item_as_test(self, index):
         image = self.rgb_loader(self.images[index])
         image = self.transform(image)  # .unsqueeze(0)
