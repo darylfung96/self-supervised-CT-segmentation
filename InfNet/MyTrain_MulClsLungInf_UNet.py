@@ -714,6 +714,8 @@ if __name__ == "__main__":
     parser.add_argument('--cons_threshold', type=float)
     parser.add_argument('--seed', default=100, type=int)
     parser.add_argument('--folds', default=0, type=int)
+    parser.add_argument('--input_channels', default=6, type=int)
+    parser.add_argument('--num_classes', default=3, type=int)
 
     parser.add_argument('--focal_loss', action='store_true')
     parser.add_argument('--lookahead', action='store_true')
