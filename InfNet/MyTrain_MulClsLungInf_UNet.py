@@ -743,7 +743,7 @@ if __name__ == "__main__":
         # training
 
         # do cross validation
-        if arg.fold > 0:
+        if arg.folds > 0:
             cross_validation(arg)
         else:
 
