@@ -374,7 +374,7 @@ def cross_validation(train_save, opt):
     dataset = COVIDDataset(image_root, gt_root, edge_root, opt.trainsize, opt.is_data_augment, opt.random_cutout)
 
     k_folds = KFold(5)
-    for fold_index, train_index, test_index in enumerate(k_folds.split(dataset)):
+    for fold_index, (train_index, test_index) in enumerate(k_folds.split(dataset)):
         random.seed(opt.seed)
         np.random.seed(opt.seed)
         torch.manual_seed(opt.seed)
