@@ -406,7 +406,7 @@ def cross_validation(train_save, opt):
         for epoch in range(1, opt.epoch):
             adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
             train(train_loader, test_loader, model, optimizer, epoch, train_save, opt.device, opt)
-            metric_string = eval(test_loader, model, opt.device, opt.train_save, opt.eval_threshold, opt)
+            metric_string = eval(test_loader, model, opt.device, None, opt.eval_threshold, opt)
 
             # write the metrics
             os.makedirs(os.path.join(opt.metric_path, opt.train_save), exist_ok=True)
