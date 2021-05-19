@@ -388,13 +388,13 @@ def cross_validation(train_save, opt):
                                                    batch_size=opt.batchsize,
                                                    shuffle=True,
                                                    num_workers=opt.num_workers,
-                                                   pin_memory=opt.pin_memory,
+                                                   pin_memory=True,
                                                    drop_last=False)
         test_loader = torch.utils.data.DataLoader(dataset=testing_dataset,
                                                    batch_size=opt.batchsize,
                                                    shuffle=True,
                                                    num_workers=opt.num_workers,
-                                                   pin_memory=opt.pin_memory,
+                                                   pin_memory=True,
                                                    drop_last=False)
 
         for epoch in range(1, opt.epoch):
