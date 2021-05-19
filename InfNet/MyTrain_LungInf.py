@@ -589,7 +589,7 @@ if __name__ == '__main__':
                 train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device, opt)
                 end = time.time()
                 timer(start, end)
-            else:
-                del train_loader, val_loader
-                cross_validation(train_save, opt)
+        else:
+            del train_loader, val_loader
+            cross_validation(train_save, opt)
 
