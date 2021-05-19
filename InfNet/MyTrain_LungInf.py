@@ -371,9 +371,9 @@ def cross_validation(train_save, opt):
     gt_root = '{}/GT/'.format(opt.all_path)
     edge_root = '{}/Edge/'.format(opt.all_path)
 
-    images = sorted([image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')])
-    gts = sorted([gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')])
-    edges = sorted([edge_root + f for f in os.listdir(edge_root) if f.endswith('.png')])
+    images = np.array(sorted([image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]))
+    gts = np.array(sorted([gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]))
+    edges = np.array(sorted([edge_root + f for f in os.listdir(edge_root) if f.endswith('.png')]))
 
     k_folds = KFold(5)
     for fold_index, (train_index, test_index) in enumerate(k_folds.split(images)):
