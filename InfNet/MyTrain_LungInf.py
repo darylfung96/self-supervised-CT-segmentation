@@ -293,7 +293,11 @@ def eval(test_loader, model, device, load_net_path, threshold, opt):
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title(f'{load_net_path.split(os.sep)[-2] if load_net_path else opt.train_save}')
+    if load_net_path is not None:
+        title = load_net_path.split(os.sep)[-2]
+    else:
+        title = opt.train_save
+    plt.title(f'{title}')
     plt.legend(loc="lower right")
     plt.show()
 
@@ -301,7 +305,7 @@ def eval(test_loader, model, device, load_net_path, threshold, opt):
                 'optimal_threshold': optimal_threshold}
     save_roc_dict_dir = './roc_saves'
     os.makedirs(save_roc_dict_dir, exist_ok=True)
-    save_roc_dict_filename = os.path.join(save_roc_dict_dir, load_net_path.split(os.sep)[-2] if load_net_path else opt.train_save)
+    save_roc_dict_filename = os.path.join(save_roc_dict_dir, title)
     with open(save_roc_dict_filename, 'wb') as f:
         pickle.dump(roc_dict, f, pickle.HIGHEST_PROTOCOL)
 
