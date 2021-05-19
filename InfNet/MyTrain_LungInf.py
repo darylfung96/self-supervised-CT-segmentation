@@ -402,11 +402,11 @@ def cross_validation(train_save, opt):
         for epoch in range(1, opt.epoch):
             adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
             train(train_loader, test_loader, model, optimizer, epoch, train_save, opt.device, opt)
-            metric_string = eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold, opt)
+            metric_string = eval(test_loader, model, opt.device, opt.train_save, opt.eval_threshold, opt)
 
             # write the metrics
-            os.makedirs(os.path.join(opt.metric_path, opt.load_net_path), exist_ok=True)
-            filename = os.path.join(opt.metric_path, opt.load_net_path, f"metrics_{fold_index}.txt")
+            os.makedirs(os.path.join(opt.metric_path, opt.train_save), exist_ok=True)
+            filename = os.path.join(opt.metric_path, opt.train_save, f"metrics_{fold_index}.txt")
             with open(f'{filename}', 'a') as f:
                 f.write(metric_string)
 

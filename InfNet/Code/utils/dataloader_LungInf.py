@@ -225,7 +225,6 @@ class IndicesDataset(data.Dataset):
         else:
             return image, gt
 
-
     def filter_files(self):
         assert len(self.images) == len(self.gts)
         images = []
