@@ -137,7 +137,7 @@ class IndicesLungDataset(Dataset):
         self.num_class = 3
 
     def __len__(self):
-        return len(os.listdir(self.imgs_path))
+        return self.img_names.shape
 
     def __getitem__(self, idx):
         # processing img
