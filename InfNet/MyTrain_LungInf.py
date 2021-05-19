@@ -13,11 +13,12 @@ import time
 import random
 from torch.utils.data.dataloader import DataLoader
 from torch.autograd import Variable
+import torch.utils.data
 import os
 import numpy as np
 import argparse
 from datetime import datetime
-from Code.utils.dataloader_LungInf import get_loader
+from Code.utils.dataloader_LungInf import get_loader, COVIDDataset
 from Code.utils.utils import clip_gradient, adjust_lr, AvgMeter, timer
 import torch.nn.functional as F
 from tensorboardX import SummaryWriter
@@ -25,6 +26,8 @@ from sklearn.metrics import roc_curve, auc
 import statistics
 import matplotlib.pyplot as plt
 import pickle
+from sklearn.model_selection import KFold
+
 from focal_loss import FocalLoss
 from lookahead import Lookahead
 
@@ -174,7 +177,7 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                 print('[Saving Snapshot:]', save_path + 'Inf-Net-%d.pth' % (epoch + 1))
 
 
-def eval(test_loader, model, device, load_net_path, threshold):
+def eval(test_loader, model, device, load_net_path, threshold, opt):
     total_test_step = 0
     total_loss_5 = []
     total_loss_4 = []
@@ -336,29 +339,81 @@ def eval(test_loader, model, device, load_net_path, threshold):
     mean_auc = np.mean(accumulated_auc)
     error_auc = np.std(accumulated_auc) / np.sqrt(accumulated_auc.size) * 1.96
 
-
     with open('single_metric.txt', 'a') as f:
         f.write(load_net_path + '\n')
         for loss in accumulated_dice:
             f.write(str(loss) + '\n')
 
-    print(f'mean absolute loss: {mean_loss}')
-    print(f'error absolute loss: {error_loss}')
-    print('=============================')
-    print(f'mean dice: {mean_dice}')
-    print(f'error dice: {error_dice}')
-    print('=============================')
-    print(f'mean jaccard: {mean_jaccard}')
-    print(f'error jaccard: {error_jaccard}')
-    print('=============================')
-    print(f'mean sens: {mean_sens}')
-    print(f'error sens: {error_sens}')
-    print('=============================')
-    print(f'mean precision: {mean_precision}')
-    print(f'error precision: {error_precision}')
-    print('=============================')
-    print(f'mean auc: {mean_auc}')
-    print(f'error auc: {error_auc}')
+    metric_string = ""
+    metric_string  += f'mean absolute loss: {mean_loss}\n'
+    metric_string  += f'error absolute loss: {error_loss}\n'
+    metric_string  += '=============================\n'
+    metric_string  += f'mean dice: {mean_dice}\n'
+    metric_string  += f'error dice: {error_dice}\n'
+    metric_string  += '=============================\n'
+    metric_string  += f'mean jaccard: {mean_jaccard}\n'
+    metric_string  += f'error jaccard: {error_jaccard}\n'
+    metric_string  += '=============================\n'
+    metric_string  += f'mean sens: {mean_sens}\n'
+    metric_string  += f'error sens: {error_sens}\n'
+    metric_string  += '=============================\n'
+    metric_string  += f'mean precision: {mean_precision}\n'
+    metric_string  += f'error precision: {error_precision}\n'
+    metric_string  += '=============================\n'
+    metric_string  += f'mean auc: {mean_auc}\n'
+    metric_string  += f'error auc: {error_auc}\n'
+
+    return metric_string
+
+
+def cross_validation(train_save, opt):
+    image_root = '{}/Imgs/'.format(opt.all_path)
+    gt_root = '{}/GT/'.format(opt.all_path)
+    edge_root = '{}/Edge/'.format(opt.all_path)
+
+    dataset = COVIDDataset(image_root, gt_root, edge_root, opt.trainsize, opt.is_data_augment, opt.random_cutout)
+
+    k_folds = KFold(5)
+    for fold_index, train_index, test_index in enumerate(k_folds.split(dataset)):
+        random.seed(opt.seed)
+        np.random.seed(opt.seed)
+        torch.manual_seed(opt.seed)
+        torch.cuda.manual_seed(opt.seed)
+        torch.random.manual_seed(opt.seed)
+        model, optimizer = create_model(opt)
+
+        training_dataset = dataset[train_index]
+        testing_dataset = dataset[test_index]
+        train_loader = torch.utils.data.DataLoader(dataset=training_dataset,
+                                                   batch_size=opt.batchsize,
+                                                   shuffle=opt.shuffle,
+                                                   num_workers=opt.num_workers,
+                                                   pin_memory=opt.pin_memory,
+                                                   drop_last=False)
+        test_loader = torch.utils.data.DataLoader(dataset=testing_dataset,
+                                                   batch_size=opt.batchsize,
+                                                   shuffle=opt.shuffle,
+                                                   num_workers=opt.num_workers,
+                                                   pin_memory=opt.pin_memory,
+                                                   drop_last=False)
+
+        for epoch in range(1, opt.epoch):
+            adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
+            train(train_loader, test_loader, model, optimizer, epoch, train_save, opt.device, opt)
+            metric_string = eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold, opt)
+
+            # write the metrics
+            os.makedirs(os.path.join(opt.metric_path, opt.load_net_path), exist_ok=True)
+            filename = os.path.join(opt.metric_path, opt.load_net_path, f"metrics_{fold_index}.txt")
+            with open(f'{filename}', 'a') as f:
+                f.write(metric_string)
+
+
+def create_model(opt):
+    model = Inf_Net(channel=opt.net_channel, n_class=opt.n_classes).to(opt.device)
+    params = model.parameters()
+    optimizer = torch.optim.Adam(params, opt.lr)
+    return model, optimizer
 
 
 if __name__ == '__main__':
@@ -409,6 +464,7 @@ if __name__ == '__main__':
     # testing dataset
     parser.add_argument('--test_path', type=str, default="./Dataset/TestingSet/LungInfection-Test/")
     parser.add_argument('--val_path', type=str, default="./Dataset/ValSet/LungInfection-Val")
+    parser.add_argument('--all_path', type=str, default="./Dataset/AllSet/LungInfection-All")
     parser.add_argument('--testsize', type=int, default=352, help='testing size')
     parser.add_argument('--valsize', type=int, default=352, help='validation size')
 
@@ -423,6 +479,7 @@ if __name__ == '__main__':
     # save log tensorboard
     parser.add_argument('--graph_path', type=str, default="./graph_log")
     parser.add_argument('--is_eval', type=bool, default=False)
+    parser.add_argument('--metric_path', type=str, default='./metrics_log')
     parser.add_argument('--eval_threshold', type=float, help='Use for threshold the sigmoid to get 1 or 0')
 
     opt = parser.parse_args()
@@ -441,7 +498,13 @@ if __name__ == '__main__':
         from Code.model_lung_infection.InfNet_VGGNet import Inf_Net
     else:
         raise ValueError('Invalid backbone parameters: {}'.format(opt.backbone))
-    model = Inf_Net(channel=opt.net_channel, n_class=opt.n_classes).to(opt.device)
+
+    random.seed(opt.seed)
+    np.random.seed(opt.seed)
+    torch.manual_seed(opt.seed)
+    torch.cuda.manual_seed(opt.seed)
+    torch.random.manual_seed(opt.seed)
+    model, optimizer = create_model(opt)
 
     if opt.load_net_path:
         net_state_dict = torch.load(opt.load_net_path, map_location=torch.device(opt.device))
@@ -480,9 +543,6 @@ if __name__ == '__main__':
     train_writer = SummaryWriter(logdir=os.path.join(opt.graph_path, 'training'))
     test_writer = SummaryWriter(logdir=os.path.join(opt.graph_path, 'testing'))
 
-    params = model.parameters()
-    optimizer = torch.optim.Adam(params, opt.lr)
-
     image_root = '{}/Imgs/'.format(opt.train_path)
     gt_root = '{}/GT/'.format(opt.train_path)
     edge_root = '{}/Edge/'.format(opt.train_path)
@@ -510,21 +570,26 @@ if __name__ == '__main__':
                   "And any questions feel free to contact me "
                   "via E-mail (gepengai.ji@163.com)\n----\n".format(opt.backbone, opt), "#"*20)
 
-    random.seed(opt.seed)
-    np.random.seed(opt.seed)
-    torch.manual_seed(opt.seed)
-    torch.cuda.manual_seed(opt.seed)
-    torch.random.manual_seed(opt.seed)
     if opt.is_eval:
         start = time.time()
-        eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold)
+        metric_string = eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold, opt)
         end = time.time()
         timer(start, end)
+
+        # write the metrics
+        os.makedirs(os.path.join(opt.metric_path, opt.load_net_path), exist_ok=True)
+        with open(f'{os.path.join(opt.metric_path, opt.load_net_path, "metrics.txt")}', 'a') as f:
+            f.write(metric_string)
     else:
-        start = time.time()
-        for epoch in range(1, opt.epoch):
-            adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
-            train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device, opt)
-        end = time.time()
-        timer(start, end)
+
+        if opt.folds == 0:
+            for epoch in range(1, opt.epoch):
+                start = time.time()
+                adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
+                train(train_loader, val_loader, model, optimizer, epoch, train_save, opt.device, opt)
+                end = time.time()
+                timer(start, end)
+            else:
+                del train_loader, val_loader
+                cross_validation(train_save, opt)
 
