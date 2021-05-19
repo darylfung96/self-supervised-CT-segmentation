@@ -3,7 +3,7 @@ python MyTrain_LungInf.py --train_save self-improved --is_data_augment True --gr
 # baseline
 python MyTrain_LungInf.py --train_save baseline-inf-net --random_cutout 0 --graph_path graph_baseline-inf-net --device cuda --epoch 500 --batchsize 8
 # baseline cross-val
-python MyTrain_LungInf.py --train_save baseline-inf-net-cross-val --fold 5 --random_cutout 0 --graph_path graph_baseline-inf-net --device cuda --epoch 500 --batchsize 8
+python MyTrain_LungInf.py --train_save baseline-inf-net-cross-val --fold 5 --random_cutout 0 --graph_path graph_baseline-inf-net-cross-val --device cuda --epoch 500 --batchsize 8
 
 # improved
 python main_inf-net.py --save_path model/self-inf-net --graph_path graphs/self-inf-net --device cuda --seed 100 --batchsize 64

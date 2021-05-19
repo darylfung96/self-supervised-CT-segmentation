@@ -17,9 +17,10 @@ import random
 
 
 class COVIDDataset(data.Dataset):
-    def __init__(self, image_root, gt_root, edge_root, trainsize, is_data_augment=False, random_cutout=0):
+    def __init__(self, image_root, gt_root, edge_root, trainsize, is_data_augment=False, random_cutout=0, is_test_dataset=False):
         self.trainsize = trainsize
         self.is_data_augment = is_data_augment
+        self.is_test_dataset = is_test_dataset
         self.random_cutout = random_cutout
         self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]
         self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]
@@ -37,6 +38,11 @@ class COVIDDataset(data.Dataset):
         self.filter_files()
         self.size = len(self.images)
 
+        self.transform = transforms.Compose([
+            transforms.Resize((self.trainsize, self.trainsize)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406],
+                                 [0.229, 0.224, 0.225])])
         self.img_transform = transforms.Compose([
             transforms.Resize((self.trainsize, self.trainsize)),
             transforms.ToTensor(),
@@ -44,8 +50,28 @@ class COVIDDataset(data.Dataset):
         self.gt_transform = transforms.Compose([
             transforms.Resize((self.trainsize, self.trainsize)),
             transforms.ToTensor()])
+        self.gt_transform_roc = transforms.Compose([
+            transforms.Resize((self.trainsize, self.trainsize), Image.NEAREST),
+            transforms.ToTensor()])
+
+    def get_item_as_test(self, index):
+        image = self.rgb_loader(self.images[index])
+        image = self.transform(image)  # .unsqueeze(0)
+        gt = self.binary_loader(self.gts[index])
+        gt_cont = self.gt_transform(gt)
+        gt_roc = self.gt_transform_roc(gt)
+        name = self.images[index].split('/')[-1]
+        if name.endswith('.jpg'):
+            name = name.split('.jpg')[0] + '.png'
+        # return image, gt, name, np.array(F.interpolate(image, gt.size, mode='bilinear'))
+        return image, gt_cont, gt_roc, name
 
     def __getitem__(self, index):
+        # if this is a test dataset
+        if self.is_test_dataset:
+            return self.get_item_as_test(index)
+
+        # if this is a train dataset
         image = self.rgb_loader(self.images[index])
         gt = self.binary_loader(self.gts[index])
 
