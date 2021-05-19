@@ -384,13 +384,13 @@ def cross_validation(train_save, opt):
 
         training_dataset = torch.utils.data.dataset.Subset(dataset, train_index)
         testing_dataset = torch.utils.data.dataset.Subset(dataset, test_index)
-        testing_dataset.dataset.set_is_test_dataset(True)
         train_loader = torch.utils.data.DataLoader(dataset=training_dataset,
                                                    batch_size=opt.batchsize,
                                                    shuffle=True,
                                                    num_workers=opt.num_workers,
                                                    pin_memory=True,
                                                    drop_last=False)
+        testing_dataset.dataset.set_is_test_dataset(True)
         test_loader = torch.utils.data.DataLoader(dataset=testing_dataset,
                                                    batch_size=opt.batchsize,
                                                    shuffle=True,
