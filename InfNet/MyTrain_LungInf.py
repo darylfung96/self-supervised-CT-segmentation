@@ -385,7 +385,7 @@ def cross_validation(train_save, opt):
         model, optimizer = create_model(opt)
 
         train_dataset = IndicesDataset(images[train_index], gts[train_index], edges[train_index], opt.trainsize, opt.is_data_augment, opt.random_cutout)
-        test_dataset = IndicesDataset(images[test_index], gts[test_index], None, opt.trainsize, opt.is_data_augment, opt.random_cutout)
+        test_dataset = IndicesDataset(images[test_index], gts[test_index], None, opt.trainsize, opt.is_data_augment, opt.random_cutout, is_test=True)
         train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                    batch_size=opt.batchsize,
                                                    shuffle=True,
