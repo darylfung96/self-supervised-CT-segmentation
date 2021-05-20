@@ -53,7 +53,7 @@ for current_type in lunginfection:
     os.makedirs(new_dir, exist_ok=True)
 # start copying files
 current_index = 0
-current_type = lunginfection[0]
+current_type = multiinfection[0]
 new_dir = f'Dataset/AllSet/MultiClassInfection-All/{current_type}'
 for set_index in range(len(sets)):
     current_dir = f'Dataset/{sets[set_index]}/MultiClassInfection-{set_name[set_index]}'
@@ -68,7 +68,7 @@ for set_index in range(len(sets)):
 
         # make sure the other files exist before copying (same filename)
         other_files_exist = True
-        for other_type in lunginfection[1:]:
+        for other_type in multiinfection[1:]:
             testing_data_dir = os.path.join(current_dir, other_type)
             other_item_format = os.listdir(testing_data_dir)[0].split('.')[1]
             other_dir = f'Dataset/AllSet/MultiClassInfection-All/{other_type}'
@@ -79,7 +79,7 @@ for set_index in range(len(sets)):
             continue
 
         copyfile(os.path.join(training_data_dir, item), os.path.join(new_dir, new_name))
-        for other_type in lunginfection[1:]:
+        for other_type in multiinfection[1:]:
             testing_data_dir = os.path.join(current_dir, other_type)
             other_dir = f'Dataset/AllSet/MultiClassInfection-All/{other_type}'
             copyfile(os.path.join(testing_data_dir, item), os.path.join(other_dir, new_name))
