@@ -97,6 +97,32 @@ You can visualise the training graph by running tensorboard on:
     tensorboard --logdir=./graphs
 
 
+### Running Cross-validation 
+For baseline single InfNet:
+
+```
+python MyTrain_LungInf.py --train_save baseline-inf-net-cross-val --fold 5 --eval_threshold 0.5 --random_cutout 0 --seed 100 --graph_path graph_baseline-inf-net-cross-val --device cuda --epoch 500 --batchsize 8
+```
+
+For self-supervised single InfNet:
+
+```buildoutcfg
+python MyTrain_LungInf.py --train_save self-improved-cross-val --fold 5 --eval_threshold 0.5 --focal_loss --lookahead --is_data_augment True --random_cutout 0.5 --seed 100 --graph_path graph_self-improved-cross-val --load_net_path ../model/self-inf-net/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 8
+```
+
+For baseline multi InfNet:
+
+```buildoutcfg
+python MyTrain_MulClsLungInf_UNet.py --folds 5 --save_path multi-inf-net-cross-val --random_cutout 0  --graph_path graph_multi-inf-net-cross-val --device cuda --epoch 500 --batchsize 4
+```
+
+For self-supervised multi InfNet:
+
+```buildoutcfg
+python MyTrain_MulClsLungInf_UNet.py --folds 5 --save_path self-multi-improved-inf-net-cross-val --seed 100 --is_data_augment True --random_cutout 0.5 --is_label_smooth True --graph_path graph_self-multi-inf-net-cross-val --model_name improved --load_net_path ../model/self_multi_improved_new/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 8
+```
+
+
 ### Evaluating models
 
 For Single InfNet, you can run:
@@ -122,6 +148,8 @@ If you want to compare different models, for instance self InfNet vs baseline In
     python MyTrain_MulClsLungInf_UNet.py --is_eval True --load_net_path './Snapshots/save_weights/self-multi-inf-net/{checkpoint_model_name}' --model_name improved --load_net_path_2 './Snapshots/save_weights/baseline-multi-inf-net/{checkpoint_model_name}' --model_name_2 baseline
 
 This will compare the models and calculate the p-value significant value between the models using Wilcox Test.
+
+For all the evaluation, a folder will be created called "metrics_log". You will be able to see all the dice, jaccard, sensitivity, precision metrics there from the eval models ran.
 
 ### Generating Results
 
