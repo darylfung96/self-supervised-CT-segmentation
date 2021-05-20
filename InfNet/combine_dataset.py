@@ -25,12 +25,23 @@ for set_index in range(len(sets)):
         item_format[0] = str(current_index)
         new_name = '.'.join(item_format)
         current_index += 1
-        copyfile(os.path.join(training_data_dir, item), os.path.join(new_dir, new_name))
 
+        # make sure the other files exist before copying (same filename)
+        other_files_exist = True
         for other_type in lunginfection[1:]:
             testing_data_dir = os.path.join(current_dir, other_type)
             other_item_format = os.listdir(testing_data_dir)[0].split('.')[1]
+            other_dir = f'Dataset/AllSet/LungInfection-All/{other_type}'
+            if not os.path.exists(os.path.join(testing_data_dir, f'{str(current_index)}.{other_item_format}')):
+                other_files_exist = False
+                continue
+        if not other_files_exist:
+            continue
 
+        copyfile(os.path.join(training_data_dir, item), os.path.join(new_dir, new_name))
+        for other_type in lunginfection[1:]:
+            testing_data_dir = os.path.join(current_dir, other_type)
+            other_item_format = os.listdir(testing_data_dir)[0].split('.')[1]
             other_dir = f'Dataset/AllSet/LungInfection-All/{other_type}'
             copyfile(os.path.join(testing_data_dir, f'{str(current_index)}.{other_item_format}'),
                      os.path.join(other_dir, f'{str(current_index)}.{other_item_format}'))
@@ -54,8 +65,20 @@ for set_index in range(len(sets)):
         item_format[0] = str(current_index)
         new_name = '.'.join(item_format)
         current_index += 1
-        copyfile(os.path.join(training_data_dir, item), os.path.join(new_dir, new_name))
 
+        # make sure the other files exist before copying (same filename)
+        other_files_exist = True
+        for other_type in lunginfection[1:]:
+            testing_data_dir = os.path.join(current_dir, other_type)
+            other_item_format = os.listdir(testing_data_dir)[0].split('.')[1]
+            other_dir = f'Dataset/AllSet/MultiClassInfection-All/{other_type}'
+            if not os.path.exists(os.path.join(testing_data_dir, f'{str(current_index)}.{other_item_format}')):
+                other_files_exist = False
+                continue
+        if not other_files_exist:
+            continue
+
+        copyfile(os.path.join(training_data_dir, item), os.path.join(new_dir, new_name))
         for other_type in lunginfection[1:]:
             testing_data_dir = os.path.join(current_dir, other_type)
             other_dir = f'Dataset/AllSet/MultiClassInfection-All/{other_type}'
