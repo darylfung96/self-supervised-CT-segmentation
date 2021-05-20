@@ -21,9 +21,9 @@ for set_index in range(len(sets)):
     all_items = natsorted(os.listdir(training_data_dir))
 
     for item in all_items:
+        current_index += 1
         item_name, item_format = item.split('.')
         new_name = f'{str(current_index)}.{item_format}'
-        current_index += 1
 
         # make sure the other files exist before copying (same filename)
         other_files_exist = True
@@ -59,9 +59,9 @@ for set_index in range(len(sets)):
     training_data_dir = os.path.join(current_dir, current_type)
     all_items = natsorted(os.listdir(training_data_dir))
     for item in all_items:
+        current_index += 1
         item_name, item_format = item.split('.')
         new_name = f'{str(current_index)}.{item_format}'
-        current_index += 1
 
         # make sure the other files exist before copying (same filename)
         other_files_exist = True
