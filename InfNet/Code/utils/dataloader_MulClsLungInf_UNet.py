@@ -137,7 +137,7 @@ class IndicesLungDataset(Dataset):
         self.num_class = 3
 
     def __len__(self):
-        return self.img_names.shape
+        return self.img_names.shape[0]
 
     def __getitem__(self, idx):
         # processing img
@@ -224,7 +224,6 @@ class IndicesLungDataset(Dataset):
         if self.transform:
             imgA = self.transform(imgA)
             imgC = self.transform(imgC)
-
 
         return imgA, imgC, onehot_label, img_name
 
