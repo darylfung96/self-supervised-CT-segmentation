@@ -146,12 +146,12 @@ class IndicesLungDataset(Dataset):
         imgA = cv2.imread(img_name)
         imgA = cv2.resize(imgA, (352, 352))
 
+        img_filename = os.path.basename(img_name).split('.')[0]
         # processing pseudo
-        imgC = cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png')
+        imgC = cv2.imread(self.pseudo_path + img_filename.split('.')[0] + '.png')
         imgC = cv2.resize(imgC, (352, 352))
 
         # processing label
-        img_filename = img_name.split('.')[0]
         imgB = cv2.imread(self.label_path + img_filename + '.png', 0)
         if not self.is_test:
             imgB = cv2.resize(imgB, (352, 352))
