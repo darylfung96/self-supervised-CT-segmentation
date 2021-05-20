@@ -29,8 +29,11 @@ for set_index in range(len(sets)):
 
         for other_type in lunginfection[1:]:
             testing_data_dir = os.path.join(current_dir, other_type)
+            other_item_format = os.listdir(testing_data_dir)[0].split('.')[1]
+
             other_dir = f'Dataset/AllSet/LungInfection-All/{other_type}'
-            copyfile(os.path.join(testing_data_dir, item), os.path.join(other_dir, new_name))
+            copyfile(os.path.join(testing_data_dir, f'{str(current_index)}.{other_item_format}'),
+                     os.path.join(other_dir, f'{str(current_index)}.{other_item_format}'))
 
 # MultiClassInfection
 # make dir first
