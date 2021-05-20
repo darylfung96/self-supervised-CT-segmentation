@@ -743,6 +743,7 @@ if __name__ == "__main__":
         timer(start, end)
     else:
         # training
+        os.makedirs(f'./Snapshots/save_weights/{arg.save_path}/', exist_ok=True)
 
         # do cross validation
         if arg.folds > 0:
@@ -757,7 +758,6 @@ if __name__ == "__main__":
             torch.random.manual_seed(arg.seed)
             start = time.time()
 
-            os.makedirs(f'./Snapshots/save_weights/{arg.save_path}/', exist_ok=True)
 
             train_dataset = LungDataset(
                 imgs_path='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/',
