@@ -7,10 +7,14 @@ sets = ['TrainingSet', 'TestingSet', 'ValSet']
 set_name = ['Train', 'Test', 'Val']
 
 # LungInfection
+# make dir first
+for current_type in lunginfection:
+    new_dir = f'Dataset/AllSet/LungInfection-All/{current_type}'
+    os.makedirs(new_dir, exist_ok=True)
+# start copying files
 current_index = 0
 current_type = lunginfection[0]
 new_dir = f'Dataset/AllSet/LungInfection-All/{current_type}'
-os.makedirs(new_dir, exist_ok=True)
 for set_index in range(len(sets)):
     current_dir = f'Dataset/{sets[set_index]}/LungInfection-{set_name[set_index]}'
 
@@ -29,10 +33,14 @@ for set_index in range(len(sets)):
             copyfile(os.path.join(testing_data_dir, item), os.path.join(other_dir, new_name))
 
 # MultiClassInfection
+# make dir first
+for current_type in lunginfection:
+    new_dir = f'Dataset/AllSet/MultiClassInfection-All/{current_type}'
+    os.makedirs(new_dir, exist_ok=True)
+# start copying files
 current_index = 0
 current_type = lunginfection[0]
 new_dir = f'Dataset/AllSet/MultiClassInfection-All/{current_type}'
-os.makedirs(new_dir, exist_ok=True)
 for set_index in range(len(sets)):
     current_dir = f'Dataset/{sets[set_index]}/MultiClassInfection-{set_name[set_index]}'
 
