@@ -429,7 +429,7 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
     metrics_string += f'background recall variance[{background_np_total_test_sensitivity.size}]: {background_variance_sensitivity}\n'
     metrics_string += f'background precision variance[{background_np_total_test_precision.size}]: {background_variance_precision}\n'
     metrics_string += '============error=============\n'
-    metrics_string += f'$\pm${round(background_error_test_dice, 3)} & $\pm${round(background_error_test_jaccard, 3)} $\pm${round(background_error_test_sensitivity, 3)} & $\pm${round(background_error_test_precision, 3)}'
+    metrics_string += f'$\pm${round(background_error_test_dice, 3)} & $\pm${round(background_error_test_jaccard, 3)} $\pm${round(background_error_test_sensitivity, 3)} & $\pm${round(background_error_test_precision, 3)}\n'
     metrics_string += '==============================\n'
     metrics_string += '==============================\n'
     metrics_string += 'ground glass opacities\n'
@@ -479,10 +479,10 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
     metrics_string += '=============================='
     metrics_string += f'{round(overall_dice, 2)} & {round(overall_jaccard, 2)} & {round(overall_sensitivity, 2)} & {round(overall_precision, 2)}\n'
     metrics_string += '\n'
-    metrics_string += f'overall dice variance[{overall_dice.size}]: {overall_variance_dice}'
-    metrics_string += f'overall jaccard [{overall_jaccard.size}]: {overall_variance_jaccard}'
-    metrics_string += f'overall recall variance[{overall_sensitivity.size}]: {overall_variance_sensitivity}'
-    metrics_string += f'overall precision variance[{overall_precision.size}]: {overall_variance_precision}'
+    metrics_string += f'overall dice variance[{overall_dice.size}]: {overall_variance_dice}\n'
+    metrics_string += f'overall jaccard [{overall_jaccard.size}]: {overall_variance_jaccard}\n'
+    metrics_string += f'overall recall variance[{overall_sensitivity.size}]: {overall_variance_sensitivity}\n'
+    metrics_string += f'overall precision variance[{overall_precision.size}]: {overall_variance_precision}\n'
     metrics_string += '============error============='
     metrics_string += f'$\pm${round(overall_error_dice, 3)} & $\pm${round(overall_error_jaccard, 3)} & $\pm${round(overall_error_sensitivity, 3)} & $\pm${round(overall_error_precision, 3)}\n'
     metrics_string += '=============================='
@@ -539,17 +539,17 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
 # load_net_path_2 is a second model that we evaluate (can be None/empty)
 # if load_net_path_2 is provided, then the wilcox test will be calculated to compare between load_net_path and
 # load_net_path_2 to determine if they are statistically significant
-def eval(test_dataset, device, pseudo_test_path, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
+def eval(test_dataset, device, pseudo_test_path, lung_model, batch_size, input_channels, num_classes, gg_threshold, cons_threshold, load_net_path,
          load_net_path_2, model_name, model_name_2):
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
-    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
-    lung_model = model_dict[model_name](input_channels, num_classes).to(device)  # input_channels=3， n_class=3
-    # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
-
-    net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
-    net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
-    lung_model.load_state_dict(net_state_dict)
+    if lung_model is None:
+        model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+        lung_model = model_dict[model_name](input_channels, num_classes).to(device)  # input_channels=3， n_class=3
+        # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
+        net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
+        net_state_dict = {k: v for k, v in net_state_dict.items() if k in lung_model.state_dict()}
+        lung_model.load_state_dict(net_state_dict)
     lung_model.eval()
 
     all_metrics_information, background_np_total_test_dice, background_np_total_test_jaccard, background_np_total_test_sensitivity, background_np_total_test_precision, \
@@ -681,7 +681,7 @@ def cross_validation(arg):
               model_name=arg.model_name,
               arg=arg)
 
-        all_metrics_information, _ = eval(testing_dataset, arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
+        all_metrics_information, _ = eval(testing_dataset, arg.device, arg.pseudo_test_path, lung_model=lung_model, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
              load_net_path=arg.load_net_path,
              model_name=arg.model_name, load_net_path_2=None, model_name_2=None)
@@ -735,7 +735,7 @@ if __name__ == "__main__":
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
             is_test=False
         )
-        eval(test_dataset, arg.device, arg.pseudo_test_path, batch_size=1, input_channels=6, num_classes=3,
+        eval(test_dataset, arg.device, arg.pseudo_test_path, lung_model=None, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
              load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2,
              model_name=arg.model_name, model_name_2=arg.model_name_2)
@@ -806,4 +806,4 @@ if __name__ == "__main__":
                 model_name=arg.model_name,
                 arg=arg)
             end = time.time()
-            timer(start, time)
+            timer(start, end)

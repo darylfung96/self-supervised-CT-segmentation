@@ -10,7 +10,7 @@ python main_inf-net.py --save_path model/self-inf-net --graph_path graphs/self-i
 python MyTrain_LungInf.py --train_save self-inf-net --random_cutout 0 --graph_path graph_self-inf-net --seed 100 --load_net_path ../model/self-inf-net/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 8
 python MyTrain_LungInf.py --train_save self-improved --focal_loss --lookahead --is_data_augment True --random_cutout 0.5 --seed 100 --graph_path graph_self-improved --load_net_path ../model/self-inf-net/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 8
 #improved cross-val
-python MyTrain_LungInf.py --train_save self-improved-cross-val --fold 5 --eval_threshold 0.5 --focal_loss --lookahead --is_data_augment True --random_cutout 0.5 --seed 100 --graph_path graph_self-improved-cross-val --load_net_path ../model/self-inf-net/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 8
+python MyTrain_LungInf.py --train_save self-improved-cross-val --fold 5 --eval_threshold 0.5 --focal_loss --lookahead --is_data_augment True --random_cutout 0.5 --seed 100 --graph_path graph_self-improved-cross-val --load_net_path ../model/self-inf-net/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 4
 
 # ablation studies
 # self-supervised only

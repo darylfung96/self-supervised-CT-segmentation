@@ -27,3 +27,8 @@ python MyTrain_MulClsLungInf_UNet.py --save_path self-multi-improved-inf-net-foc
 
 # lookahead only
 python MyTrain_MulClsLungInf_UNet.py --save_path self-multi-improved-inf-net-lookahead --seed 100 --lookahead --is_data_augment True --random_cutout 0.5 --is_label_smooth True --graph_path graph_self-multi-inf-net-lookahead --model_name improved --load_net_path ../model/self_multi_improved_new/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 500 --batchsize 4
+
+
+
+# evaluation
+python MyTrain_MulClsLungInf_UNet.py --is_eval True --load_net_path './Snapshots/save_weights/self-multi-inf-net/{checkpoint_model_name}' --model_name improved
