@@ -445,7 +445,7 @@ if __name__ == '__main__':
                         help='whether calculate FLOPs/Params (Thop)')
     parser.add_argument('--gpu_device', type=int, default=0,
                         help='choose which GPU device you want to use')
-    parser.add_argument('--num_workers', type=int, default=8,
+    parser.add_argument('--num_workers', type=int, default=0,
                         help='number of workers in dataloader. In windows, set num_workers=0')
     parser.add_argument('--device', type=str, default='cpu')
     # model_lung_infection parameters
