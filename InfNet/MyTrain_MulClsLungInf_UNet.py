@@ -333,15 +333,16 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
         if not math.isnan(precision):
             cons_total_test_precision.append(precision)
 
-    with open('metric.txt', 'a') as f:
-        f.write(load_net_path + '\n')
-        f.write('ground glass opacities\n')
-        for gg in gg_total_test_dice:
-            f.write(str(gg) + '\n')
-        f.write('\nconsolidation\n')
-        for cons in cons_total_test_dice:
-            f.write(str(cons) + '\n')
-        f.write('===========================')
+    if load_net_path is not None:
+        with open('metric.txt', 'a') as f:
+            f.write(load_net_path + '\n')
+            f.write('ground glass opacities\n')
+            for gg in gg_total_test_dice:
+                f.write(str(gg) + '\n')
+            f.write('\nconsolidation\n')
+            for cons in cons_total_test_dice:
+                f.write(str(cons) + '\n')
+            f.write('===========================')
 
     # background
     background_np_total_test_dice = np.array(background_total_test_dice)
