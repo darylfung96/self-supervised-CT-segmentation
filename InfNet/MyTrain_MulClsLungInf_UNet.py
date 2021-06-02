@@ -728,7 +728,7 @@ if __name__ == "__main__":
     parser.add_argument('--pseudo_test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/Prior/', type=str)
     parser.add_argument('--label_test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/GT/', type=str)
 
-    parser.add_argument('--_img_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/Imgs/', type=str)
+    parser.add_argument('--img_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/Imgs/', type=str)
     parser.add_argument('--pseudo_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/Prior/', type=str) # can change to output of single label InfNet
     parser.add_argument('--label_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/GT/', type=str)
 
