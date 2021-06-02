@@ -724,11 +724,15 @@ if __name__ == "__main__":
     parser.add_argument('--pseudo_train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/Prior/', type=str)
     parser.add_argument('--label_train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/GT/', type=str)
 
-    parser.add_argument('--_img_test_path', default='./Dataset/TrainingSet/MultiClassInfection-Test/Imgs/', type=str)
-    parser.add_argument('--pseudo_test_path', default='./Dataset/TrainingSet/MultiClassInfection-Test/Prior/', type=str)
+    parser.add_argument('--_img_test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/', type=str)
+    parser.add_argument('--pseudo_test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/Prior/', type=str)
     parser.add_argument('--label_test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/GT/', type=str)
 
-    parser.add_argument('--focal_loss', action='store_true')
+    parser.add_argument('--_img_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/Imgs/', type=str)
+    parser.add_argument('--pseudo_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/Prior/', type=str) # can change to output of single label InfNet
+    parser.add_argument('--label_val_path', default='./Dataset/ValSet/MultiClassInfection-Val/GT/', type=str)
+
+parser.add_argument('--focal_loss', action='store_true')
     parser.add_argument('--lookahead', action='store_true')
 
     arg = parser.parse_args()
@@ -783,9 +787,9 @@ if __name__ == "__main__":
 
             # test dataset
             test_dataset = LungDataset(
-                imgs_path='./Dataset/ValSet/MultiClassInfection-Val/Imgs/',
-                pseudo_path='./Dataset/ValSet/MultiClassInfection-Val/Prior/',  # NOTES: generated from Semi-Inf-Net
-                label_path='./Dataset/ValSet/MultiClassInfection-Val/GT/',
+                imgs_path=arg.img_val_path,
+                pseudo_path=arg.pseudo_val_path,  # NOTES: generated from Semi-Inf-Net
+                label_path=arg.label_val_path,
                 transform=transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
