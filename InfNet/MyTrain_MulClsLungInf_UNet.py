@@ -83,7 +83,7 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
 
     global_iteration = 0
     for epo in range(epo_num):
-        start = time.time()
+
         train_loss = 0
         lung_model.train()
 
@@ -112,8 +112,7 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
             if np.mod(index, 20) == 0:
                 print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader),
                                                                            iter_loss))
-        end=time.time()
-        timer(start, end)
+
         # old saving method
         # os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
         # if np.mod(epo+1, 10) == 0:
@@ -126,122 +125,120 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
         #
         # del img
         # del img_mask
+        total_test_loss = []
 
-        # TODO: RE-ADD TESTING BACK REMEMBER THIS IS JUST FOR CALCULATING COMPUTATION COST
-        # total_test_loss = []
-        #
-        # background_test_dice = []
-        # background_test_jaccard = []
-        # background_test_sensitivity = []
-        # background_test_precision = []
-        #
-        # gg_test_dice = []
-        # gg_test_jaccard = []
-        # gg_test_sensitivity = []
-        # gg_test_precision = []
-        #
-        # cons_test_dice = []
-        # cons_test_jaccard = []
-        # cons_test_sensitivity = []
-        # cons_test_precision = []
-        #
-        # lung_model.eval()
-        # for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
-        #     img = img.to(device)
-        #     pseudo = pseudo.to(device)
-        #     img_mask = img_mask.to(device)
-        #     output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
-        #
-        #     output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
-        #     b, _, w, h = output.size()
-        #     pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w,
-        #                                                                                               h).numpy().squeeze()
-        #     pred_onehot = (np.arange(3) == pred[..., None]).astype(np.float64)
-        #
-        #     background_output = torch.from_numpy(pred_onehot[:, :, :, 0]).to(device)
-        #     gg_output = torch.from_numpy(pred_onehot[:, :, :, 1]).to(device)
-        #     cons_output = torch.from_numpy(pred_onehot[:, :, :, 2]).to(device)
-        #
-        #     background_img_mask = img_mask[:, 0]
-        #     gg_img_mask = img_mask[:, 1]
-        #     cons_img_mask = img_mask[:, 2]
-        #
-        #     loss = criterion(output, img_mask)
-        #     total_test_loss.append(loss.item())
-        #     print(f'test loss is {loss.item()}')
-        #     total_test_loss.append(loss.item())
-        #
-        #     # calculate background metrics
-        #     dice = dice_similarity_coefficient(background_output, background_img_mask, None)
-        #     jaccard = jaccard_similarity_coefficient(background_output, background_img_mask, None)
-        #     sensitivity = sensitivity_similarity_coefficient(background_output, background_img_mask, None)
-        #     precision = precision_similarity_coefficient(background_output, background_img_mask, None)
-        #
-        #     if not math.isnan(dice):
-        #         background_test_dice.append(dice)
-        #     if not math.isnan(jaccard):
-        #         background_test_jaccard.append(jaccard)
-        #     if not math.isnan(sensitivity):
-        #         background_test_sensitivity.append(sensitivity)
-        #     if not math.isnan(precision):
-        #         background_test_precision.append(precision)
-        #
-        #     # calculate ground-glass opacities metrics
-        #     dice = dice_similarity_coefficient(gg_output, gg_img_mask, None)
-        #     jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask, None)
-        #     sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask, None)
-        #     precision = precision_similarity_coefficient(gg_output, gg_img_mask, None)
-        #
-        #     if not math.isnan(dice):
-        #         gg_test_dice.append(dice)
-        #     if not math.isnan(jaccard):
-        #         gg_test_jaccard.append(jaccard)
-        #     if not math.isnan(sensitivity):
-        #         gg_test_sensitivity.append(sensitivity)
-        #     if not math.isnan(precision):
-        #         gg_test_precision.append(precision)
-        #
-        #     # calculate consolidation metrics
-        #     loss = torch.mean(torch.abs(cons_output - cons_img_mask))
-        #     dice = dice_similarity_coefficient(cons_output, cons_img_mask, None)
-        #     jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask, None)
-        #     sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask, None)
-        #     precision = precision_similarity_coefficient(cons_output, cons_img_mask, None)
-        #     if not math.isnan(dice):
-        #         cons_test_dice.append(dice)
-        #     if not math.isnan(jaccard):
-        #         cons_test_jaccard.append(jaccard)
-        #     if not math.isnan(sensitivity):
-        #         cons_test_sensitivity.append(sensitivity)
-        #     if not math.isnan(precision):
-        #         cons_test_precision.append(precision)
-        #
-        # average_test_loss = sum(total_test_loss) / len(total_test_loss)
-        # average_test_dice = (sum(background_test_dice) + sum(gg_test_dice) + sum(cons_test_dice)) / \
-        #                     (len(background_test_dice) + len(gg_test_dice) + len(cons_test_dice))
-        # average_test_jaccard = (sum(background_test_jaccard) + sum(gg_test_jaccard) + sum(cons_test_jaccard)) / \
-        #                        (len(background_test_jaccard) + len(gg_test_jaccard) + len(cons_test_jaccard))
-        # average_test_sensitivity = (sum(background_test_sensitivity) + sum(gg_test_sensitivity) + sum(
-        #     cons_test_sensitivity)) \
-        #                            / (len(background_test_sensitivity) + len(gg_test_sensitivity) + len(
-        #     cons_test_sensitivity))
-        # average_test_precision = (sum(background_test_precision) + sum(gg_test_precision) + sum(cons_test_precision)) / \
-        #                          (len(background_test_precision) + len(gg_test_precision) + len(cons_test_precision))
-        # test_writer.add_scalar('test/loss', average_test_loss, epo)
-        # test_writer.add_scalar('test/dice', average_test_dice, epo)
-        # test_writer.add_scalar('test/jaccard', average_test_jaccard, epo)
-        # test_writer.add_scalar('test/sensitivity', average_test_sensitivity, epo)
-        # test_writer.add_scalar('test/precision', average_test_precision, epo)
-        #
-        # if average_test_loss < best_loss:
-        #     best_loss = average_test_loss
-        #     best_dice = average_test_dice
-        #     best_jaccard = average_test_jaccard
-        #     best_sensitivity = average_test_sensitivity
-        #     best_precision = average_test_precision
-        #     torch.save(lung_model.state_dict(),
-        #                './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
-        #     print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
+        background_test_dice = []
+        background_test_jaccard = []
+        background_test_sensitivity = []
+        background_test_precision = []
+
+        gg_test_dice = []
+        gg_test_jaccard = []
+        gg_test_sensitivity = []
+        gg_test_precision = []
+
+        cons_test_dice = []
+        cons_test_jaccard = []
+        cons_test_sensitivity = []
+        cons_test_precision = []
+
+        lung_model.eval()
+        for index, (img, pseudo, img_mask, name) in enumerate(test_dataloader):
+            img = img.to(device)
+            pseudo = pseudo.to(device)
+            img_mask = img_mask.to(device)
+            output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
+
+            output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
+            b, _, w, h = output.size()
+            pred = output.cpu().permute(0, 2, 3, 1).contiguous().view(-1, num_classes).max(1)[1].view(b, w,
+                                                                                                      h).numpy().squeeze()
+            pred_onehot = (np.arange(3) == pred[..., None]).astype(np.float64)
+
+            background_output = torch.from_numpy(pred_onehot[:, :, :, 0]).to(device)
+            gg_output = torch.from_numpy(pred_onehot[:, :, :, 1]).to(device)
+            cons_output = torch.from_numpy(pred_onehot[:, :, :, 2]).to(device)
+
+            background_img_mask = img_mask[:, 0]
+            gg_img_mask = img_mask[:, 1]
+            cons_img_mask = img_mask[:, 2]
+
+            loss = criterion(output, img_mask)
+            total_test_loss.append(loss.item())
+            print(f'test loss is {loss.item()}')
+            total_test_loss.append(loss.item())
+
+            # calculate background metrics
+            dice = dice_similarity_coefficient(background_output, background_img_mask, None)
+            jaccard = jaccard_similarity_coefficient(background_output, background_img_mask, None)
+            sensitivity = sensitivity_similarity_coefficient(background_output, background_img_mask, None)
+            precision = precision_similarity_coefficient(background_output, background_img_mask, None)
+
+            if not math.isnan(dice):
+                background_test_dice.append(dice)
+            if not math.isnan(jaccard):
+                background_test_jaccard.append(jaccard)
+            if not math.isnan(sensitivity):
+                background_test_sensitivity.append(sensitivity)
+            if not math.isnan(precision):
+                background_test_precision.append(precision)
+
+            # calculate ground-glass opacities metrics
+            dice = dice_similarity_coefficient(gg_output, gg_img_mask, None)
+            jaccard = jaccard_similarity_coefficient(gg_output, gg_img_mask, None)
+            sensitivity = sensitivity_similarity_coefficient(gg_output, gg_img_mask, None)
+            precision = precision_similarity_coefficient(gg_output, gg_img_mask, None)
+
+            if not math.isnan(dice):
+                gg_test_dice.append(dice)
+            if not math.isnan(jaccard):
+                gg_test_jaccard.append(jaccard)
+            if not math.isnan(sensitivity):
+                gg_test_sensitivity.append(sensitivity)
+            if not math.isnan(precision):
+                gg_test_precision.append(precision)
+
+            # calculate consolidation metrics
+            loss = torch.mean(torch.abs(cons_output - cons_img_mask))
+            dice = dice_similarity_coefficient(cons_output, cons_img_mask, None)
+            jaccard = jaccard_similarity_coefficient(cons_output, cons_img_mask, None)
+            sensitivity = sensitivity_similarity_coefficient(cons_output, cons_img_mask, None)
+            precision = precision_similarity_coefficient(cons_output, cons_img_mask, None)
+            if not math.isnan(dice):
+                cons_test_dice.append(dice)
+            if not math.isnan(jaccard):
+                cons_test_jaccard.append(jaccard)
+            if not math.isnan(sensitivity):
+                cons_test_sensitivity.append(sensitivity)
+            if not math.isnan(precision):
+                cons_test_precision.append(precision)
+
+        average_test_loss = sum(total_test_loss) / len(total_test_loss)
+        average_test_dice = (sum(background_test_dice) + sum(gg_test_dice) + sum(cons_test_dice)) / \
+                            (len(background_test_dice) + len(gg_test_dice) + len(cons_test_dice))
+        average_test_jaccard = (sum(background_test_jaccard) + sum(gg_test_jaccard) + sum(cons_test_jaccard)) / \
+                               (len(background_test_jaccard) + len(gg_test_jaccard) + len(cons_test_jaccard))
+        average_test_sensitivity = (sum(background_test_sensitivity) + sum(gg_test_sensitivity) + sum(
+            cons_test_sensitivity)) \
+                                   / (len(background_test_sensitivity) + len(gg_test_sensitivity) + len(
+            cons_test_sensitivity))
+        average_test_precision = (sum(background_test_precision) + sum(gg_test_precision) + sum(cons_test_precision)) / \
+                                 (len(background_test_precision) + len(gg_test_precision) + len(cons_test_precision))
+        test_writer.add_scalar('test/loss', average_test_loss, epo)
+        test_writer.add_scalar('test/dice', average_test_dice, epo)
+        test_writer.add_scalar('test/jaccard', average_test_jaccard, epo)
+        test_writer.add_scalar('test/sensitivity', average_test_sensitivity, epo)
+        test_writer.add_scalar('test/precision', average_test_precision, epo)
+
+        if average_test_loss < best_loss:
+            best_loss = average_test_loss
+            best_dice = average_test_dice
+            best_jaccard = average_test_jaccard
+            best_sensitivity = average_test_sensitivity
+            best_precision = average_test_precision
+            torch.save(lung_model.state_dict(),
+                       './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
+            print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
 
         del img
         del img_mask
