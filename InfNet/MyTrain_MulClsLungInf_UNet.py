@@ -83,7 +83,7 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
 
     global_iteration = 0
     for epo in range(epo_num):
-
+        start = time.time()
         train_loss = 0
         lung_model.train()
 
@@ -112,7 +112,8 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
             if np.mod(index, 20) == 0:
                 print('Epoch: {}/{}, Step: {}/{}, Train loss is {}'.format(epo, epo_num, index, len(train_dataloader),
                                                                            iter_loss))
-
+        end=time.time()
+        timer(start, end)
         # old saving method
         # os.makedirs('./checkpoints//UNet_Multi-Class-Semi', exist_ok=True)
         # if np.mod(epo+1, 10) == 0:
