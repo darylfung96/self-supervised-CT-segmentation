@@ -28,6 +28,7 @@ from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
 from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
+from fcn8 import create_fcn
 from Code.utils.utils import timer
 import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
@@ -36,6 +37,9 @@ from metric import dice_similarity_coefficient, jaccard_similarity_coefficient, 
     precision_similarity_coefficient
 from focal_loss import FocalLoss
 from lookahead import Lookahead
+
+
+model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved, 'FCN': create_fcn}
 
 
 def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_channels, batch_size, lr, is_data_augment,
@@ -545,7 +549,6 @@ def eval(test_dataset, device, pseudo_test_path, lung_model, batch_size, input_c
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
     if lung_model is None:
-        model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
         lung_model = model_dict[model_name](input_channels, num_classes).to(device)  # input_channels=3， n_class=3
         # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
         net_state_dict = torch.load(load_net_path, map_location=torch.device(device))
@@ -661,7 +664,6 @@ def cross_validation(arg):
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
             is_test=False)
 
-        model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
         lung_model = model_dict[arg.model_name](arg.input_channels, arg.num_classes)  # input_channels=3， n_class=3
         # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
         print(lung_model)
@@ -783,7 +785,6 @@ if __name__ == "__main__":
             )
 
             # load model
-            model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
             lung_model = model_dict[arg.model_name](arg.input_channels, arg.num_classes)  # input_channels=3， n_class=3
             # lung_model.load_state_dict(torch.load('./Snapshots/save_weights/multi_baseline/unet_model_200.pkl', map_location=torch.device(device)))
             print(lung_model)
