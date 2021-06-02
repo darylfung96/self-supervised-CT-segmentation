@@ -775,10 +775,10 @@ if __name__ == "__main__":
 
 
             train_dataset = LungDataset(
-                imgs_path=arg.train_image_path,
+                imgs_path=arg.img_train_path,
                 # NOTES: prior is borrowed from the object-level label of train split
-                pseudo_path=arg.train_pseudo_path,
-                label_path=arg.train_label_path,
+                pseudo_path=arg.pseudo_train_path,
+                label_path=arg.label_train_path,
                 transform=transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
