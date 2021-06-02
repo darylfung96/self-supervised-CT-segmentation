@@ -1,5 +1,5 @@
 # check again maybe batchsize can be changed
-python main_multi-inf-net.py --save_path model/self_multi_improved --graph_path graph_self_multi_improved --device cuda --seed 7
+python main_multi-inf-net.py --save_path model/self_multi_improved --graph_path graph_self_multi_improved --device cuda --seed 100
 
 # baseline
 python MyTrain_MulClsLungInf_UNet.py --save_path multi-inf-net --random_cutout 0  --graph_path graph_multi-inf-net --device cuda --epoch 500 --batchsize 4

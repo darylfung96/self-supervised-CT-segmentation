@@ -702,7 +702,6 @@ if __name__ == "__main__":
     parser.add_argument('--metric_path', type=str, default='./metrics_log')
     parser.add_argument('--save_path', type=str, default='Semi-Inf-Net_UNet')
     parser.add_argument('--model_name', type=str, default='baseline')  # baseline or improved
-    parser.add_argument('--pseudo_test_path', type=str)
     parser.add_argument('--epoch', type=int, default=200)
     parser.add_argument('--is_data_augment', type=bool, default=False)
     parser.add_argument('--is_label_smooth', type=bool, default=False)
@@ -720,6 +719,15 @@ if __name__ == "__main__":
     parser.add_argument('--input_channels', default=6, type=int)
     parser.add_argument('--num_classes', default=3, type=int)
 
+    # image paths
+    parser.add_argument('--img_train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/', type=str)
+    parser.add_argument('--pseudo_train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/Prior/', type=str)
+    parser.add_argument('--label_train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/GT/', type=str)
+
+    parser.add_argument('--_img_test_path', default='./Dataset/TrainingSet/MultiClassInfection-Test/Imgs/', type=str)
+    parser.add_argument('--pseudo_test_path', default='./Dataset/TrainingSet/MultiClassInfection-Test/Prior/', type=str)
+    parser.add_argument('--label_test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/GT/', type=str)
+
     parser.add_argument('--focal_loss', action='store_true')
     parser.add_argument('--lookahead', action='store_true')
 
@@ -730,9 +738,9 @@ if __name__ == "__main__":
         start = time.time()
         # test dataset
         test_dataset = LungDataset(
-            imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
+            imgs_path=arg.img_test_path,
             pseudo_path=arg.pseudo_test_path,  # NOTES: generated from Semi-Inf-Net
-            label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
+            label_path=arg.label_test_path,
             transform=transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
@@ -763,10 +771,10 @@ if __name__ == "__main__":
 
 
             train_dataset = LungDataset(
-                imgs_path='./Dataset/TrainingSet/MultiClassInfection-Train/Imgs/',
+                imgs_path=arg.train_image_path,
                 # NOTES: prior is borrowed from the object-level label of train split
-                pseudo_path='./Dataset/TrainingSet/MultiClassInfection-Train/Prior/',
-                label_path='./Dataset/TrainingSet/MultiClassInfection-Train/GT/',
+                pseudo_path=arg.train_pseudo_path,
+                label_path=arg.train_label_path,
                 transform=transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
