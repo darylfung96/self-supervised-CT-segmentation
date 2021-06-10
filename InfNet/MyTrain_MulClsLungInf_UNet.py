@@ -52,6 +52,9 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
     best_sensitivity = 0
     best_precision = 0
 
+    VALIDATION_EARLY_STOPPING = 6
+    current_validation_early_count = 0
+
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
@@ -239,6 +242,12 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
             torch.save(lung_model.state_dict(),
                        './Snapshots/save_weights/{}/unet_model_{}.pkl'.format(save_path, epo + 1))
             print('Saving checkpoints: unet_model_{}.pkl'.format(epo + 1))
+            current_validation_early_count = 0
+        else:
+            current_validation_early_count += 1
+
+        if current_validation_early_count >= VALIDATION_EARLY_STOPPING:
+            break
 
         del img
         del img_mask
