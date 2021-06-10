@@ -636,11 +636,11 @@ def eval(test_dataset, device, pseudo_test_path, lung_model, batch_size, input_c
 
 
 def cross_validation(arg):
-    imgs_path = os.path.join(arg.all_path, 'Imgs')
+    imgs_path = os.path.join(arg.all_path, 'Imgs') + "/"
     img_names = [imgs_path + f for f in os.listdir(imgs_path)]
     # NOTES: prior is borrowed from the object-level label of train split
-    pseudo_path = os.path.join(arg.all_path, 'Prior')
-    label_path = os.path.join(arg.all_path, 'GT')
+    pseudo_path = os.path.join(arg.all_path, 'Prior') + "/"
+    label_path = os.path.join(arg.all_path, 'GT') + "/"
 
     img_names = np.array(img_names)
 
@@ -730,9 +730,9 @@ if __name__ == "__main__":
 
     # image paths
     parser.add_argument('--train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/', type=str)
-    parser.add_argument('--test_path', default='./Dataset/TestingSet/MultiClassInfection-Test', type=str)
-    parser.add_argument('--val_path', default='./Dataset/ValSet/MultiClassInfection-Val', type=str)
-    parser.add_argument('--all_path', default='./Dataset/AllSet/MultiClassInfection-All', type=str)
+    parser.add_argument('--test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/', type=str)
+    parser.add_argument('--val_path', default='./Dataset/ValSet/MultiClassInfection-Val/', type=str)
+    parser.add_argument('--all_path', default='./Dataset/AllSet/MultiClassInfection-All/', type=str)
 
     parser.add_argument('--focal_loss', action='store_true')
     parser.add_argument('--lookahead', action='store_true')
@@ -742,9 +742,9 @@ if __name__ == "__main__":
     if arg.is_eval:
         # evaluation
         start = time.time()
-        img_test_path = os.path.join(arg.test_path, 'Imgs')
-        pseudo_test_path = os.path.join(arg.test_path, 'Prior')
-        label_test_path = os.path.join(arg.test_path, 'GT')
+        img_test_path = os.path.join(arg.test_path, 'Imgs') + "/"
+        pseudo_test_path = os.path.join(arg.test_path, 'Prior') + "/"
+        label_test_path = os.path.join(arg.test_path, 'GT') + "/"
         # test dataset
         test_dataset = LungDataset(
             imgs_path=img_test_path,
@@ -778,9 +778,9 @@ if __name__ == "__main__":
             torch.random.manual_seed(arg.seed)
             start = time.time()
 
-            img_train_path = os.path.join(arg.train_path, 'Imgs')
-            pseudo_train_path = os.path.join(arg.train_path, 'Prior')
-            label_train_path = os.path.join(arg.train_path, 'GT')
+            img_train_path = os.path.join(arg.train_path, 'Imgs') + '/'
+            pseudo_train_path = os.path.join(arg.train_path, 'Prior') + '/'
+            label_train_path = os.path.join(arg.train_path, 'GT') + '/'
 
             train_dataset = LungDataset(
                 imgs_path=img_train_path,
