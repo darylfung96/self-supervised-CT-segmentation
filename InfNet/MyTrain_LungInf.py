@@ -379,7 +379,7 @@ def cross_validation(train_save, opt):
     gts = np.array(sorted([gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]))
     edges = np.array(sorted([edge_root + f for f in os.listdir(edge_root) if f.endswith('.png')]))
 
-    k_folds = KFold(5)
+    k_folds = KFold(opt.folds)
     for fold_index, (train_index, test_index) in enumerate(k_folds.split(images)):
         random.seed(opt.seed)
         np.random.seed(opt.seed)
