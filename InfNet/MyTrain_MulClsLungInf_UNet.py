@@ -635,7 +635,7 @@ def cross_validation(arg):
 
     img_names = np.array(img_names)
 
-    k_folds = KFold(5)
+    k_folds = KFold(arg.fold)
     for fold_index, (train_index, test_index) in enumerate(k_folds.split(img_names)):
         np.random.seed(arg.seed)
         random.seed(arg.seed)
