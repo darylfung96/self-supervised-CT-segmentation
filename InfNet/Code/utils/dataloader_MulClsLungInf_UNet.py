@@ -37,6 +37,7 @@ class LungDataset(Dataset):
     def __getitem__(self, idx):
         # processing img
         img_name = os.listdir(self.imgs_path)[idx]
+        print(self.imgs_path + img_name)
         # image path
         imgA = cv2.imread(self.imgs_path + img_name)
         imgA = cv2.resize(imgA, (352, 352))
