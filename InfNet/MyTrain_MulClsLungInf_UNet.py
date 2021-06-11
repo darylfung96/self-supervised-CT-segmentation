@@ -793,9 +793,9 @@ if __name__ == "__main__":
                 is_data_augment=arg.is_data_augment, is_label_smooth=arg.is_label_smooth,
                 random_cutout=arg.random_cutout)
 
-            img_val_path = os.path.join(arg.val_path, 'Imgs')
-            pseudo_val_path = os.path.join(arg.val_path, 'Prior')
-            label_val_path = os.path.join(arg.val_path, 'GT')
+            img_val_path = os.path.join(arg.val_path, 'Imgs') + '/'
+            pseudo_val_path = os.path.join(arg.val_path, 'Prior') + '/'
+            label_val_path = os.path.join(arg.val_path, 'GT') + '/'
             # test dataset
             test_dataset = LungDataset(
                 imgs_path=img_val_path,
