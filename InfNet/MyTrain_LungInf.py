@@ -381,9 +381,9 @@ def cross_validation(train_save, opt):
 
     k_folds = KFold(opt.folds)
     VALIDATION_EARLY_STOPPING = 6
-    current_validation_early_count = 0
-    best_loss = 99999
     for fold_index, (train_index, test_index) in enumerate(k_folds.split(images)):
+        best_loss = 99999
+        current_validation_early_count = 0
         random.seed(opt.seed)
         np.random.seed(opt.seed)
         torch.manual_seed(opt.seed)
