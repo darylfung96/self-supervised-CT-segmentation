@@ -693,7 +693,7 @@ def cross_validation(arg):
               model_name=arg.model_name,
               arg=arg)
 
-        all_metrics_information, _ = eval(testing_dataset, arg.device, arg.pseudo_test_path, lung_model=lung_model, batch_size=1, input_channels=6, num_classes=3,
+        all_metrics_information, _ = eval(testing_dataset, arg.device, None, lung_model=lung_model, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
              load_net_path=arg.load_net_path,
              model_name=arg.model_name, load_net_path_2=None, model_name_2=None)
@@ -755,7 +755,7 @@ if __name__ == "__main__":
                 transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
             is_test=False
         )
-        eval(test_dataset, arg.device, arg.pseudo_test_path, lung_model=None, batch_size=1, input_channels=6, num_classes=3,
+        eval(test_dataset, arg.device, None, lung_model=None, batch_size=1, input_channels=6, num_classes=3,
              gg_threshold=arg.gg_threshold, cons_threshold=arg.cons_threshold,
              load_net_path=arg.load_net_path, load_net_path_2=arg.load_net_path_2,
              model_name=arg.model_name, model_name_2=arg.model_name_2)

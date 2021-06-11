@@ -16,7 +16,7 @@ python MyTrain_MulClsLungInf_UNet.py --load_net_path ../model/self_multi_improve
 python MyTrain_MulClsLungInf_UNet.py --save_path self-multi-inf-net --seed 100 --random_cutout 0 --graph_path graph_self-multi-inf-net --load_net_path ../model/self_multi_improved/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 200 --batchsize 8
 python MyTrain_MulClsLungInf_UNet.py --save_path self-multi-improved-inf-net --seed 100 --is_data_augment True --random_cutout 0.5 --is_label_smooth True --graph_path graph_self-multi-inf-net --model_name improved --load_net_path ../model/self_multi_improved_new/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 200 --batchsize 8
 # cross-val
-python MyTrain_MulClsLungInf_UNet.py --folds 3 --lookahead --focal_loss --save_path self-multi-improved-inf-net-cross-val --seed 100 --is_data_augment True --random_cutout 0.5 --is_label_smooth True --graph_path graph_self-multi-inf-net-cross-val --model_name improved --load_net_path ../model/self_multi_improved_new/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 200 --batchsize 64
+python MyTrain_MulClsLungInf_UNet.py --folds 3 --lookahead --focal_loss --save_path self-multi-improved-inf-net-cross-val --seed 100 --is_data_augment True --random_cutout 0.5 --is_label_smooth True --graph_path graph_self-multi-inf-net-cross-val --model_name improved --load_net_path ../model/self_multi_improved_new/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 200 --batchsize 4
 
 # ablation
 # self-supervised only
