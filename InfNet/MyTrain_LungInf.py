@@ -124,57 +124,57 @@ def train(train_loader, test_loader, model, optimizer, epoch, train_save, device
                   'lateral-2: {:.4f}, lateral-3: {:0.4f}, lateral-4: {:0.4f}, lateral-5: {:0.4f}]'.
                   format(datetime.now(), epoch, opt.epoch, i, total_step, loss_record1.show(),
                          loss_record2.show(), loss_record3.show(), loss_record4.show(), loss_record5.show()))
-        # check testing error
-        if global_current_iteration % 20 == 0:
-            total_test_step = 0
-            total_loss_5 = 0
-            total_loss_4 = 0
-            total_loss_3 = 0
-            total_loss_2 = 0
+    # check testing error
+    total_test_step = 0
+    total_loss_5 = 0
+    total_loss_4 = 0
+    total_loss_3 = 0
+    total_loss_2 = 0
 
-            total_dice_5 = 0
-            total_dice_4 = 0
-            total_dice_3 = 0
-            total_dice_2 = 0
-            model.eval()
-            for pack in test_loader:
-                total_test_step += 1
-                image, gt, _, name = pack
-                image = Variable(image).to(device)
-                gt = Variable(gt).to(device)
-                # ---- forward ----
-                lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
-                # ---- loss function ----
-                loss5 = joint_loss(lateral_map_5, gt, opt)
-                loss4 = joint_loss(lateral_map_4, gt, opt)
-                loss3 = joint_loss(lateral_map_3, gt, opt)
-                loss2 = joint_loss(lateral_map_2, gt, opt)
-                total_loss_5 += loss5.item()
-                total_loss_4 += loss4.item()
-                total_loss_3 += loss3.item()
-                total_loss_2 += loss2.item()
+    total_dice_5 = 0
+    total_dice_4 = 0
+    total_dice_3 = 0
+    total_dice_2 = 0
+    model.eval()
+    for pack in test_loader:
+        total_test_step += 1
+        image, gt, _, name = pack
+        image = Variable(image).to(device)
+        gt = Variable(gt).to(device)
+        # ---- forward ----
+        lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, lateral_edge = model(image)
+        # ---- loss function ----
+        loss5 = joint_loss(lateral_map_5, gt, opt)
+        loss4 = joint_loss(lateral_map_4, gt, opt)
+        loss3 = joint_loss(lateral_map_3, gt, opt)
+        loss2 = joint_loss(lateral_map_2, gt, opt)
+        total_loss_5 += loss5.item()
+        total_loss_4 += loss4.item()
+        total_loss_3 += loss3.item()
+        total_loss_2 += loss2.item()
 
-                total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt, 0.5)
-                total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt, 0.5)
-                total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt, 0.5)
-                total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt, 0.5)
+        total_dice_5 += dice_similarity_coefficient(lateral_map_5.sigmoid(), gt, 0.5)
+        total_dice_4 += dice_similarity_coefficient(lateral_map_4.sigmoid(), gt, 0.5)
+        total_dice_3 += dice_similarity_coefficient(lateral_map_3.sigmoid(), gt, 0.5)
+        total_dice_2 += dice_similarity_coefficient(lateral_map_2.sigmoid(), gt, 0.5)
 
-            total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
-            test_writer.add_scalar('test/loss2', total_loss_2/total_test_step, global_current_iteration)
-            test_writer.add_scalar('test/loss3', total_loss_3/total_test_step, global_current_iteration)
-            test_writer.add_scalar('test/loss4', total_loss_4/total_test_step, global_current_iteration)
-            test_writer.add_scalar('test/loss5', total_loss_5/total_test_step, global_current_iteration)
-            test_writer.add_scalar('test/total_loss', total_average_loss, global_current_iteration)
-            test_writer.add_scalar('test/dice', (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4, global_current_iteration)
-            model.train()
+    total_average_loss = (total_loss_2 + total_loss_3 + total_loss_4 + total_loss_5) / total_test_step / 4
+    test_writer.add_scalar('test/loss2', total_loss_2/total_test_step, global_current_iteration)
+    test_writer.add_scalar('test/loss3', total_loss_3/total_test_step, global_current_iteration)
+    test_writer.add_scalar('test/loss4', total_loss_4/total_test_step, global_current_iteration)
+    test_writer.add_scalar('test/loss5', total_loss_5/total_test_step, global_current_iteration)
+    test_writer.add_scalar('test/total_loss', total_average_loss, global_current_iteration)
+    test_writer.add_scalar('test/dice', (total_dice_2 + total_dice_3 + total_dice_4 + total_dice_5) / total_test_step / 4, global_current_iteration)
+    model.train()
 
-            if total_average_loss < best_loss:
-                best_loss = total_average_loss
-                # ---- save model_lung_infection ----
-                save_path = './Snapshots/save_weights/{}/'.format(train_save)
-                os.makedirs(save_path, exist_ok=True)
-                torch.save(model.state_dict(), save_path + 'Inf-Net-%d.pth' % (epoch + 1))
-                print('[Saving Snapshot:]', save_path + 'Inf-Net-%d.pth' % (epoch + 1))
+    if total_average_loss < best_loss:
+        best_loss = total_average_loss
+        # ---- save model_lung_infection ----
+        save_path = './Snapshots/save_weights/{}/'.format(train_save)
+        os.makedirs(save_path, exist_ok=True)
+        torch.save(model.state_dict(), save_path + 'Inf-Net-%d.pth' % (epoch + 1))
+        print('[Saving Snapshot:]', save_path + 'Inf-Net-%d.pth' % (epoch + 1))
+    return total_average_loss
 
 
 def eval(test_loader, model, device, load_net_path, threshold, opt):
@@ -380,6 +380,9 @@ def cross_validation(train_save, opt):
     edges = np.array(sorted([edge_root + f for f in os.listdir(edge_root) if f.endswith('.png')]))
 
     k_folds = KFold(opt.folds)
+    VALIDATION_EARLY_STOPPING = 6
+    current_validation_early_count = 0
+    best_loss = 99999
     for fold_index, (train_index, test_index) in enumerate(k_folds.split(images)):
         random.seed(opt.seed)
         np.random.seed(opt.seed)
@@ -405,14 +408,21 @@ def cross_validation(train_save, opt):
 
         for epoch in range(1, opt.epoch):
             adjust_lr(optimizer, opt.lr, epoch, opt.decay_rate, opt.decay_epoch)
-            train(train_loader, test_loader, model, optimizer, epoch, train_save, opt.device, opt)
-            metric_string = eval(test_loader, model, opt.device, None, opt.eval_threshold, opt)
+            average_test_loss = train(train_loader, test_loader, model, optimizer, epoch, train_save, opt.device, opt)
+            if average_test_loss < best_loss:
+                best_loss = average_test_loss
+                current_validation_early_count = 0
+            else:
+                current_validation_early_count += 1
+            if current_validation_early_count >= VALIDATION_EARLY_STOPPING:
+                break
+        metric_string = eval(test_loader, model, opt.device, None, opt.eval_threshold, opt)
 
-            # write the metrics
-            os.makedirs(os.path.join(opt.metric_path, opt.train_save), exist_ok=True)
-            filename = os.path.join(opt.metric_path, opt.train_save, f"metrics_{fold_index}.txt")
-            with open(f'{filename}', 'a') as f:
-                f.write(metric_string)
+        # write the metrics
+        os.makedirs(os.path.join(opt.metric_path, opt.train_save), exist_ok=True)
+        filename = os.path.join(opt.metric_path, opt.train_save, f"metrics_{fold_index}.txt")
+        with open(f'{filename}', 'a') as f:
+            f.write(metric_string)
 
 
 def create_model(opt):

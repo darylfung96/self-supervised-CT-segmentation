@@ -168,8 +168,6 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
 
             loss = criterion(output, img_mask)
             total_test_loss.append(loss.item())
-            print(f'test loss is {loss.item()}')
-            total_test_loss.append(loss.item())
 
             # calculate background metrics
             dice = dice_similarity_coefficient(background_output, background_img_mask, None)
@@ -232,6 +230,7 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
         test_writer.add_scalar('test/jaccard', average_test_jaccard, epo)
         test_writer.add_scalar('test/sensitivity', average_test_sensitivity, epo)
         test_writer.add_scalar('test/precision', average_test_precision, epo)
+        print(f'test loss is {average_test_loss}')
 
         if average_test_loss < best_loss:
             best_loss = average_test_loss
