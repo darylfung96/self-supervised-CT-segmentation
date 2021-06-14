@@ -23,3 +23,12 @@ python MyTrain_LungInf.py --train_save baseline-inf-net-lookahead --random_cutou
 
 # evaluation (use python rocs_generation.py to find the best eval_threshold)
 python MyTrain_LungInf.py --is_eval True --eval_threshold 0.5 --load_net_path './Snapshots/save_weights/self-inf-net/{checkpoint_model_name}'
+
+
+
+
+### (on their small dataset)
+# baseline
+python MyTrain_LungInf.py --train_save baseline-inf-net-smalldataset --random_cutout 0 --graph_path graph_baseline-inf-net-smalldataset --device cuda --epoch 200 --batchsize 8 --train_path "Dataset(small)/TrainingSet/LungInfection-Train/Doctor-label" --test_path "Dataset(small)/TestingSet/LungInfection-Test/"
+# improved
+python MyTrain_LungInf.py --train_save self-improved-smalldataset --focal_loss --lookahead --is_data_augment True --random_cutout 0.5 --seed 100 --graph_path graph_self-improved-smalldataset --load_net_path ../model/self-inf-net/medseg_resnet18_autoencoder_no_bottleneck_use_coach10.net.best.ckpt.t7 --device cuda --epoch 200 --batchsize 8 --train_path "Dataset(small)/TrainingSet/LungInfection-Train/Doctor-label" --test_path "Dataset(small)/TestingSet/LungInfection-Test/"
