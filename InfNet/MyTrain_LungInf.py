@@ -591,7 +591,7 @@ if __name__ == '__main__':
         metric_string = eval(test_loader, model, opt.device, opt.load_net_path, opt.eval_threshold, opt)
         end = time.time()
         timer(start, end)
-
+        print(metric_string)
         # write the metrics
         os.makedirs(os.path.join(opt.metric_path, opt.load_net_path), exist_ok=True)
         with open(f'{os.path.join(opt.metric_path, opt.load_net_path, "metrics.txt")}', 'a') as f:

@@ -1,5 +1,6 @@
 python MyTrain_LungInf.py --train_save self-improved --is_data_augment True --graph_path graph_self-improved --device cuda --epoch 200 --batchsize 12 --is_data_augment True --random_cutout 0.4
 
+
 # baseline
 python MyTrain_LungInf.py --train_save baseline-inf-net --random_cutout 0 --graph_path graph_baseline-inf-net --device cuda --epoch 200 --batchsize 8
 # baseline cross-val

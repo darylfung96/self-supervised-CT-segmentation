@@ -730,6 +730,7 @@ if __name__ == "__main__":
     # image paths
     parser.add_argument('--train_path', default='./Dataset/TrainingSet/MultiClassInfection-Train/', type=str)
     parser.add_argument('--test_path', default='./Dataset/TestingSet/MultiClassInfection-Test/', type=str)
+    parser.add_argument('--pseudo_test_path', default='./Results/Lung infection segmentation/baseline-inf-net/', type=str)
     parser.add_argument('--val_path', default='./Dataset/ValSet/MultiClassInfection-Val/', type=str)
     parser.add_argument('--all_path', default='./Dataset/AllSet/MultiClassInfection-All/', type=str)
 
@@ -742,7 +743,8 @@ if __name__ == "__main__":
         # evaluation
         start = time.time()
         img_test_path = os.path.join(arg.test_path, 'Imgs') + "/"
-        pseudo_test_path = os.path.join(arg.test_path, 'Prior') + "/"
+        # pseudo_test_path = os.path.join(arg.test_path, 'Prior') + "/"
+        pseudo_test_path = arg.pseudo_test_path
         label_test_path = os.path.join(arg.test_path, 'GT') + "/"
         # test dataset
         test_dataset = LungDataset(
