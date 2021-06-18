@@ -120,7 +120,6 @@ class LungDataset(Dataset):
             imgA = self.transform(imgA)
             imgC = self.transform(imgC)
 
-
         return imgA, imgC, onehot_label, img_name
 
 

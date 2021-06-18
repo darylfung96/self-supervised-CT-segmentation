@@ -24,6 +24,10 @@ class COVIDDataset(data.Dataset):
         self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]
         self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]
 
+        for idx in range(len(self.images)):
+            self.images[idx] = self.rgb_loader(self.images[idx])
+            self.gts[idx] = self.binary_loader(self.gts[idx])
+
         self.images = sorted(self.images)
         self.gts = sorted(self.gts)
 
@@ -46,8 +50,8 @@ class COVIDDataset(data.Dataset):
             transforms.ToTensor()])
 
     def __getitem__(self, index):
-        image = self.rgb_loader(self.images[index])
-        gt = self.binary_loader(self.gts[index])
+        image = self.images[index]
+        gt = self.gts[index]
 
         # augment data
         if self.is_data_augment:
