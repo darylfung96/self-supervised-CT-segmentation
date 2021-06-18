@@ -31,23 +31,33 @@ class LungDataset(Dataset):
         self.random_cutout = random_cutout
         self.num_class = 3
 
+        self.imgA = []
+        self.imgB = []
+        self.imgC = []
+        img_names = os.listdir(self.imgs_path)
+        for img_name in img_names:
+            imgA = cv2.resize(cv2.imread(self.imgs_path + img_name), (352, 352))
+            imgB = cv2.resize(cv2.imread(self.label_path + img_name.split('.')[0] + '.png', 0), (352, 352))
+            imgC = cv2.resize(cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png', 0), (352, 352))
+
+            # only need to process the original dataset, tr and rp already processed
+            if 'tr' not in img_name and 'rp' not in img_name:
+                imgB[imgB < 19] = 0
+                imgB[(imgB <= 38) & (imgB >= 19)] = 1
+                imgB[imgB > 38] = 2
+
+            self.imgA.append(imgA)
+            self.imgB.append(imgB)
+            self.imgC.append(imgC)
+
     def __len__(self):
-        return len(os.listdir(self.imgs_path))
+        return len(self.imgA)
 
     def __getitem__(self, idx):
-        # processing img
-        img_name = os.listdir(self.imgs_path)[idx]
-        # image path
-        imgA = cv2.imread(self.imgs_path + img_name)
-        imgA = cv2.resize(imgA, (352, 352))
+        imgA = self.imgA[idx]
+        imgB = self.imgB[idx]
+        imgC = self.imgC[idx]
 
-        # processing pseudo
-        imgC = cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png')
-        imgC = cv2.resize(imgC, (352, 352))
-
-        # processing label
-        img_filename = img_name.split('.')[0]
-        imgB = cv2.imread(self.label_path + img_filename + '.png', 0)
         if not self.is_test:
             imgB = cv2.resize(imgB, (352, 352))
         img_label = imgB
@@ -102,12 +112,6 @@ class LungDataset(Dataset):
             img_label = np.array(pil_img_label)
             imgC = np.array(pil_imgC)
 
-        # only need to process the original dataset, tr and rp already processed
-        if 'tr' not in img_filename and 'rp' not in img_filename:
-            img_label[img_label < 19] = 0
-            img_label[(img_label <= 38) & (img_label >= 19)] = 1
-            img_label[img_label > 38] = 2
-
         img_label_onehot = (np.arange(self.num_class) == img_label[...,None]).astype(float)
         img_label_onehot = img_label_onehot.transpose(2, 0, 1)  # n_class * w * H
 
@@ -120,7 +124,8 @@ class LungDataset(Dataset):
             imgA = self.transform(imgA)
             imgC = self.transform(imgC)
 
-        return imgA, imgC, onehot_label, img_name
+        # return imgA, imgC, onehot_label, img_name
+        return imgA, imgC, onehot_label, None
 
 
 class IndicesLungDataset(Dataset):
