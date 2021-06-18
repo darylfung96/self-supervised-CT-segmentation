@@ -125,7 +125,7 @@ class LungDataset(Dataset):
             imgC = self.transform(imgC)
 
         # return imgA, imgC, onehot_label, img_name
-        return imgA, imgC, onehot_label, None
+        return imgA, imgC, onehot_label, []
 
 
 class IndicesLungDataset(Dataset):
