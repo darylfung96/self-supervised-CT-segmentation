@@ -27,10 +27,6 @@ class COVIDDataset(data.Dataset):
         self.images = sorted(self.images)
         self.gts = sorted(self.gts)
 
-        for idx in range(len(self.images)):
-            self.images[idx] = self.rgb_loader(self.images[idx])
-            self.gts[idx] = self.binary_loader(self.gts[idx])
-
         if len(edge_root) != 0:
             self.edge_flage = True
             self.edges = [edge_root + f for f in os.listdir(edge_root) if f.endswith('.png')]
@@ -48,6 +44,10 @@ class COVIDDataset(data.Dataset):
         self.gt_transform = transforms.Compose([
             transforms.Resize((self.trainsize, self.trainsize)),
             transforms.ToTensor()])
+
+        for idx in range(len(self.images)):
+            self.images[idx] = self.rgb_loader(self.images[idx])
+            self.gts[idx] = self.binary_loader(self.gts[idx])
 
     def __getitem__(self, index):
         image = self.images[index]
