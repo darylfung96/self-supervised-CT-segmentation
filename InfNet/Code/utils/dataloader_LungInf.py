@@ -24,12 +24,12 @@ class COVIDDataset(data.Dataset):
         self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]
         self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]
 
+        self.images = sorted(self.images)
+        self.gts = sorted(self.gts)
+
         for idx in range(len(self.images)):
             self.images[idx] = self.rgb_loader(self.images[idx])
             self.gts[idx] = self.binary_loader(self.gts[idx])
-
-        self.images = sorted(self.images)
-        self.gts = sorted(self.gts)
 
         if len(edge_root) != 0:
             self.edge_flage = True
