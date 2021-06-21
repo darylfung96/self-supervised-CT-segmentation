@@ -7,6 +7,7 @@ submit to Transactions on Medical Imaging, 2020.
 First Version: Created on 2020-05-13 (@author: Ge-Peng Ji)
 """
 
+import numpy as np
 import os
 from PIL import Image
 import torch.utils.data as data
@@ -311,6 +312,8 @@ class test_dataset:
         image = self.rgb_loader(self.images[index])
         image = self.transform(image) #.unsqueeze(0)
         gt = self.binary_loader(self.gts[index])
+        gt = np.array(gt).astype(np.float32)  # make float first otherwise conversion error with gt_roc
+        gt = Image.fromarray(gt)
         gt_cont = self.gt_transform(gt)
         gt_roc = self.gt_transform_roc(gt)
         name = self.images[index].split('/')[-1]
