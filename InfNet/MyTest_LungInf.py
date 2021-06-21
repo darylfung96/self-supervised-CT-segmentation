@@ -14,8 +14,12 @@ import os
 import argparse
 import imageio
 from scipy import misc
-from Code.model_lung_infection.InfNet_ResNet import Inf_Net as Network
-from Code.utils.dataloader_LungInf import test_dataset
+
+import sys
+sys.path.append('..')
+
+from InfNet.Code.model_lung_infection.InfNet_ResNet import Inf_Net as Network
+from InfNet.Code.utils.dataloader_LungInf import test_dataset
 
 
 def joint_loss(pred, mask):
