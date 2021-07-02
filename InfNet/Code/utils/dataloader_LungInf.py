@@ -316,6 +316,7 @@ class test_dataset:
         gt = Image.fromarray(gt)
         gt_cont = self.gt_transform(gt)
         gt_roc = self.gt_transform_roc(gt)
+        gt_roc[gt_roc > 1] = 1 # since it's binary, we can safely convert to 1
         name = self.images[index].split('/')[-1]
         if name.endswith('.jpg'):
             name = name.split('.jpg')[0] + '.png'
