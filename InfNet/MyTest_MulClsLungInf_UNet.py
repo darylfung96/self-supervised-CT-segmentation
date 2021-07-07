@@ -12,6 +12,8 @@ import numpy as np
 from Code.utils.dataloader_MulClsLungInf_UNet import LungDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader
+import sys
+sys.path.append('..')
 from Code.model_lung_infection.InfNet_UNet import *  # 当前用的UNet模型
 import imageio
 from Code.utils.split_class import split_class
