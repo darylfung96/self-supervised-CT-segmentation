@@ -33,26 +33,27 @@ for current_type in types:
 
         # img and msk should have the same name
         img_dirname = os.path.join(img_folder_dir, img_folder)
-        img_filename = os.listdir(img_dirname)[0]
-        new_filename = f'{img_folder}_{img_filename}'
 
-        copyfile(os.path.join(img_dirname, img_filename), os.path.join(img_output_dir, new_filename))
+        for img_filename in os.listdir(img_dirname):
+            new_filename = f'{img_folder}_{img_filename}'
+            copyfile(os.path.join(img_dirname, img_filename), os.path.join(img_output_dir, new_filename))
 
     for msk_folder in msk_folders:
         # msk
         msk_dirname = os.path.join(msk_folder_dir, msk_folder)
-        msk_filename = os.listdir(msk_dirname)[0]
-        new_filename = f'{msk_folder}_{msk_filename}'
-        copyfile(os.path.join(msk_dirname, msk_filename), os.path.join(msk_output_dir, new_filename))
 
-        # prior
-        msk = os.path.join(msk_dirname, msk_filename)
-        binary_msk = io.imread(msk).astype(np.uint8)
-        binary_msk[binary_msk > 1] = 1
-        io.imsave(os.path.join(prior_output_dir, new_filename), binary_msk)
+        for msk_filename in os.listdir(msk_dirname):
+            new_filename = f'{msk_folder}_{msk_filename}'
+            copyfile(os.path.join(msk_dirname, msk_filename), os.path.join(msk_output_dir, new_filename))
 
-        # edge
-        edge_msk = io.imread(msk)
-        edge_msk = feature.canny(edge_msk).astype(np.uint8)
-        edge_msk[edge_msk >= 1] = 255
-        io.imsave(os.path.join(edge_output_dir, new_filename), edge_msk)
+            # prior
+            msk = os.path.join(msk_dirname, msk_filename)
+            binary_msk = io.imread(msk).astype(np.uint8)
+            binary_msk[binary_msk > 1] = 1
+            io.imsave(os.path.join(prior_output_dir, new_filename), binary_msk)
+
+            # edge
+            edge_msk = io.imread(msk)
+            edge_msk = feature.canny(edge_msk).astype(np.uint8)
+            edge_msk[edge_msk >= 1] = 255
+            io.imsave(os.path.join(edge_output_dir, new_filename), edge_msk)
