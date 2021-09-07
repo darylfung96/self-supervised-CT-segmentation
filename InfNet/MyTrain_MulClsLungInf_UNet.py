@@ -28,7 +28,7 @@ from torchvision import transforms
 # from LungData import test_dataloader, train_dataloader  # pls change batch_size
 from torch.utils.data import DataLoader
 from Code.model_lung_infection.InfNet_UNet import *
-from fcn8 import create_fcn
+from fcn8 import create_fcn, FCN8s
 from Code.utils.utils import timer
 import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
@@ -99,7 +99,12 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
             img_mask = img_mask.to(device)
 
             optimizer.zero_grad()
-            output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
+
+            inputs =  torch.cat((img, pseudo), dim =1)
+            if type(lung_model) == FCN8s:
+                inputs = img
+
+            output = lung_model(inputs)  # change 2nd img to pseudo for original
 
             output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
             loss = criterion(output, img_mask)
@@ -150,7 +155,11 @@ def train(lung_model, train_dataset, test_dataset, epo_num, num_classes, input_c
             img = img.to(device)
             pseudo = pseudo.to(device)
             img_mask = img_mask.to(device)
-            output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
+
+            inputs = torch.cat((img, pseudo), dim=1)
+            if type(lung_model) == FCN8s:
+                inputs = img
+            output = lung_model(inputs)  # change 2nd img to pseudo for original
 
             output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
             b, _, w, h = output.size()
@@ -279,7 +288,11 @@ def calculate_metrics(test_dataloader, num_classes, load_net_path, lung_model, d
         img = img.to(device)
         pseudo = pseudo.to(device)
         img_mask = img_mask.to(device)
-        output = lung_model(torch.cat((img, pseudo), dim=1))  # change 2nd img to pseudo for original
+
+        inputs = torch.cat((img, pseudo), dim=1)
+        if type(lung_model) == FCN8s:
+            inputs = img
+        output = lung_model(inputs)  # change 2nd img to pseudo for original
 
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
         b, _, w, h = output.size()
