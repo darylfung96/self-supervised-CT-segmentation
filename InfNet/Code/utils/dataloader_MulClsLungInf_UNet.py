@@ -34,6 +34,7 @@ class LungDataset(Dataset):
         self.imgA = []
         self.imgB = []
         self.imgC = []
+        self.img_names = []
         img_names = os.listdir(self.imgs_path)
         is_process_file = 'StichNet' not in label_path
 
@@ -52,6 +53,7 @@ class LungDataset(Dataset):
             self.imgA.append(imgA)
             self.imgB.append(imgB)
             self.imgC.append(imgC)
+            self.img_names.append(img_name)
 
     def __len__(self):
         return len(self.imgA)
@@ -128,7 +130,7 @@ class LungDataset(Dataset):
             imgC = self.transform(imgC)
 
         # return imgA, imgC, onehot_label, img_name
-        return imgA, imgC, onehot_label, []
+        return imgA, imgC, onehot_label, self.img_names[idx]
 
 
 class IndicesLungDataset(Dataset):

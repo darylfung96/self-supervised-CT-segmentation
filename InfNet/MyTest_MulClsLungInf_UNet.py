@@ -70,8 +70,8 @@ def inference(num_classes, input_channels, snapshot_dir, save_path, pseudo_path,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/self-multi-inf-net_new/unet_model_38.pkl')
-    parser.add_argument('--pseudo_path', type=str, default='./Results/Lung infection segmentation/single_self-inf-net/')
-    parser.add_argument('--save_path', type=str, default='./Results/Multi-class lung infection segmentation/strongprior_multi-inf-net_new')
+    parser.add_argument('--pseudo_path', type=str, default='./Results/Lung infection segmentation/baseline-inf-net/')
+    parser.add_argument('--save_path', type=str, default='./Results/Multi-class lung infection segmentation/self-multi-inf-net_new/')
     parser.add_argument('--model_name', type=str, default='improved')  # can be baseline or improved
     arg = parser.parse_args()
 
