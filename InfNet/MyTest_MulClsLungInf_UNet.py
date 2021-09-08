@@ -14,6 +14,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 import sys
 sys.path.append('..')
+from fcn8 import create_fcn, FCN8s
 from Code.model_lung_infection.InfNet_UNet import *  # 当前用的UNet模型
 import imageio
 from Code.utils.split_class import split_class
@@ -35,7 +36,7 @@ def inference(num_classes, input_channels, snapshot_dir, save_path, pseudo_path,
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved}
+    model_dict = {'baseline': Inf_Net_UNet, 'improved': Inf_Net_UNet_Improved, 'FCN': create_fcn}
     lung_model = model_dict[model_name](input_channels, num_classes).to(device)
     print(lung_model)
     lung_model.load_state_dict(torch.load(snapshot_dir, map_location=torch.device(device)))
@@ -47,7 +48,10 @@ def inference(num_classes, input_channels, snapshot_dir, save_path, pseudo_path,
         pseudo = pseudo.to(device)
         img_mask = img_mask.to(device)
 
-        output = lung_model(torch.cat((img, pseudo), dim=1))
+        inputs = torch.cat((img, pseudo), dim=1)
+        if type(lung_model) == FCN8s:
+            inputs = img
+        output = lung_model(inputs)
         output = torch.sigmoid(output)  # output.shape is torch.Size([4, 2, 160, 160])
         b, _, w, h = output.size()
         _, _, w_gt, h_gt = img_mask.size()
@@ -72,11 +76,12 @@ if __name__ == "__main__":
     parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/self-multi-inf-net_new/unet_model_38.pkl')
     parser.add_argument('--pseudo_path', type=str, default='./Results/Lung infection segmentation/baseline-inf-net/')
     parser.add_argument('--save_path', type=str, default='./Results/Multi-class lung infection segmentation/self-multi-inf-net_new/')
+    parser.add_argument('--input_channels', type=int, default=6)
     parser.add_argument('--model_name', type=str, default='improved')  # can be baseline or improved
     arg = parser.parse_args()
 
     inference(num_classes=3,
-              input_channels=6,
+              input_channels=arg.input_channels,
               snapshot_dir=arg.pth_path,
               save_path=arg.save_path,
               pseudo_path=arg.pseudo_path,
