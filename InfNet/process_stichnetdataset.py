@@ -4,9 +4,9 @@ from shutil import copyfile
 from skimage import io, feature
 
 
-STICHNET_DIR = 'StichNet_Dataset'
+STICHNET_DIR = 'cleaned_cropped_full_ct'
 
-OUTPUT_DIR = 'StichNet_processed_Dataset'
+OUTPUT_DIR = 'cleaned_cropped_full_ct_processed'
 
 types = ['train', 'test', 'val']
 for current_type in types:

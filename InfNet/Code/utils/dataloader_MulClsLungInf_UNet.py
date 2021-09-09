@@ -36,7 +36,7 @@ class LungDataset(Dataset):
         self.imgC = []
         self.img_names = []
         img_names = os.listdir(self.imgs_path)
-        is_process_file = 'StichNet' not in label_path
+        is_process_file = 'StichNet' not in label_path and 'full_ct_processed' not in label_path
 
         for img_name in img_names:
             imgA = cv2.resize(cv2.imread(self.imgs_path + img_name), (352, 352))
@@ -44,7 +44,7 @@ class LungDataset(Dataset):
             imgC = cv2.resize(cv2.imread(self.pseudo_path + img_name.split('.')[0] + '.png'), (352, 352))
 
             # only need to process the original dataset, tr and rp already processed
-            if is_process_file: # don't process file if StichNet Dataset
+            if is_process_file:  # don't process file if StichNet Dataset
                 if 'tr' not in img_name and 'rp' not in img_name:
                     imgB[imgB < 19] = 0
                     imgB[(imgB <= 38) & (imgB >= 19)] = 1
