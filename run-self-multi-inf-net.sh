@@ -39,6 +39,8 @@ python MyTrain_MulClsLungInf_UNet.py --save_path self-multi-improved-inf-net-loo
 # evaluation
 python MyTrain_MulClsLungInf_UNet.py --is_eval True --load_net_path './Snapshots/save_weights/self-multi-inf-net/{checkpoint_model_name}' --model_name improved
 
+# generation
+python MyTest_MulClsLungInf_UNet.py --pth_path Snapshots/save_weights/{model weights}--save_path "Results/Multi-class lung infection segmentation/" --input_channels 3 --model_name FCN
 
 ### (on their small dataset)
 # baseline

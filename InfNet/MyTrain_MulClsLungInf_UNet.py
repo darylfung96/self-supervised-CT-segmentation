@@ -728,7 +728,7 @@ if __name__ == "__main__":
     parser.add_argument('--is_label_smooth', type=bool, default=False)
     parser.add_argument('--random_cutout', type=float, default=0)
     parser.add_argument('--batchsize', type=int, default=12)
-    parser.add_argument('--is_eval', type=bool, default=False)
+    parser.add_argument('--is_eval', action='store_true')
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--load_net_path', type=str)
     parser.add_argument('--load_net_path_2', type=str, default=None)
