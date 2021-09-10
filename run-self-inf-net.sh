@@ -26,7 +26,8 @@ python MyTrain_LungInf.py --train_save baseline-inf-net-lookahead --random_cutou
 # evaluation (use python rocs_generation.py to find the best eval_threshold)
 python MyTrain_LungInf.py --is_eval True --eval_threshold 0.5 --load_net_path './Snapshots/save_weights/self-inf-net/{checkpoint_model_name}'
 
-
+# generation
+ python MyTest_LungInf.py --data_path {test path} --device cuda --pth_path {model_path} --save_path {save path}
 
 
 ### (on their small dataset)
