@@ -24,9 +24,9 @@ import argparse
 
 def inference(num_classes, input_channels, snapshot_dir, save_path, test_path, pseudo_path, model_name):
     test_dataset = LungDataset(
-        imgs_path=os.path.join(test_path, 'Imgs'),
+        imgs_path=os.path.join(test_path, 'Imgs/'),
         pseudo_path=pseudo_path,  # NOTES: generated from Semi-Inf-Net
-        label_path=os.path.join(test_path, 'GT'),
+        label_path=os.path.join(test_path, 'GT/'),
         transform=transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
