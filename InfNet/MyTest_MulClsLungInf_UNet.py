@@ -22,11 +22,11 @@ import shutil
 import argparse
 
 
-def inference(num_classes, input_channels, snapshot_dir, save_path, pseudo_path, model_name):
+def inference(num_classes, input_channels, snapshot_dir, save_path, test_path, pseudo_path, model_name):
     test_dataset = LungDataset(
-        imgs_path='./Dataset/TestingSet/MultiClassInfection-Test/Imgs/',
+        imgs_path=os.path.join(test_path, 'Imgs'),
         pseudo_path=pseudo_path,  # NOTES: generated from Semi-Inf-Net
-        label_path='./Dataset/TestingSet/MultiClassInfection-Test/GT/',
+        label_path=os.path.join(test_path, 'GT'),
         transform=transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
@@ -75,6 +75,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--pth_path', type=str, default='./Snapshots/save_weights/self-multi-inf-net_new/unet_model_38.pkl')
     parser.add_argument('--pseudo_path', type=str, default='./Results/Lung infection segmentation/baseline-inf-net/')
+    parser.add_argument('--test_path', type=str, default='./Dataset/TestingSet/MultiClassInfection-Test/')
     parser.add_argument('--save_path', type=str, default='./Results/Multi-class lung infection segmentation/self-multi-inf-net_new/')
     parser.add_argument('--input_channels', type=int, default=6)
     parser.add_argument('--model_name', type=str, default='improved')  # can be baseline or improved
@@ -85,5 +86,6 @@ if __name__ == "__main__":
               snapshot_dir=arg.pth_path,
               save_path=arg.save_path,
               pseudo_path=arg.pseudo_path,
+              test_path=arg.test_path,
               model_name=arg.model_name
               )
