@@ -12,7 +12,7 @@ numpy==1.18.1
 olefile==0.46
 opencv-python==4.2.0.34
 Pillow==7.1.1
-protobuf==3.11.3
+protobuf==3.15.0
 pycparser==2.20
 pyparsing==2.4.7
 PyQt5==5.12.3
