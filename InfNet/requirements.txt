@@ -11,7 +11,7 @@ mkl-service==2.3.0
 numpy==1.18.1
 olefile==0.46
 opencv-python==4.2.0.34
-Pillow==7.1.1
+Pillow==9.0.1
 protobuf==3.11.3
 pycparser==2.20
 pyparsing==2.4.7
