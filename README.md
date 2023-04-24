@@ -39,11 +39,13 @@ You can visualise the training graph by running tensorboard on:
 
 #### Preparing InfNet for training
 
-W need to get the dataset for the InfNet first. The data can be found [here](https://mega.nz/file/e8hHSKgZ#VKAYJ0lVWT8a27sv4ObvPGuLf1YFE0sZfdTYmLCpiBY).
+W need to get the dataset for the InfNet first. The data can be found [here](https://www.kaggle.com/datasets/darylfung96/covidhu).
 
     
 
-Once the data is obtained, go to InfNet directory and extract the zip file there. There should be a file called Dataset being created. Place that Dataset folder in InfNet directory.
+Once the data is obtained, go to InfNet directory and create a folder name Dataset, extract the zip file there. The directory should look something like this:
+InfNet/Dataset/AllSet/...
+
 
 ##### <b style="color: red">Note: All the following code at the bottom will be ran inside InfNet folder</b> 
 
