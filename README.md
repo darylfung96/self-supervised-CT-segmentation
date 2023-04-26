@@ -7,11 +7,10 @@
 ---
 
 #### Process data for self-supervision
-Prepare dataset for Self-Supervised learning from ICTCF. You can obtain the processed ICTCF dataset [here](https://mega.nz/file/b5AkQSoa#wk40ZPGB8IUCLQBU0S8dZl1SJBYeU9TtB3EDeBBbKP0).
+Prepare dataset for Self-Supervised learning from medseg. You can obtain the processed medseg [here](https://www.kaggle.com/datasets/darylfung96/medseg/).
     
-Once you have downloaded the ```ictcf-dataset.zip```, move the ictcf-dataset to the directory of Self-supervised-CT-segmentatiobn. Then run 
-
-    python process_ictcf_for_self.py -- input_folder ictcf-dataset --output_folder ./datasets/medseg
+Once you have downloaded the ```medseg.zip```, move the medseg.zip to the dataset folder in the directory of Self-supervised-CT-segmentation.
+unzip the medseg.zip. Your dataset directory should look like this self-supervised-CT-segmentation/dataset/medseg
     
 ---
 
