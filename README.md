@@ -154,7 +154,7 @@ For all the evaluation, a folder will be created called "metrics_log". You will 
 
 ### Generating Results
 
-The pre-trained models can be found [here](https://mega.nz/file/b9p0GIAJ#qzbY8yhcQ_e3XDDwIvWHayT4TssZCynvqGhIosvotm4). Extract the zip file into this directory: ```./Snapshots/save_weights```
+The pre-trained models can be found [here](https://www.kaggle.com/datasets/darylfung96/self-supervised-ct-segmentation-model). Extract the zip file into this directory: ```./Snapshots/save_weights```
 
 #### baseline InfNet
 In order to generate results for the baseline Single InfNet, run:
